@@ -1,0 +1,29 @@
+# robots.txt – LeadRadar
+# Controle de acesso para crawlers web e IA
+
+User-agent: *
+Allow: /
+Disallow: /settings
+Disallow: /automation
+Disallow: /leads
+Disallow: /war-room
+Disallow: /finance
+Disallow: /conversion
+
+# Permitir explicitamente crawlers de IA (GEO)
+User-agent: GPTBot
+Allow: /
+Disallow: /settings
+Disallow: /automation
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /settings
+Disallow: /automation
+
+User-agent: Claude-Web
+Allow: /
+Disallow: /settings
+Disallow: /automation
+
+Sitemap: https://leadradar.com.br/sitemap.xml

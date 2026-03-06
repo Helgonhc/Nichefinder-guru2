@@ -1,0 +1,114 @@
+export interface BusinessData {
+  id: string;
+  name: string;
+  niche: string;
+  address: string;
+  city: string;
+  phone?: string;
+  rating?: number;
+  totalRatings?: number;
+  website?: string;
+  instagram?: string;
+  facebook?: string;
+  tiktok?: string;
+  whatsapp?: string;
+  googleMapsUrl?: string;
+  placeId?: string;
+  presenceScore: number;
+  missingItems: string[];
+  foundItems: string[];
+
+  // Legacy & Basic Metrics (Internal Sync)
+  performanceScore?: number;
+  seoScore?: number;
+  mobileFriendly?: boolean;
+  instagramHandle?: string;
+  email?: string;
+  status?: 'new' | 'contacted' | 'interested' | 'closed';
+  notes?: string;
+  siteType?: 'proprietary' | 'aggregator' | 'social' | 'none';
+  isSecure?: boolean;
+  score?: number;
+  temperature?: 'frio' | 'morno' | 'quente';
+  lastPostDate?: string;
+  offerReason?: string;
+
+  // --- NEW CONVERSION MACHINE FIELDS (Deep Qualification) ---
+  temSite?: boolean;
+  urlSite?: string;
+  audit?: {
+    mobileFriendly?: boolean;
+    https?: boolean;
+    speedScore?: number;
+    seoBasics?: boolean;
+    ctaClarity?: boolean;
+    performanceScore?: number;
+    seoScore?: number;
+    accessibilityScore?: number;
+    bestPracticesScore?: number;
+    lcp?: string;
+    cls?: string;
+    isResponsive?: boolean;
+    isSecure?: boolean;
+    copyrightYear?: number;
+    analyzedAt?: string;
+    ai_insight?: string;
+    isDown?: boolean;
+  };
+  instagramAtivo?: boolean;
+  ultimaPostagem?: string;
+  contatoPreferido?: 'whats' | 'email' | 'ig';
+  categoria?: string;
+  prioridade?: number; // Calculated by score
+  motivoPrincipalDaOferta?: string; // AI generated
+
+  // Funnel & Cadence tracking
+  cadenceStage?: 'D0' | 'D2' | 'D5' | 'D9' | 'Completed';
+  lastInteractionDate?: string;
+  automationLogs?: Array<{
+    date: string;
+    action: string;
+    result: 'enviado' | 'entregue' | 'respondido' | 'bloqueado' | 'erro';
+    templateUsed?: string;
+  }>;
+  ticketMedio?: number;
+  conversionResult?: 'reuniao' | 'fechamento' | 'perdido' | 'nulo';
+  automationStatus?: 'idle' | 'queued' | 'sending' | 'paused' | 'stopped' | 'completed' | 'stopped_by_user' | 'ready_for_dispatch';
+  lastScanAt?: string;
+  motivoOferta?: string;
+}
+
+export interface SearchParams {
+  niche: string;
+  city: string;
+  customNiche?: string;
+}
+
+export type GeneratorType = 'script' | 'prompt' | 'analysis' | 'design' | 'script_system' | 'script_website' | 'battle_plan' | 'xeque_mate' | 'objections' | 'website_html';
+
+export const NICHES = [
+  { value: 'terapias_holisticas', label: '🌿 Terapias Holísticas', keyword: 'terapia holística reiki acupuntura aromaterapia' },
+  { value: 'energia_solar', label: '☀️ Energia Solar', keyword: 'energia solar instalação fotovoltaica' },
+  { value: 'estetica', label: '✨ Clínica de Estética', keyword: 'clínica estética harmonização facial' },
+  { value: 'dentista', label: '🦷 Dentista / Odonto', keyword: 'consultório odontológico dentista' },
+  { value: 'medico', label: '👨‍⚕️ Consultório Médico', keyword: 'clínica médica consultório' },
+  { value: 'advocacia', label: '⚖️ Advocacia', keyword: 'escritório de advocacia advogado' },
+  { value: 'arquitetura', label: '🏗️ Arquitetura & Interiores', keyword: 'escritório arquitetura design interiores' },
+  { value: 'imobiliaria', label: '🏠 Imobiliária', keyword: 'imobiliária corretor imóveis' },
+  { value: 'beach_tennis', label: '🎾 Beach Tennis / Futevôlei', keyword: 'quadra beach tennis futevôlei arena' },
+  { value: 'academia', label: '💪 Academia / Crossfit', keyword: 'academia fitness crossfit' },
+  { value: 'mecanica', label: '🔧 Oficina Mecânica', keyword: 'oficina mecânica automotiva' },
+  { value: 'concessionaria', label: '🚗 Concessionária / Lojas', keyword: 'concessionária veículos revenda carros' },
+  { value: 'restaurante', label: '🍽️ Restaurante', keyword: 'restaurante gastronomia' },
+  { value: 'sushi', label: '🍣 Sushi / Japonês', keyword: 'restaurante japonês sushi delivery' },
+  { value: 'pizzaria', label: '🍕 Pizzaria', keyword: 'pizzaria delivery' },
+  { value: 'hamburgueria', label: '🍔 Hamburgueria', keyword: 'hamburgueria artesanal' },
+  { value: 'escola', label: '🎓 Escola Particular', keyword: 'escola particular colégio infantil' },
+  { value: 'pet_shop', label: '🐾 Pet Shop / Vet', keyword: 'pet shop clínica veterinária' },
+  { value: 'contabilidade', label: '📊 Contabilidade', keyword: 'escritório contabilidade contador' },
+  { value: 'salao_beleza', label: '💇 Salão de Beleza', keyword: 'salão de beleza cabeleireiro' },
+  { value: 'barbearia', label: '💈 Barbearia', keyword: 'barbearia moderna' },
+  { value: 'farmacia', label: '💊 Farmácia', keyword: 'farmácia drogaria' },
+  { value: 'telemetria', label: '📡 Telemetria (Geral)', keyword: "condomínio edifício prédio shopping indústria clínica hospital moinho geradora administradora conservadora síndico gestão" },
+  { value: 'outro', label: '🔍 Outro (personalizado)', keyword: "" },
+];
