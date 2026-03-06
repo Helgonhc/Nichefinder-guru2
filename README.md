@@ -21,7 +21,7 @@ O NicheFinder Guru não é apenas um CRM ou um buscador de leads. É uma **Máqu
 * **Gerenciamento de Estado & Data Fetching:** TanStack Query (React Query)
 * **Backend & Banco de Dados:** Supabase (Auth, PostgreSQL)
 * **Geração de PDF:** Node.js, Puppeteer (Serviço Local)
-* **Inteligência Artificial:** OpenAI API (GPT-4) e Serper API
+* **Inteligência Artificial:** Groq API (Processamento ultrarrápido) e Serper API (Busca no Google)
 
 ---
 
@@ -29,12 +29,12 @@ O NicheFinder Guru não é apenas um CRM ou um buscador de leads. É uma **Máqu
 
 ### 1. Radar B2B Engine (`/src/pages/Radar.tsx`)
 O coração da captação.
-- `searchLeads()`: Interage diretamente com a API do Google Places (via Edge Functions/Servidor Local) para varrer áreas geográficas específicas.
+- `searchLeads()`: Interage diretamente com a API do Google Places (via Edge Functions/Servidor Local) e Serper API para varrer áreas geográficas específicas e encontrar contatos.
 - Implementa um sistema de *Blacklist* para evitar adicionar empresas indesejadas (ex: agências concorrentes).
 
 ### 2. Auditoria Técnica e IA (`/src/lib/siteAuditor.ts` & `/src/lib/aiService.ts`)
-- **Auditor:** Ao analisar um site, coletamos métricas cruciais de Performance e SEO através da API do Google PageSpeed Insights.
-- **AI Insights:** Esses dados alimentam a OpenAI, que gera automaticamente um parágrafo de abordagem (Script Frio) utilizando *Copywriting* focado em conversão.
+- **Auditor:** Ao analisar um site, coletamos métricas cruciais de Performance e SEO através da API oficial do Google.
+- **AI Insights:** Esses dados alimentam a Groq API, que gera automaticamente um parágrafo de abordagem ultrarrápido (Script Frio) utilizando *Copywriting* focado em conversão.
 
 ### 3. PDF VIP Generator (`/server/pdf-engine.js` & `/src/components/SitePDF.tsx`)
 - Um gerador de propostas VIP *On-The-Fly*.
@@ -51,14 +51,14 @@ O coração da captação.
 ### Pré-requisitos
 - Node.js (v18+)
 - Conta no Supabase (com banco provisionado)
-- Chaves de API (OpenAI, Google Maps/Places)
+- Chaves de API (Groq, Serper, Google Places)
 
 ### Instalação
 
-1. Clone o repositório:
+1. Clone este repositório para o seu ambiente local:
 ```bash
-git clone https://github.com/SeuUsuario/nichefinder-guru.git
-cd nichefinder-guru
+git clone https://github.com/Helgonhc/Nichefinder-guru2.git
+cd Nichefinder-guru2
 ```
 
 2. Instale as dependências:
@@ -66,12 +66,14 @@ cd nichefinder-guru
 npm install
 ```
 
-3. Configure as Variáveis de Ambiente (`.env`):
+3. Configure as Variáveis de Ambiente. Crie um arquivo `.env` na raiz do projeto:
 ```env
-VITE_SUPABASE_URL=sua_url_aqui
-VITE_SUPABASE_ANON_KEY=sua_chave_anonima_aqui
-VITE_OPENAI_API_KEY=sua_openai_key
-# Veja o arquivo .env.example para a lista completa
+VITE_SUPABASE_PROJECT_ID="seu_project_id"
+VITE_SUPABASE_URL="sua_url_supabase"
+VITE_SUPABASE_PUBLISHABLE_KEY="sua_chave_anonima"
+VITE_GOOGLE_PLACES_API_KEY="sua_chave_google_places"
+VITE_SERPER_API_KEY="sua_chave_serper"
+VITE_GROQ_API_KEY="sua_chave_groq"
 ```
 
 4. Inicie o Servidor de Desenvolvimento:
