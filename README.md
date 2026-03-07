@@ -6,11 +6,12 @@ Bem-vindo ao repositório do **NicheFinder Guru**, uma plataforma de inteligênc
 
 ## 🚀 O que é o NicheFinder Guru?
 
-O NicheFinder Guru não é apenas um CRM ou um buscador de leads. É uma **Máquina de Vendas Autônoma** que:
+O NicheFinder Guru não é apenas um CRM ou um buscador de leads. É uma **Máquina de Vendas Autônoma** focada em encontrar e converter negócios com a pior dor digital possível: **A falta de um site profissional**.
+
 1. **Minera (Radar):** Faz buscas em múltiplas cidades e nichos simultaneamente através da API do Google, removendo concorrentes e duplicidades.
-2. **Audita (Audit):** Analisa tecnicamente a presença digital de cada lead encontrado (PageSpeed, SEO, Segurança SSL).
-3. **Classifica (Score):** Identifica automaticamente quem são os "leads quentes" (desatualizados, lentos) e quem são os "frios" (estruturados).
-4. **Converte (AI & Bot):** Utiliza IA para gerar scripts de abordagem baseados na "dor técnica" do cliente e disponibiliza PDFs de impacto (Mockups VIP) para envio via WhatsApp de forma massiva com a automação integrada.
+2. **Scanner de Dor (Audit):** O foco definitivo é identificar empresas **SEM SITE** (a mina de ouro escondida), ou analisar os sites existentes apontando falhas críticas de infraestrutura e performance.
+3. **Classifica (Score/Thermal Sorting):** Separa instantaneamente quem está "sangrando dinheiro" (ex: lead Sem Site ou com site super lento) daqueles que já são bem atendidos.
+4. **O Robô de $1 Milhão (WhatsApp Bot):** O grande motor do fechamento. Um bot autônomo conectado ao seu WhatsApp que roda em background 24/7. Ele pega os melhores leads, envia a análise do Google via IA com um PDF anexado, abordando de maneira persuasiva diretamente no celular do dono, gerando demanda quente e automática.
 
 ---
 
@@ -32,17 +33,25 @@ O coração da captação.
 - `searchLeads()`: Interage diretamente com a API do Google Places (via Edge Functions/Servidor Local) e Serper API para varrer áreas geográficas específicas e encontrar contatos.
 - Implementa um sistema de *Blacklist* para evitar adicionar empresas indesejadas (ex: agências concorrentes).
 
+![Radar B2B Desktop](./docs/assets/radar_main.png)
+
 ### 2. Auditoria Técnica e IA (`/src/lib/siteAuditor.ts` & `/src/lib/aiService.ts`)
 - **Auditor:** Ao analisar um site, coletamos métricas cruciais de Performance e SEO através da API oficial do Google.
 - **AI Insights:** Esses dados alimentam a Groq API, que gera automaticamente um parágrafo de abordagem ultrarrápido (Script Frio) utilizando *Copywriting* focado em conversão.
+
+![Auditor de Site e Score](./docs/assets/audit_modal.png)
 
 ### 3. PDF VIP Generator (`/server/pdf-engine.js` & `/src/components/SitePDF.tsx`)
 - Um gerador de propostas VIP *On-The-Fly*.
 - O frontend envia um payload de dados para o motor Node.js (Puppeteer) rodando na porta 3001, que renderiza um layout React (`SitePDF`) em um PDF de alta fidelidade e converte para base64 para envio imediato no WhatsApp.
 
-### 4. Automação (`/src/pages/Automation.tsx`)
-- Gerenciamento de filas (Queue). Onde os leads classificados aguardam a execução do robô.
-- Interface para controle do loop automatizado de abordagem.
+### 4. O Robô: Automação WhatsApp (`/standalone-bot/wa-bot.js` & `/src/pages/Automation.tsx`)
+A joia da coroa da operação. É aqui que saímos do manual para a escala assustadora.
+- **WhatsApp Standalone Bot:** Um motor Node.js nos bastidores. Funciona com QR Code e atua como seu melhor vendedor 24h.
+- **Ataque Autônomo:** O bot varre a sua fila do Radar. Se a dor principal do lead for *"Sem Site"*, ele pede para a IA formular o pitch perfeito ("Notei que seus clientes do Google não te encontram direito..."), anexa o PDF e envia direto no WhatsApp com delays humanizados (para não tomar ban).
+- **Control Room:** O frontend (`Automation.tsx`) atua só como painel de pausa/início e monitoramento visual das métricas de ataque do robô.
+
+![Dashboard de Automação do WhatsApp](./docs/assets/automation_main.png)
 
 ---
 

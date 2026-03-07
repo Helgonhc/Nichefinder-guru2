@@ -248,11 +248,16 @@
 
                     <h4 class="text-accent font-semibold text-sm mb-1 uppercase tracking-wide">A Nossa Solução (Código)
                     </h4>
-                    <p class="text-textMuted text-sm border-l-2 border-accent pl-3">O NicheFinder possui o <strong>Radar
+                    <p class="text-textMuted text-sm border-l-2 border-accent pl-3 mb-4">O NicheFinder possui o
+                        <strong>Radar
                             Engine</strong>. Você digita o nicho e a cidade. O código do React pede para uma função
                         auxiliar conectada no Google varrer a cidade inteira num instante. O sistema devolve uma tabela
                         limpa com Nome, Nota e Telefone, e remove as palavras indesejadas (Lista Negra) sozinho antes
                         mesmo de mostrar na tela.</p>
+                    <div class="mt-4 rounded-lg overflow-hidden border border-border">
+                        <img src="./docs/assets/radar_main.png" alt="Tela Principal do Radar"
+                            class="w-full h-auto object-cover opacity-90 hover:opacity-100 transition-opacity" />
+                    </div>
                 </div>
 
                 <div class="code-box">
@@ -289,12 +294,16 @@
 
                     <h4 class="text-accent font-semibold text-sm mb-1 uppercase tracking-wide">A Nossa Solução (Código)
                     </h4>
-                    <p class="text-textMuted text-sm border-l-2 border-accent pl-3">O código do sistema observa aquele
-                        pacote de dados do Google. Se o campo chamado <code>website</code> voltar nulo ou vazio, nós
-                        colocamos uma <strong>tarja vermelha e jogamos esse lead para o topo da fila (Thermal
+                    <p class="text-textMuted text-sm border-l-2 border-accent pl-3 mb-4">O código do sistema observa
+                        aquele pacote de dados do Google. Se o campo chamado <code>website</code> voltar nulo ou vazio,
+                        nós colocamos uma <strong>tarja vermelha e jogamos esse lead para o topo da fila (Thermal
                             Sorting)</strong>. Sabemos que esta empresa está perdendo dinheiro agora mesmo por ser
                         invisível, ou seja, a dor é gigantesca e ele precisa do seu serviço de agência de marketing
                         urgentemente.</p>
+                    <div class="mt-4 rounded-lg overflow-hidden border border-border">
+                        <img src="./docs/assets/audit_modal.png" alt="Modal de Auditoria e Falha de Site"
+                            class="w-full h-auto object-cover opacity-90 hover:opacity-100 transition-opacity" />
+                    </div>
                 </div>
             </div>
         </section>
@@ -320,7 +329,8 @@
                         que é enviado para o sistema de Inteligência Artificial mais rápido do mundo (API Groq - Modelo
                         Llama). A gente manda as variáveis <code>${Nome}</code>, <code>${Cidade}</code> e
                         <code>${Problema}</code>. A IA cospe uma linha altamente humanizada fazendo você parecer um
-                        conselheiro atencioso. Jamais geramos textos iguais duas vezes.</p>
+                        conselheiro atencioso. Jamais geramos textos iguais duas vezes.
+                    </p>
                 </div>
 
                 <div class="flex items-start gap-4 mt-6 bg-black/50 p-4 border border-border rounded-lg">
@@ -361,7 +371,8 @@
                         <code>pdf-engine.js</code>) rodando na porta 3001. O sistema tira uma "foto virtual" super
                         rápida das cores do site, manda para esse robô como código fonte, ele "imprime" internamente
                         usando um Chrome fantasma chamado Puppeteer, gera o arquivo na memória RAM dele e devolve pronto
-                        só pra envio em 2 segundos, sem sobrecarregar sua máquina e sem salvar lixo no HD.</p>
+                        só pra envio em 2 segundos, sem sobrecarregar sua máquina e sem salvar lixo no HD.
+                    </p>
                 </div>
             </div>
         </section>
@@ -380,7 +391,8 @@
                     <p class="text-textMuted text-sm border-l-2 border-danger pl-3 mb-4">Se você pegar 50 contatos de
                         uma vez no sistema e rodar um script no seu navegador mandando o PDF e a mensagem da IA num loop
                         <code>forzinho rápido</code> disparando de 2 em 2 segundos... o Facebook percebe o software
-                        esquisito, bloqueia seu IP, derruba seu celular e sua chance acaba.</p>
+                        esquisito, bloqueia seu IP, derruba seu celular e sua chance acaba.
+                    </p>
 
                     <h4 class="text-accent font-semibold text-sm mb-1 uppercase tracking-wide">A Nossa Solução (Código)
                     </h4>
@@ -388,13 +400,18 @@
                         "Automação Desacoplada" (<code>wa-bot.js</code>). Ele não tem conexão com o design do site. Ele
                         se conecta sorrateiro via banco de dados Supabase na <code>whatsapp_queue</code> (sua fila que
                         você clicou no visual).</p>
-                    <p class="text-textMuted text-sm border-l-2 border-accent pl-3 mt-2"><strong>A Mágica da lentidão
+                    <p class="text-textMuted text-sm border-l-2 border-accent pl-3 mt-2 mb-4"><strong>A Mágica da
+                            lentidão
                             intencional:</strong> O bot pega a primeira oficina da fila, mostra "Digitando..."
                         dependendo do tamanho da mensagem para simular uma pessoa teclando no celular, anexa o PDF e
                         envia. Antes de ir pra empresa de baixo, ele aciona um gatilho de tempo: <strong>Vai esperar um
                             número embaralhado aleatório entre 45 segundos e 120 segundos.</strong> Isso dilui as
                         mensagens de modo humanizado para os servidores do WhatsApp acharem que é um operador normal
                         trabalhando. O Bot trabalha de madrugada pra você.</p>
+                    <div class="mt-4 rounded-lg overflow-hidden border border-border">
+                        <img src="./docs/assets/automation_main.png" alt="Painel de Automação Standalone"
+                            class="w-full h-auto object-cover opacity-90 hover:opacity-100 transition-opacity" />
+                    </div>
                 </div>
             </div>
         </section>
