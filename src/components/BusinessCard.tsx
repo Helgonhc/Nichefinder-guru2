@@ -1491,6 +1491,7 @@ export const BusinessCard = memo(function BusinessCard({
                         presence_score: business.presenceScore,
                         status: 'new',
                         meta_data: {
+                          googleMapsUrl: business.googleMapsUrl,
                           missingItems: business.missingItems,
                           foundItems: business.foundItems,
                           performanceScore: business.performanceScore,

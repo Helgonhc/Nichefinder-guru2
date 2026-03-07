@@ -118,6 +118,11 @@ const Leads = () => {
                 presence_score: lead.presenceScore,
                 status: 'new',
                 meta_data: {
+                    googleMapsUrl: lead.googleMapsUrl,
+                    instagram: lead.instagram,
+                    facebook: lead.facebook,
+                    tiktok: lead.tiktok,
+                    whatsapp: lead.whatsapp,
                     missingItems: lead.missingItems,
                     foundItems: lead.foundItems,
                     performanceScore: lead.performanceScore,
