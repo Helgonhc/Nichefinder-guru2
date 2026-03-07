@@ -45,7 +45,12 @@ Assinado por ${userName}.`;
     }
 
     if (type === 'website_html') {
-        return `Designer Web Sênior. Gere HTML/CSS INLINE Desktop (1280x720). Nome: ${business.name}. Luxuoso e moderno. Retorne APENAS HTML.`;
+        return `Você é um Designer Web Sênior de Elite. Sua missão é gerar o código HTML e CSS INLINE (sem arquivos externos) para um site ultra-luxuoso focado no nicho: ${business.niche || 'Negócios Locais'}.
+Nome da Empresa: ${business.name}. 
+Cidade: ${business.city}.
+Estética: Moderna, minimalista, estilo Apple/Vercel, com cores que remetam ao nicho e autoridade.
+Foco: Conversão e autoridade extrema.
+Retorne APENAS o código HTML/CSS pronto para ser injetado em um iframe (1280x720).`;
     }
 
     if (type === 'battle_plan') {

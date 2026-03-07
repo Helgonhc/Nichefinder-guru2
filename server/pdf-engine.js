@@ -48,7 +48,6 @@ const allowedOrigins = [
 
 app.use(cors({
     origin: (origin, callback) => {
-        // Permite requests sem origin (Postman, curl) apenas em dev
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
@@ -59,6 +58,21 @@ app.use(cors({
     allowedHeaders: ['Content-Type'],
 }));
 
+// --- Middleware de Payload (Aumentado para 30MB para segurança) ---
+app.use(express.json({ limit: "30mb" }));
+app.use(express.urlencoded({ limit: "30mb", extended: true }));
+
+// --- Tratamento de Erro de Payload (JSON amigável) ---
+app.use((err, req, res, next) => {
+    if (err.type === 'entity.too.large') {
+        return res.status(413).json({
+            error: "Payload Too Large",
+            details: "O HTML enviado é muito grande (limite 30MB). Tente reduzir o tamanho das imagens embutidas."
+        });
+    }
+    next(err);
+});
+
 // Security headers
 app.use((req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -66,12 +80,8 @@ app.use((req, res, next) => {
     next();
 });
 
-// Rate limiting aplicado globalmente
+// Rate limiting aplicado globalmente (MANTIDO DEPOIS DOS PARSERS PARA EVITAR PROBLEMAS)
 app.use(rateLimiter);
-
-// Limite de payload (20MB máximo para HTML + imagens base64)
-app.use(express.json({ limit: "20mb" }));
-app.use(express.urlencoded({ limit: "20mb", extended: true }));
 
 
 app.post("/generate-pdf", async (req, res) => {
@@ -87,10 +97,10 @@ app.post("/generate-pdf", async (req, res) => {
         return res.status(400).json({ error: "Payload HTML inválido." });
     }
 
-    // Validação 3: tamanho máximo (15MB)
-    const MAX_HTML_BYTES = 15 * 1024 * 1024;
+    // Validação 3: tamanho máximo (25MB)
+    const MAX_HTML_BYTES = 25 * 1024 * 1024;
     if (Buffer.byteLength(html, 'utf8') > MAX_HTML_BYTES) {
-        return res.status(413).json({ error: "Payload HTML excede o tamanho máximo permitido (4MB)." });
+        return res.status(413).json({ error: "O arquivo da proposta excedeu o limite do motor (25MB)." });
     }
 
     // Validação 4: detectar padrões suspeitos de script injection
@@ -111,8 +121,17 @@ app.post("/generate-pdf", async (req, res) => {
     try {
         console.log("🦅 [PDF Engine] Lançando o Motor Chromium Headless...");
         browser = await puppeteer.launch({
-            headless: 'new',
-            args: ["--no-sandbox", "--disable-setuid-sandbox"]
+            headless: "new",
+            args: [
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-accelerated-2d-canvas",
+                "--disable-gpu",
+                "--no-first-run",
+                "--no-zygote",
+                "--single-process"
+            ]
         });
 
         const page = await browser.newPage();
