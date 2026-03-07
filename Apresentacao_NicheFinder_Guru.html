@@ -4,13 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NicheFinder Guru - Documentação Passo a Passo</title>
+    <title>NicheFinder Guru 🚀 | Open Source Architecture</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap"
         rel="stylesheet">
 
     <!-- Tailwind CSS -->
@@ -24,18 +24,28 @@
             theme: {
                 extend: {
                     colors: {
-                        background: '#0F1115', // Fundo mais suave do que o preto puro
-                        surface: '#1A1D24', // Cor de cartão para destaque
-                        border: '#2A2E39', // Bordas sutis
-                        primary: '#3B82F6', // Azul amigável (Educativo)
-                        accent: '#10B981', // Verde de sucesso/tecnologia
-                        textMain: '#E2E8F0', // Texto muito legível
-                        textMuted: '#94A3B8', // Texto para descrições
-                        danger: '#EF4444' // Vermelho para dores
+                        background: '#000000',
+                        surface: 'rgba(255, 255, 255, 0.03)',
+                        surfaceBorder: 'rgba(255, 255, 255, 0.08)',
+                        primary: '#ededed',
+                        muted: '#a1a1aa',
+                        accent: '#3b82f6', // Vercel Blue
+                        glow: '#a855f7' // Purple aura
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                         mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    animation: {
+                        'blob': 'blob 7s infinite',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        }
                     }
                 }
             }
@@ -44,418 +54,264 @@
 
     <style>
         body {
-            background-color: #0F1115;
-            color: #E2E8F0;
+            background-color: #000;
+            color: #ededed;
             -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
         }
 
-        .didactic-block {
-            background-color: #1A1D24;
-            border: 1px solid #2A2E39;
-            border-radius: 12px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            transition: transform 0.2s, box-shadow 0.2s;
+        /* Vercel/Linear Aesthetic Glassmorphism */
+        .glass-card {
+            background: rgba(20, 20, 20, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease, border-color 0.3s ease;
         }
 
-        .didactic-block:hover {
-            border-color: #3B82F6;
-            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.1);
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
         }
 
-        .code-box {
-            background-color: #0B0C10;
-            border: 1px solid #2A2E39;
+        /* Imagens reais envelopadas no estilo macOS (Browser fictício) */
+        .system-mockup {
             border-radius: 8px;
-            padding: 1.5rem;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
-            color: #94A3B8;
-            overflow-x: auto;
-            margin-top: 1rem;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            background: #000;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 40px rgba(59, 130, 246, 0.1);
         }
 
-        .nav-link {
-            transition: all 0.2s;
-            border-left: 2px solid transparent;
-            color: #94A3B8;
-        }
-
-        .nav-link:hover,
-        .nav-link.active {
-            color: #3B82F6;
-            border-left: 2px solid #3B82F6;
-            background: rgba(59, 130, 246, 0.05);
-            font-weight: 500;
-        }
-
-        /* Setas para os fluxogramas visuais */
-        .flow-arrow {
+        .mockup-header {
+            height: 28px;
+            background: #111;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             display: flex;
             align-items: center;
-            justify-content: center;
-            color: #3B82F6;
-            margin: 1rem 0;
+            padding: 0 12px;
+            gap: 6px;
+        }
+
+        .mockup-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        /* Grade sutil ao fundo */
+        .bg-grid {
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 30%, rgba(0, 0, 0, 0) 100%);
+            -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 30%, rgba(0, 0, 0, 0) 100%);
+        }
+
+        .text-gradient {
+            background: linear-gradient(to right, #fff, #a1a1aa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
     </style>
 </head>
 
-<body class="flex flex-col md:flex-row min-h-screen">
+<body class="relative min-h-screen">
 
-    <!-- Menu Lateral Fixo -->
-    <aside
-        class="w-full md:w-80 md:fixed md:top-0 md:left-0 md:h-screen bg-surface border-r border-border p-6 flex flex-col z-20 overflow-y-auto">
-        <div class="mb-10 text-center md:text-left">
-            <div class="bg-primary/10 text-primary p-3 rounded-lg inline-flex mb-3">
-                <i data-lucide="book-open" class="w-6 h-6"></i>
+    <!-- Efeitos de Luz no Fundo (Aura) -->
+    <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+        <div
+            class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-accent rounded-full mix-blend-screen filter blur-[120px] opacity-20 animate-blob">
+        </div>
+        <div class="absolute top-[20%] right-[-10%] w-96 h-96 bg-glow rounded-full mix-blend-screen filter blur-[120px] opacity-10 animate-blob"
+            style="animation-delay: 2s;"></div>
+    </div>
+
+    <!-- Grid -->
+    <div class="fixed inset-0 bg-grid -z-20 pointer-events-none"></div>
+
+    <!-- Navegação Topo Simples -->
+    <nav class="fixed top-0 w-full border-b border-surfaceBorder bg-black/50 backdrop-blur-md z-50">
+        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <i data-lucide="target" class="w-5 h-5 text-accent"></i>
+                <span class="font-bold tracking-tight text-white">NicheFinder <span
+                        class="text-accent">Guru</span></span>
             </div>
-            <h1 class="font-bold text-xl text-white">NicheFinder Documentação</h1>
-            <p class="text-xs text-textMuted mt-1">Guia Passo a Passo (Didático)</p>
+            <a href="https://github.com/Helgonhc/Nichefinder-guru2" target="_blank"
+                class="flex items-center gap-2 text-sm font-medium text-muted hover:text-white transition-colors bg-surface border border-surfaceBorder px-4 py-1.5 rounded-full">
+                <i data-lucide="github" class="w-4 h-4"></i>
+                Ver no GitHub
+            </a>
+        </div>
+    </nav>
+
+    <!-- Header Hero -->
+    <main class="pt-32 pb-24 max-w-6xl mx-auto px-6">
+
+        <div class="text-center max-w-3xl mx-auto mb-20 mt-10">
+            <div
+                class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-surfaceBorder bg-surface text-xs font-mono text-muted mb-6">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                v2.4 Open Source Release
+            </div>
+            <h1 class="text-5xl md:text-7xl font-extrabold tracking-tighter mb-6 text-gradient drop-shadow-lg">
+                Automação B2B <br />que parece Mágica.
+            </h1>
+            <p class="text-lg text-muted md:text-xl leading-relaxed mb-8">
+                Um ecossistema React & Node projetado para achar a <strong class="text-white">mina de ouro
+                    invisível</strong> do Google Maps: Empresas que faturam físico, mas não possuem um site na internet.
+            </p>
+            <div class="flex justify-center gap-4 text-sm font-mono text-muted">
+                <span class="px-3 py-1 rounded-md bg-surface border border-surfaceBorder flex items-center gap-2"><i
+                        data-lucide="zap" class="w-4 h-4 text-yellow-400"></i>React 18</span>
+                <span class="px-3 py-1 rounded-md bg-surface border border-surfaceBorder flex items-center gap-2"><i
+                        data-lucide="database" class="w-4 h-4 text-green-500"></i>Supabase</span>
+                <span class="px-3 py-1 rounded-md bg-surface border border-surfaceBorder flex items-center gap-2"><i
+                        data-lucide="bot" class="w-4 h-4 text-purple-400"></i>Node + Puppeteer</span>
+            </div>
         </div>
 
-        <nav class="flex-1 space-y-2 text-sm">
-            <p class="text-[11px] uppercase text-textMuted font-bold tracking-widest mt-2 mb-2">Introdução</p>
-            <a href="#o-que-e" class="nav-link block px-4 py-2 rounded-r-lg">O que este sistema faz?</a>
-            <a href="#arquitetura-geral" class="nav-link block px-4 py-2 rounded-r-lg">Como as peças se conectam</a>
+        <!-- A JORNADA (Didática Visual) -->
+        <div class="space-y-32">
 
-            <p class="text-[11px] uppercase text-textMuted font-bold tracking-widest mt-6 mb-2">Engenharia Passo a Passo
-            </p>
-            <a href="#fase-1" class="nav-link block px-4 py-2 rounded-r-lg">Fase 1: Captação de Contatos</a>
-            <a href="#fase-2" class="nav-link block px-4 py-2 rounded-r-lg">Fase 2: A Dor "Sem Site"</a>
-            <a href="#fase-3" class="nav-link block px-4 py-2 rounded-r-lg">Fase 3: Inteligência Groq</a>
-            <a href="#fase-4" class="nav-link block px-4 py-2 rounded-r-lg">Fase 4: Fábrica de PDFs Node</a>
-            <a href="#fase-5" class="nav-link block px-4 py-2 rounded-r-lg">Fase 5: Robô de WhatsApp Seguro</a>
-        </nav>
-    </aside>
-
-    <!-- Área de Conteúdo -->
-    <main class="flex-1 md:ml-80 bg-background p-6 md:p-12 lg:px-24">
-
-        <header class="mb-16 border-b border-border pb-8">
-            <h1 class="text-3xl md:text-5xl font-bold text-white mb-4">Como o NicheFinder Funciona por Baixo dos Panos
-            </h1>
-            <p class="text-lg text-textMuted">
-                Preparamos este arquivo para explicar a desenvolvedores de forma <strong>muito simples e
-                    didática</strong> como esta aplicação une Frontend React, Bancos de Dados, Inteligência Artificial e
-                Automações de WhatsApp sem travar computadores e sem gerar banimentos.
-            </p>
-        </header>
-
-        <!-- INTRODUÇÃO -->
-        <section id="o-que-e" class="scroll-mt-10 mb-16">
-            <div class="flex items-center gap-3 mb-6">
-                <div class="bg-primary/20 p-2 rounded text-primary"><i data-lucide="help-circle"></i></div>
-                <h2 class="text-2xl font-bold text-white">O que exatamente este sistema faz?</h2>
-            </div>
-
-            <p class="text-textMuted leading-relaxed mb-6">
-                O papel do <strong>NicheFinder Guru</strong> é automatizar as vendas para agências de marketing que
-                criam sites ou fazem gestão de tráfego. Ele faz o trabalho duro sozinho seguindo um caminho muito
-                simples:
-            </p>
-
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
-                <div class="bg-surface border border-border rounded-xl p-4">
-                    <i data-lucide="search" class="w-8 h-8 mx-auto text-blue-400 mb-2"></i>
-                    <p class="font-bold text-white text-sm">1. Busca</p>
-                    <p class="text-xs text-textMuted mt-1">Acha empresas locais no Brasil pelo Google Maps.</p>
-                </div>
-                <div class="bg-surface border border-border rounded-xl p-4">
-                    <i data-lucide="filter" class="w-8 h-8 mx-auto text-danger mb-2"></i>
-                    <p class="font-bold text-white text-sm">2. Filtra Pela Dor</p>
-                    <p class="text-xs text-textMuted mt-1">Descobre quais dessas empresas <strong>não possuem um site
-                            próprio</strong>.</p>
-                </div>
-                <div class="bg-surface border border-border rounded-xl p-4">
-                    <i data-lucide="file-text" class="w-8 h-8 mx-auto text-purple-400 mb-2"></i>
-                    <p class="font-bold text-white text-sm">3. Monta Apresentação</p>
-                    <p class="text-xs text-textMuted mt-1">A IA redige um texto e o sistema gera um PDF mostrando a
-                        urgência do problema.</p>
-                </div>
-                <div class="bg-surface border border-border rounded-xl p-4">
-                    <i data-lucide="send" class="w-8 h-8 mx-auto text-green-400 mb-2"></i>
-                    <p class="font-bold text-white text-sm">4. Aborda</p>
-                    <p class="text-xs text-textMuted mt-1">Um robô de WhatsApp envia o alerta e o PDF ao invés de você
-                        fazer na mão.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- ARQUITETURA -->
-        <section id="arquitetura-geral" class="scroll-mt-10 mb-16">
-            <h2 class="text-2xl font-bold text-white mb-6 border-l-4 border-primary pl-4">Como as peças se conectam (A
-                Arquitetura)</h2>
-            <p class="text-textMuted mb-8">
-                Projetamos isso dividindo as tarefas para nenhum sistema ficar lento. A interface cuida só da aparência.
-                O "trabalho sujo" é enviado para os bastidores.
-            </p>
-
-            <div class="bg-surface border border-border rounded-xl p-8 mb-8 text-center hidden md:block">
-                <div class="flex justify-between items-center max-w-4xl mx-auto">
-                    <!-- Front -->
-                    <div class="w-1/4">
-                        <div class="bg-[#1E293B] border border-blue-500/30 rounded-lg p-4">
-                            <i data-lucide="monitor" class="w-8 h-8 text-blue-400 mx-auto mb-2"></i>
-                            <p class="text-white font-bold text-sm">Frontend (React)</p>
-                            <p class="text-xs text-textMuted mt-1">Onde você aperta os botões. Painel de Controle.</p>
+            <!-- FASE 1: O RADAR -->
+            <section class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="order-2 lg:order-1 relative group">
+                    <div
+                        class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200">
+                    </div>
+                    <div class="system-mockup">
+                        <div class="mockup-header">
+                            <div class="mockup-dot bg-red-500"></div>
+                            <div class="mockup-dot bg-yellow-500"></div>
+                            <div class="mockup-dot bg-green-500"></div>
                         </div>
+                        <img src="./docs/assets/radar_main.png" alt="O Radar em Ação" class="w-full h-auto" />
                     </div>
-
-                    <div class="w-1/6 flex justify-center text-border"><i data-lucide="arrow-right" class="w-6 h-6"></i>
+                </div>
+                <div class="order-1 lg:order-2">
+                    <div
+                        class="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 mb-6">
+                        <i data-lucide="radar"></i>
                     </div>
+                    <h2 class="text-3xl font-bold mb-4">1. O Radar (Data Mining)</h2>
+                    <p class="text-muted leading-relaxed mb-6">
+                        Acabou o Ctrl+C e Ctrl+V no Google Maps. O Front-end bate em uma Edge Function segura que varre
+                        cidades inteiras e cospe milhares de leads de uma vez.
+                    </p>
+                    <div class="glass-card p-5 rounded-xl">
+                        <p class="text-sm text-muted mb-2"><strong class="text-white">O Pulo do Gato (O
+                                Código):</strong></p>
+                        <p class="text-sm font-mono text-blue-300">
+                            A lista negra (Blacklist) roda <em>antes</em> de você ver a tela. Advogados da união e
+                            concorrentes são destruídos do Array. Só sobra lead qualificado.
+                        </p>
+                    </div>
+                </div>
+            </section>
 
-                    <!-- DB -->
-                    <div class="w-1/4">
-                        <div class="bg-[#1E293B] border border-green-500/30 rounded-lg p-4">
-                            <i data-lucide="database" class="w-8 h-8 text-green-400 mx-auto mb-2"></i>
-                            <p class="text-white font-bold text-sm">Supabase (Fila)</p>
-                            <p class="text-xs text-textMuted mt-1">Guarda os dados das empresas numa "Fila de Espera".
-                            </p>
+            <!-- FASE 2: A DOR E A AUDITORIA -->
+            <section class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <div
+                        class="w-10 h-10 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 mb-6">
+                        <i data-lucide="target"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold mb-4">2. Encontrando quem "Sangra" (A Falta de Site)</h2>
+                    <p class="text-muted leading-relaxed mb-6">
+                        O algoritmo varre centenas de alvos na hora. Se o Google responde que o campo
+                        <code>website</code> está vazio... Bingo! O sistema coloca uma tarja vermelha absurda na sua
+                        tela informando <strong>"SEM SITE"</strong>. Essa é a empresa que está perdendo dinheiro.
+                    </p>
+                    <div class="glass-card p-5 rounded-xl border-red-900/30">
+                        <p class="text-sm text-muted mb-2"><strong class="text-white">Extra - Auditoria
+                                Profunda:</strong></p>
+                        <p class="text-sm font-mono text-red-300">
+                            Se a empresa TEM um site, não damos trégua. Batemos na API do PageSpeed. Se faltar
+                            certificado SSL ou estiver lento no celular, a gente pinta ele de vermelho também!
+                        </p>
+                    </div>
+                </div>
+                <div class="relative group">
+                    <div
+                        class="absolute -inset-1 bg-gradient-to-r from-red-600 to-orange-600 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200">
+                    </div>
+                    <div class="system-mockup">
+                        <div class="mockup-header">
+                            <div class="mockup-dot bg-red-500"></div>
+                            <div class="mockup-dot bg-yellow-500"></div>
+                            <div class="mockup-dot bg-green-500"></div>
                         </div>
+                        <img src="./docs/assets/audit_modal.png" alt="Score e Auditoria" class="w-full h-auto" />
                     </div>
+                </div>
+            </section>
 
-                    <div class="w-1/6 flex justify-center text-border"><i data-lucide="arrow-right" class="w-6 h-6"></i>
+            <!-- FASE 3: O ROBO E O PDF -->
+            <section class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="order-2 lg:order-1 relative group">
+                    <div
+                        class="absolute -inset-1 bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200">
                     </div>
-
-                    <!-- Bot -->
-                    <div class="w-1/4">
-                        <div class="bg-[#1E293B] border border-orange-500/30 rounded-lg p-4">
-                            <i data-lucide="bot" class="w-8 h-8 text-orange-400 mx-auto mb-2"></i>
-                            <p class="text-white font-bold text-sm">Robôs NodeJS (Bastidores)</p>
-                            <p class="text-xs text-textMuted mt-1">Geram PDFs PDF e disparam WhatsApp sem você ver.</p>
+                    <div class="system-mockup">
+                        <div class="mockup-header">
+                            <div class="mockup-dot bg-red-500"></div>
+                            <div class="mockup-dot bg-yellow-500"></div>
+                            <div class="mockup-dot bg-green-500"></div>
                         </div>
+                        <img src="./docs/assets/automation_main.png" alt="Painel do Robô Standalone"
+                            class="w-full h-auto" />
                     </div>
                 </div>
-            </div>
-            <p class="text-sm text-textMuted italic bg-surface p-4 rounded text-center md:hidden">Ver o diagrama de
-                arquitetura completo em um Computador Desktop.</p>
-        </section>
-
-        <!-- FASE 1 -->
-        <section id="fase-1" class="scroll-mt-10 mb-12">
-            <div class="didactic-block">
-                <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                    <span
-                        class="bg-primary text-white text-sm w-6 h-6 rounded-full flex items-center justify-center">1</span>
-                    Fase 1: Captação de Contatos Inteligente
-                </h3>
-
-                <div class="mt-6">
-                    <h4 class="text-danger font-semibold text-sm mb-1 uppercase tracking-wide">O Problema</h4>
-                    <p class="text-textMuted text-sm border-l-2 border-danger pl-3 mb-4">Pesquisar no Google Maps uma
-                        lista de "oficinas em Campinas", anotar os telefones num Excel um por um demora horas ou dias. E
-                        muitos deles você nem devia contatar (são prefeituras, ou já são seus concorrentes).</p>
-
-                    <h4 class="text-accent font-semibold text-sm mb-1 uppercase tracking-wide">A Nossa Solução (Código)
-                    </h4>
-                    <p class="text-textMuted text-sm border-l-2 border-accent pl-3 mb-4">O NicheFinder possui o
-                        <strong>Radar
-                            Engine</strong>. Você digita o nicho e a cidade. O código do React pede para uma função
-                        auxiliar conectada no Google varrer a cidade inteira num instante. O sistema devolve uma tabela
-                        limpa com Nome, Nota e Telefone, e remove as palavras indesejadas (Lista Negra) sozinho antes
-                        mesmo de mostrar na tela.</p>
-                    <div class="mt-4 rounded-lg overflow-hidden border border-border">
-                        <img src="./docs/assets/radar_main.png" alt="Tela Principal do Radar"
-                            class="w-full h-auto object-cover opacity-90 hover:opacity-100 transition-opacity" />
+                <div class="order-1 lg:order-2">
+                    <div
+                        class="w-10 h-10 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 mb-6">
+                        <i data-lucide="bot"></i>
                     </div>
-                </div>
-
-                <div class="code-box">
-                    <span class="text-gray-500">// Simbolizando o que acontece no backend:</span><br>
-                    <span class="text-purple-400">async function</span> <span
-                        class="text-blue-300">procurarOficinas</span>() {<br>
-                    &nbsp;&nbsp;<span class="text-gray-500">// Acessando o Google Maps na nuvem:</span><br>
-                    &nbsp;&nbsp;<span class="text-purple-400">let</span> empresas = <span
-                        class="text-purple-400">await</span> GoogleAPI.search(<span class="text-green-300">"Oficina
-                        Mecânica, Campinas"</span>);<br>
-                    &nbsp;&nbsp;<span class="text-gray-500">// Remove o que não interessa:</span><br>
-                    &nbsp;&nbsp;<span class="text-purple-400">let</span> listaLimpa = empresas.filter( empresa =>
-                    !minhaListaNegra.includes(empresa.nome) );<br>
-                    &nbsp;&nbsp;<span class="text-purple-400">return</span> listaLimpa;<br>
-                    }
-                </div>
-            </div>
-        </section>
-
-        <!-- FASE 2 -->
-        <section id="fase-2" class="scroll-mt-10 mb-12">
-            <div class="didactic-block">
-                <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                    <span
-                        class="bg-primary text-white text-sm w-6 h-6 rounded-full flex items-center justify-center">2</span>
-                    Fase 2: O Ouro "Sem Site"
-                </h3>
-
-                <div class="mt-6">
-                    <h4 class="text-danger font-semibold text-sm mb-1 uppercase tracking-wide">O Problema</h4>
-                    <p class="text-textMuted text-sm border-l-2 border-danger pl-3 mb-4">Você achou 100 oficinas. Você
-                        vai oferecer um site novo pras 100? E se 80 delas já tiverem um site excelente? Você vai gastar
-                        saliva, mandar e-mails à toa e ganhar vários "Nãos".</p>
-
-                    <h4 class="text-accent font-semibold text-sm mb-1 uppercase tracking-wide">A Nossa Solução (Código)
-                    </h4>
-                    <p class="text-textMuted text-sm border-l-2 border-accent pl-3 mb-4">O código do sistema observa
-                        aquele pacote de dados do Google. Se o campo chamado <code>website</code> voltar nulo ou vazio,
-                        nós colocamos uma <strong>tarja vermelha e jogamos esse lead para o topo da fila (Thermal
-                            Sorting)</strong>. Sabemos que esta empresa está perdendo dinheiro agora mesmo por ser
-                        invisível, ou seja, a dor é gigantesca e ele precisa do seu serviço de agência de marketing
-                        urgentemente.</p>
-                    <div class="mt-4 rounded-lg overflow-hidden border border-border">
-                        <img src="./docs/assets/audit_modal.png" alt="Modal de Auditoria e Falha de Site"
-                            class="w-full h-auto object-cover opacity-90 hover:opacity-100 transition-opacity" />
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- FASE 3 -->
-        <section id="fase-3" class="scroll-mt-10 mb-12">
-            <div class="didactic-block">
-                <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                    <span
-                        class="bg-primary text-white text-sm w-6 h-6 rounded-full flex items-center justify-center">3</span>
-                    Fase 3: O Cérebro da Argumentação (Integração IA Groq)
-                </h3>
-
-                <div class="mt-6">
-                    <h4 class="text-danger font-semibold text-sm mb-1 uppercase tracking-wide">O Problema</h4>
-                    <p class="text-textMuted text-sm border-l-2 border-danger pl-3 mb-4">Mandar uma mensagem padrão tipo
-                        "Olá, quer fazer um site?" no WhatsApp é ignorado na hora. O cliente bloqueia seu número e lê
-                        aquilo como Spam de telemarketing preguiçoso.</p>
-
-                    <h4 class="text-accent font-semibold text-sm mb-1 uppercase tracking-wide">A Nossa Solução (Código)
-                    </h4>
-                    <p class="text-textMuted text-sm border-l-2 border-accent pl-3">Nós construímos um comando fechado
-                        que é enviado para o sistema de Inteligência Artificial mais rápido do mundo (API Groq - Modelo
-                        Llama). A gente manda as variáveis <code>${Nome}</code>, <code>${Cidade}</code> e
-                        <code>${Problema}</code>. A IA cospe uma linha altamente humanizada fazendo você parecer um
-                        conselheiro atencioso. Jamais geramos textos iguais duas vezes.
+                    <h2 class="text-3xl font-bold mb-4">3. A Fábrica de Conversão (WA Standalone)</h2>
+                    <p class="text-muted leading-relaxed mb-6">
+                        O painel joga o lead pra fila do Supabase. Daqui pra frente você não faz nada. Um Robô em Node
+                        (totalmente isolado da web pra evitar Bans da Meta) lê o banco. Ele pede para a Inteligência
+                        Artificial (<strong>Groq</strong>) montar uma mensagem hiper-pessoal sobre a dor do cliente.
                     </p>
-                </div>
-
-                <div class="flex items-start gap-4 mt-6 bg-black/50 p-4 border border-border rounded-lg">
-                    <i data-lucide="message-square" class="text-gray-500 mt-1"></i>
-                    <div>
-                        <p class="text-xs text-textMuted font-mono uppercase mb-2">Exemplo da IA conversando com a
-                            concessionária X na cidade Y sem site:</p>
-                        <p class="text-sm text-white italic">"Boa tarde pessoal da Oficina X. Um cliente comentou hoje
-                            que tentou achar a oficina no Google pra enviar uma cotação e notou que o painel no mapa
-                            está sem site, e acabou indo em outro lugar. Achei melhor avisar porque isso atrapalha nas
-                            buscas! Fiz uma simulação aqui de como pode ficar..."</p>
+                    <div class="glass-card p-5 rounded-xl border-green-900/30">
+                        <p class="text-sm text-muted mb-2"><strong class="text-white">A Mágica do Puppeteer (PDF
+                                On-The-Fly):</strong></p>
+                        <p class="text-sm font-mono text-green-300">
+                            Fazer o navegador do usuário gerar PDF toda hora travaria ele. Nós levantamos uma porta
+                            <code>:3001</code> escondida num servidor Node. Um Chrome fantasma tira "foto" das cores do
+                            cliente e envia um PDF VIP via API direto no número de zap dele como Base64!
+                        </p>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- FASE 4 -->
-        <section id="fase-4" class="scroll-mt-10 mb-12">
-            <div class="didactic-block">
-                <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                    <span
-                        class="bg-primary text-white text-sm w-6 h-6 rounded-full flex items-center justify-center">4</span>
-                    Fase 4: O Gerador de PDF em Nuvem (Motor Puppeteer)
-                </h3>
+        </div>
 
-                <div class="mt-6">
-                    <h4 class="text-danger font-semibold text-sm mb-1 uppercase tracking-wide">O Problema</h4>
-                    <p class="text-textMuted text-sm border-l-2 border-danger pl-3 mb-4">Você quer impressionar esse
-                        dono de oficina enviando no WhatsApp um arquivo em PDF luxuoso, mostrando pra ele na hora como o
-                        site novo ficaria. Mas forçar o navegador do usuário a "fazer download de um PDF customizado"
-                        toda vez ia travar a aba do seu Chrome inteira, porque é um arquivo pesadíssimo pra montar via
-                        Javascript Client-Side (na sua tela).</p>
-
-                    <h4 class="text-accent font-semibold text-sm mb-1 uppercase tracking-wide">A Nossa Solução (Código)
-                    </h4>
-                    <p class="text-textMuted text-sm border-l-2 border-accent pl-3">Em vez do seu navegador sofrer
-                        montando PDF, nós criamos um robozinho invisível (Chamado Serviço Node no arquivo
-                        <code>pdf-engine.js</code>) rodando na porta 3001. O sistema tira uma "foto virtual" super
-                        rápida das cores do site, manda para esse robô como código fonte, ele "imprime" internamente
-                        usando um Chrome fantasma chamado Puppeteer, gera o arquivo na memória RAM dele e devolve pronto
-                        só pra envio em 2 segundos, sem sobrecarregar sua máquina e sem salvar lixo no HD.
-                    </p>
-                </div>
-            </div>
-        </section>
-
-        <!-- FASE 5 -->
-        <section id="fase-5" class="scroll-mt-10 mb-12">
-            <div class="didactic-block">
-                <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                    <span
-                        class="bg-primary text-white text-sm w-6 h-6 rounded-full flex items-center justify-center">5</span>
-                    Fase 5: O WhatsApp Anti-Banimento Seguro
-                </h3>
-
-                <div class="mt-6">
-                    <h4 class="text-danger font-semibold text-sm mb-1 uppercase tracking-wide">O Problema</h4>
-                    <p class="text-textMuted text-sm border-l-2 border-danger pl-3 mb-4">Se você pegar 50 contatos de
-                        uma vez no sistema e rodar um script no seu navegador mandando o PDF e a mensagem da IA num loop
-                        <code>forzinho rápido</code> disparando de 2 em 2 segundos... o Facebook percebe o software
-                        esquisito, bloqueia seu IP, derruba seu celular e sua chance acaba.
-                    </p>
-
-                    <h4 class="text-accent font-semibold text-sm mb-1 uppercase tracking-wide">A Nossa Solução (Código)
-                    </h4>
-                    <p class="text-textMuted text-sm border-l-2 border-accent pl-3">O NicheFinder possui o script de
-                        "Automação Desacoplada" (<code>wa-bot.js</code>). Ele não tem conexão com o design do site. Ele
-                        se conecta sorrateiro via banco de dados Supabase na <code>whatsapp_queue</code> (sua fila que
-                        você clicou no visual).</p>
-                    <p class="text-textMuted text-sm border-l-2 border-accent pl-3 mt-2 mb-4"><strong>A Mágica da
-                            lentidão
-                            intencional:</strong> O bot pega a primeira oficina da fila, mostra "Digitando..."
-                        dependendo do tamanho da mensagem para simular uma pessoa teclando no celular, anexa o PDF e
-                        envia. Antes de ir pra empresa de baixo, ele aciona um gatilho de tempo: <strong>Vai esperar um
-                            número embaralhado aleatório entre 45 segundos e 120 segundos.</strong> Isso dilui as
-                        mensagens de modo humanizado para os servidores do WhatsApp acharem que é um operador normal
-                        trabalhando. O Bot trabalha de madrugada pra você.</p>
-                    <div class="mt-4 rounded-lg overflow-hidden border border-border">
-                        <img src="./docs/assets/automation_main.png" alt="Painel de Automação Standalone"
-                            class="w-full h-auto object-cover opacity-90 hover:opacity-100 transition-opacity" />
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- FIM (CONCLUSÃO) -->
-        <section class="mt-16 text-center border-t border-border pt-12">
-            <h3 class="text-xl font-bold text-white mb-4">Conclusão Final</h3>
-            <p class="text-textMuted mb-6 max-w-2xl mx-auto">
-                Ao entender como estes 5 passos formam a base tecnológica, você enxerga que o NicheFinder Guru não é um
-                disparo estúpido de Spam. É um <strong>mapeador analítico automatizado que resolve o gargalo de
-                    faturamento comercial</strong> dos prestadores locais e de serviços de tecnologia. Uma máquina de
-                vendas construída código por código.
-            </p>
-        </section>
-
+        <div class="mt-32 text-center p-12 glass-card rounded-2xl max-w-4xl mx-auto">
+            <h3 class="text-2xl font-bold mb-4">Gostou desse código absurdo?</h3>
+            <p class="text-muted mb-8 max-w-xl mx-auto">Feito para programadores e marqueteiros que querem converter
+                chumbo em ouro na internet usando ecossistemas reativos. Sem desculpas e sem travar PC.</p>
+            <a href="https://github.com/Helgonhc/Nichefinder-guru2" target="_blank"
+                class="inline-flex items-center gap-2 bg-white text-black font-semibold px-6 py-3 rounded-full hover:bg-gray-200 transition-colors">
+                <i data-lucide="github" class="w-5 h-5"></i> Clonar o Repositório
+            </a>
+        </div>
     </main>
+
+    <footer class="border-t border-surfaceBorder py-8 mt-12 bg-black">
+        <div class="max-w-6xl mx-auto px-6 text-center">
+            <p class="text-sm text-muted font-mono uppercase tracking-widest"><span class="text-accent">Nichefinder
+                    Guru</span> - Vibecoded in Brazil</p>
+        </div>
+    </footer>
 
     <script>
         lucide.createIcons();
-
-        // Destaque do Menu Lateral ao Rolar a Tela
-        document.addEventListener('DOMContentLoaded', () => {
-            const sections = document.querySelectorAll('section[id]');
-            const navLinks = document.querySelectorAll('.nav-link');
-
-            window.addEventListener('scroll', () => {
-                let currentPath = '';
-
-                sections.forEach(section => {
-                    const sectionTop = section.offsetTop;
-                    // Limite superior simples para detectar que o quadro atingiu a metade da tela
-                    if (scrollY >= (sectionTop - 250)) {
-                        currentPath = section.getAttribute('id');
-                    }
-                });
-
-                navLinks.forEach(link => {
-                    link.classList.remove('active');
-                    if (link.getAttribute('href') === `#${currentPath}`) {
-                        link.classList.add('active');
-                    }
-                });
-            });
-        });
     </script>
 </body>
 

@@ -1,125 +1,103 @@
-# NicheFinder Guru 🎯
+<div align="center">
+  <img src="https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB" alt="React Badge"/>
+  <img src="https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white" alt="NodeJS Badge"/>
+  <img src="https://img.shields.io/badge/supabase-%233FCF8E.svg?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase Badge"/>
+  <img src="https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind Badge"/>
+  <br/>
+  <h1>🚀 NicheFinder Guru 🚀</h1>
+  <p><strong>Automação B2B que parece Mágica.</strong><br>O ecossistema open-source que encontra a dor invisível do Google Maps e automatiza propostas VIP.</p>
+</div>
 
-Bem-vindo ao repositório do **NicheFinder Guru**, uma plataforma de inteligência de prospecção e automação B2B projetada para dominar o Google Maps e transformar leads frios em clientes reais utilizando análise avançada e Inteligência Artificial.
+<br/>
 
----
+## 🎯 Por que o NicheFinder existe?
 
-## 🚀 O que é o NicheFinder Guru?
+Se você trabalha com marketing ou vende sites, sabe a dor: Pegar contatos no Maps, tentar achar o telefone, mandar um textão frio no WhatsApp e ser completamente ignorado. 
 
-O NicheFinder Guru não é apenas um CRM ou um buscador de leads. É uma **Máquina de Vendas Autônoma** focada em encontrar e converter negócios com a pior dor digital possível: **A falta de um site profissional**.
-
-1. **Minera (Radar):** Faz buscas em múltiplas cidades e nichos simultaneamente através da API do Google, removendo concorrentes e duplicidades.
-2. **Scanner de Dor (Audit):** O foco definitivo é identificar empresas **SEM SITE** (a mina de ouro escondida), ou analisar os sites existentes apontando falhas críticas de infraestrutura e performance.
-3. **Classifica (Score/Thermal Sorting):** Separa instantaneamente quem está "sangrando dinheiro" (ex: lead Sem Site ou com site super lento) daqueles que já são bem atendidos.
-4. **O Robô de $1 Milhão (WhatsApp Bot):** O grande motor do fechamento. Um bot autônomo conectado ao seu WhatsApp que roda em background 24/7. Ele pega os melhores leads, envia a análise do Google via IA com um PDF anexado, abordando de maneira persuasiva diretamente no celular do dono, gerando demanda quente e automática.
-
----
-
-## 🏗️ Stack Tecnológica
-
-* **Frontend:** React 18, TypeScript, Vite
-* **Estilização:** Tailwind CSS v3, shadcn/ui (Radix UI), Lucide Icons
-* **Gerenciamento de Estado & Data Fetching:** TanStack Query (React Query)
-* **Backend & Banco de Dados:** Supabase (Auth, PostgreSQL)
-* **Geração de PDF:** Node.js, Puppeteer (Serviço Local)
-* **Inteligência Artificial:** Groq API (Processamento ultrarrápido) e Serper API (Busca no Google)
+O **NicheFinder Guru** hackeou essa dor. Nós resolvemos isso usando a melhor *stack* moderna (React + Supabase + API do Groq), transformando o que demorava 2 dias num processo glorioso de apertar um botão e ver leads caindo no celular convertidos.
 
 ---
 
-## ⚙️ Funcionalidades Core
+## 🤯 Como a Mágica Acontece (A Arquitetura)
 
-### 1. Radar B2B Engine (`/src/pages/Radar.tsx`)
-O coração da captação.
-- `searchLeads()`: Interage diretamente com a API do Google Places (via Edge Functions/Servidor Local) e Serper API para varrer áreas geográficas específicas e encontrar contatos.
-- Implementa um sistema de *Blacklist* para evitar adicionar empresas indesejadas (ex: agências concorrentes).
+### 1. O Radar (Mina de Dados)
+Chega de procurar à mão. Você insere "Clínicade de Estética" + "Campinas" e nosso *Edge Function* bate no **Google Places** e na **Serper**. Retornamos os nomes numa UI Glassmorphism deliciosa. Aquela concorrência inútil? Cortada na Blacklist antes de bater no Front.
 
-![Radar B2B Desktop](./docs/assets/radar_main.png)
+<div align="center">
+  <img src="./docs/assets/radar_main.png" alt="O Radar Vendo Leads" width="800" style="border-radius: 8px;" />
+</div>
 
-### 2. Auditoria Técnica e IA (`/src/lib/siteAuditor.ts` & `/src/lib/aiService.ts`)
-- **Auditor:** Ao analisar um site, coletamos métricas cruciais de Performance e SEO através da API oficial do Google.
-- **AI Insights:** Esses dados alimentam a Groq API, que gera automaticamente um parágrafo de abordagem ultrarrápido (Script Frio) utilizando *Copywriting* focado em conversão.
+<br/>
 
-![Auditor de Site e Score](./docs/assets/audit_modal.png)
+### 2. Scanner de Dor (Thermal Score)
+Nós construímos um classificador absurdo (Thermal Sorting). Quando a requisição volta, a mágica do React separa o joio do trigo: se a empresa **NÃO TIVER SITE** listado lá no Maps, a interface sangra de vermelho. A urgência de venda é de R$5 mil na mesa. Tem site? Então o App espiona silencioso: Tá sem cadeado HTTPS? É lento no Celular? Tá frito também!
 
-### 3. PDF VIP Generator (`/server/pdf-engine.js` & `/src/components/SitePDF.tsx`)
-- Um gerador de propostas VIP *On-The-Fly*.
-- O frontend envia um payload de dados para o motor Node.js (Puppeteer) rodando na porta 3001, que renderiza um layout React (`SitePDF`) em um PDF de alta fidelidade e converte para base64 para envio imediato no WhatsApp.
+<div align="center">
+  <img src="./docs/assets/audit_modal.png" alt="Modal com o Score de Auditoria" width="800" style="border-radius: 8px;" />
+</div>
 
-### 4. O Robô: Automação WhatsApp (`/standalone-bot/wa-bot.js` & `/src/pages/Automation.tsx`)
-A joia da coroa da operação. É aqui que saímos do manual para a escala assustadora.
-- **WhatsApp Standalone Bot:** Um motor Node.js nos bastidores. Funciona com QR Code e atua como seu melhor vendedor 24h.
-- **Ataque Autônomo:** O bot varre a sua fila do Radar. Se a dor principal do lead for *"Sem Site"*, ele pede para a IA formular o pitch perfeito ("Notei que seus clientes do Google não te encontram direito..."), anexa o PDF e envia direto no WhatsApp com delays humanizados (para não tomar ban).
-- **Control Room:** O frontend (`Automation.tsx`) atua só como painel de pausa/início e monitoramento visual das métricas de ataque do robô.
+<br/>
 
-![Dashboard de Automação do WhatsApp](./docs/assets/automation_main.png)
+### 3. A Central de Tiro (Robô + IA Groq + PDF Generator)
+Não travamos o PC com laços pesados e descargas manuais de arquivos PDF. Se o lead tá ruim, você manda pra fila do banco de dados (Supabase).
+Nas trincheiras do Backend, um script `wa-bot.js` entra no Whatsapp Web nativo.
+1. A IA da Groq estuda o nome e a cidade e escreve uma **mensagem curta absurdamente persuasiva e humanizada**.
+2. Um robô local numa porta `:3001` abre um Chrome fantasma (*Puppeteer*), tira fotos visuais do prospect, e converte num PDF luxuoso sem você encostar no teclado.
+3. Como não ser Banido do WhatsApp? O robô envia o combo da Mensagem + PDF em *delays assíncronos sorrateiros* (de 45 a 120s entre empresas). 
+
+<div align="center">
+  <img src="./docs/assets/automation_main.png" alt="Painel do Robô Autônomo" width="800" style="border-radius: 8px;" />
+</div>
 
 ---
 
-## 🛠️ Como Iniciar o Projeto Localmente
+## 🛠️ Como dar Boot nisso na sua Máquina?
 
-### Pré-requisitos
-- Node.js (v18+)
-- Conta no Supabase (com banco provisionado)
-- Chaves de API (Groq, Serper, Google Places)
+A gente sabe que ninguém quer gastar 2h configurando pacote. Deixamos o ambiente liso.
 
-### Instalação
+### 📋 Pré-requisitos Rápidos
+- Ter o `Node.js` (v18+) na veia.
+- Uma continha grátis lá no Supabase.
+- Suas chaves de IA (Groq 🔥, Serper e Google Places).
 
-1. Clone este repositório para o seu ambiente local:
+### 🚀 Setup em 1 Minuto
+
+1. **Baixe o foguete:**
 ```bash
 git clone https://github.com/Helgonhc/Nichefinder-guru2.git
 cd Nichefinder-guru2
 ```
 
-2. Instale as dependências:
+2. **Dê o `install` master:**
 ```bash
 npm install
 ```
 
-3. Configure as Variáveis de Ambiente. Crie um arquivo `.env` na raiz do projeto:
+3. **Crie o Arquivo `.env` na raiz** e injete o sangue (dados fictícios abaixo):
 ```env
-VITE_SUPABASE_PROJECT_ID="seu_project_id"
-VITE_SUPABASE_URL="sua_url_supabase"
-VITE_SUPABASE_PUBLISHABLE_KEY="sua_chave_anonima"
-VITE_GOOGLE_PLACES_API_KEY="sua_chave_google_places"
-VITE_SERPER_API_KEY="sua_chave_serper"
-VITE_GROQ_API_KEY="sua_chave_groq"
+VITE_SUPABASE_PROJECT_ID="project_do_supabase"
+VITE_SUPABASE_URL="https://sua_url_unica.supabase.co"
+VITE_SUPABASE_PUBLISHABLE_KEY="sua_chave_anon_gigante"
+VITE_GOOGLE_PLACES_API_KEY="AIzaSy..."
+VITE_SERPER_API_KEY="sua_chave_magica_do_serper"
+VITE_GROQ_API_KEY="gsk_..."
 ```
 
-4. Inicie o Servidor de Desenvolvimento:
-O sistema necessita que o frontend e o motor de PDF rodem simultaneamente. O comando `dev` já faz isso usando concurrently.
+4. **Acenda a faísca:**
+Usamos a magia negra chamada `concurrently` no `package.json`. Esse comando roda o Frontend no `:8080` E o motor de PDF invisível no `:3001` de uma vez só!
 ```bash
 npm run dev
 ```
-> O Frontend estará em `http://localhost:8080`
-> O Motor PDF estará aguardando na porta `3001`
+
+Abra `http://localhost:8080` no navegador, coloque os óculos escuros e veja a magia da UI escura rolar solta! 😎
 
 ---
 
-## 📂 Estrutura de Pastas Principal
+## 🤝 Quer codar com a gente? (Contribuição)
 
-```text
-├── server/
-│   └── pdf-engine.js        # Worker do Puppeteer para geração de PDF
-├── src/
-│   ├── components/          # Componentes visuais reutilizáveis (UI) e Layout
-│   ├── contexts/            # React Contexts (Ex: AuthContext)
-│   ├── hooks/               # Custom hooks globais
-│   ├── integrations/        # Config do Supabase e rotas
-│   ├── lib/                 # Serviços lógicos (APIs, Inteligência, Utils)
-│   └── pages/               # Views principais da aplicação (Radar, Leads, etc)
-├── tests/                   # Suíte de testes (Playwright/E2E)
-└── supabase/                # Edge Functions e schemas do banco de dados
-```
+A comunidade ama pull requests elegantes.
+1. Dá o fork e cria sua branch inovadora (`git checkout -b feature/hack-novo`)
+2. Commita o pulo do gato (`git commit -m 'feat: refatorando botão de score'`)
+3. E joga pro GitHub (`git push origin feature/hack-novo`)
 
----
-
-## 🤝 Contribuição
-
-Siga os padrões estabelecidos no `eslint` e mantenha a estética "Luxury Modern" nas implementações frontend.
-1. Crie uma branch para sua feature (`git checkout -b feature/minha-feature`)
-2. Faça commit das mudanças (`git commit -m 'feat: minha nova feature'`)
-3. Faça o push para a branch (`git push origin feature/minha-feature`)
-4. Abra um Pull Request.
-
----
-*NicheFinder Guru - Transformando internet em lucro estruturado.*
+Vamos espalhar a mentalidade automatizada de ganhos pelo Brasil inteiro! 🇧🇷
