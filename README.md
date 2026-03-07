@@ -73,7 +73,7 @@ A arquitetura moderna foi reduzida a um comando.
 
 1. **Baixe o repositório principal:**
 ```bash
-git clone https://github.com/Helgonhc/Nichefinder-guru2.git
+git clone https://github.com/SEU_USUARIO/SEU_REPOSITORIO.git
 cd Nichefinder-guru2
 ```
 

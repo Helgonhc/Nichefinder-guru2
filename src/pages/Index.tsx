@@ -458,9 +458,7 @@ const Index = () => {
         <div className="space-y-4">
           <div className="flex items-center gap-3 text-muted-foreground text-[12px] sm:text-sm px-1">
             <div className="w-2 h-2 rounded-full bg-primary animate-ping" />
-            {(lastSearch && ['telemetria', 'condominio_logistico', 'condominio_residencial', 'shopping_center', 'edificio_comercial', 'rede_varejo', 'industria_infra'].includes(lastSearch.niche))
-              ? `Mapeando em ${lastSearch.city}...`
-              : `Escaneando presença digital em ${lastSearch?.city}...`}
+            {`Escaneando presença digital em ${lastSearch?.city || 'sua região'}...`}
           </div>
           {[1, 2, 3].map((i) => (
             <div key={i} className="card-glass rounded-2xl p-5 h-40 skeleton-shimmer" />

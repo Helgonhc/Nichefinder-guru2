@@ -27,7 +27,6 @@ const ROBOT_VERSION = "2.5.0-FIREWALL-BILLING";
 
 // MAPA DE NICHOS (Sincronizado com types/business.ts)
 const NICHES = [
-    { value: 'terapias_holisticas', keyword: 'terapia holística reiki acupuntura aromaterapia' },
     { value: 'energia_solar', keyword: 'energia solar instalação fotovoltaica' },
     { value: 'estetica', keyword: 'clínica estética harmonização facial' },
     { value: 'dentista', keyword: 'consultório odontológico dentista' },
@@ -48,9 +47,7 @@ const NICHES = [
     { value: 'contabilidade', keyword: 'escritório contabilidade contador' },
     { value: 'salao_beleza', keyword: 'salão de beleza cabeleireiro' },
     { value: 'barbearia', keyword: 'barbearia moderna' },
-    { value: 'farmacia', keyword: 'farmácia drogaria' },
-    { value: 'telemetria', keyword: "condomínio edifício prédio shopping indústria clínica hospital moinho geradora" },
-    { value: 'monitoramento_condominios', keyword: "condomínio edifício prédio shopping indústria clínica hospital moinho geradora" }
+    { value: 'farmacia', keyword: 'farmácia drogaria' }
 ];
 
 
@@ -66,21 +63,6 @@ let page = null;
 async function logToSupabase(message, type = 'info') {
     const timestamp = new Date().toLocaleTimeString();
     // Filtro Semântico de Nicho: Garante que os logs não contaminem a percepção do usuário sobre o que o robô está fazendo.
-    let displayMessage = message;
-    const isTelemetria = (process.env.VITE_DEFAULT_NICHE || '').includes('telemetria') ||
-        robotConsole.some(l => l.includes('telemetria')) ||
-        message.includes('telemetria') || message.includes('condomínio');
-
-    if (isTelemetria) {
-        displayMessage = displayMessage
-            .replace(/Varredura/gi, 'Mapeamento Técnico')
-            .replace(/Minerando nicho/gi, 'Mapeando Instalações do nicho')
-            .replace(/Auditoria Profunda no site/gi, 'Dossiê Técnico da estrutura de')
-            .replace(/Site Analisado/gi, 'Infraestrutura Mapeada')
-            .replace(/pontos fracos/gi, 'riscos operacionais')
-            .replace(/presença digital/gi, 'infraestrutura hídrica');
-    }
-
     const logLine = `[${timestamp}] ${displayMessage}`;
     console.log(logLine);
 
@@ -144,9 +126,7 @@ async function logToSupabase(message, type = 'info') {
 
 async function generateAIContent(business, type, siteAuditData = null, stage = 'D0') {
     if (!groqApiKey) return null;
-    const isHolistic = business.niche === 'terapias_holisticas' || business.niche?.toLowerCase().includes('reiki') || business.niche?.toLowerCase().includes('orgon');
     const isCourts = business.niche?.toLowerCase().includes('quadra') || business.niche?.toLowerCase().includes('beach') || business.niche?.toLowerCase().includes('fut');
-    const isTelemetria = business.niche?.toLowerCase().includes('telemetria') || business.niche?.toLowerCase().includes('condomínio') || business.niche?.toLowerCase().includes('síndico') || business.niche?.toLowerCase().includes('reservatório');
 
     let systemPrompt = `Você é um Estrategista de Vendas Consultivas de Elite. Sua missão é criar mensagens de abordagem via WhatsApp que sejam impossíveis de ignorar. 
     Seu tom é profissional, direto e focado em gerar curiosidade através de diagnósticos técnicos reais (Ferida Aberta).
@@ -176,27 +156,6 @@ async function generateAIContent(business, type, siteAuditData = null, stage = '
         } else if (stage === 'D9') {
             systemPrompt = `Estrategista focado em arenas. ULTIMATE CALL. Despedida de elite, deixando a porta aberta para quando a escala do negócio for prioridade. (Máx 2 linhas, humano e educado).`;
         }
-    } else if (isTelemetria) {
-        let tipoEstabelecimento = "Condomínio Residencial";
-        const n = (business.name || '').toLowerCase();
-        if (n.includes('hospital') || n.includes('clínic')) tipoEstabelecimento = "Hospital / Clínica Médica";
-        else if (n.includes('shopping') || n.includes('center')) tipoEstabelecimento = "Shopping Center";
-        else if (n.includes('logístic') || n.includes('distribui') || n.includes('galpão')) tipoEstabelecimento = "Centro Logístico / Galpão";
-        else if (n.includes('comercial') || n.includes('corporativo') || n.includes('empresarial')) tipoEstabelecimento = "Prédio Comercial / Corporativo";
-        else if (n.includes('indústria') || n.includes('fábrica') || n.includes('moinho')) tipoEstabelecimento = "Indústria / Fábrica";
-
-        const brand = "Eletricom Telemetria (https://telemetria-eletricom.me/)";
-        if (stage === 'D0') {
-            systemPrompt = `Você é um Estrategista de Vendas Consultivas de Elite focado em Operação e Infraestrutura. Seu objetivo é oferecer a solução '${brand}' para ${tipoEstabelecimento}.
-            Foco na 'Ferida Aberta': O risco de desabastecimento crítico ou falha na reserva técnica de incêndio. 
-            Regra: Tom extremamente profissional, focado em mitigação de riscos e tranquilidade do gestor. Crie uma mensagem curta (Máx 2 parágrafos).`;
-        } else if (stage === 'D2') {
-            systemPrompt = `Estrategista de Infraestrutura. Follow-up focado em MANUTENÇÃO PREVENTIVA. Questione se o ${tipoEstabelecimento} está pronto para uma falha hídrica crítica hoje. (Máx 2 linhas consultivas).`;
-        } else if (stage === 'D5') {
-            systemPrompt = `Estrategista de Infraestrutura. Foco em VALOR PATRIMONIAL. Mostre como a tecnologia da Eletricom valoriza o ${tipoEstabelecimento} e remove a falha humana da gestão. (Máx 2 linhas).`;
-        } else if (stage === 'D9') {
-            systemPrompt = `Estrategista de Infraestrutura. Despedida estratégica. Deixe seu contato para quando a segurança dos reservatórios do ${tipoEstabelecimento} virar uma pauta prioritária. (Máx 2 linhas).`;
-        }
     }
 
     if (type === 'battle_plan') {
@@ -224,10 +183,6 @@ async function generateAIContent(business, type, siteAuditData = null, stage = '
             userPrompt = `Empresa: ${business.name}, Cidade: ${business.city}. Crie uma mensagem de WhatsApp informal e rápida (MÁXIMO 2 parágrafos). 
             Vá direto ao ponto e fale com um tom de 'Amigo para Amigo'. Mostre para eles que gerenciar clientes e reservas manualmente pelo WhatsApp é o que está sugando a energia deles.
             Apresente o sistema 'ReservaAí' como uma forma dos jogadores agendarem e pagarem 100% sozinhos pelo celular. NÃO fale sobre marketing, sites ou redes sociais.`;
-        } else if (isHolistic) {
-            userPrompt = `Empresa: ${business.name}, Cidade: ${business.city}. Estágio: ${stage}. Crie uma mensagem altamente refinada e humana para oferecer a Caixa Orgônica (Acumulador Orgone). Foque no impacto biológico e não pareça um robô de vendas.`;
-        } else if (isTelemetria) {
-            userPrompt = `Empresa: ${business.name}, Cidade: ${business.city}. Estágio: ${stage}. Crie uma abordagem consultiva sobre telemetria de reservatórios e segurança hídrica para síndicos. Fale sobre evitar a falta d'água e garantir o monitoramento 24h. (Máx 2 parágrafos).`;
         } else {
             const hasSite = !!business.website;
             const audit = siteAuditData || {};
@@ -277,34 +232,26 @@ async function generateAIContent(business, type, siteAuditData = null, stage = '
 function scoreLead(lead, audit = null) {
     let score = 0;
     const nicheLower = (lead.niche || '').toLowerCase();
-    const isTelemetria = ['telemetria', 'condominio', 'shopping', 'logistico', 'hospital', 'industria', 'predio'].some(kw => nicheLower.includes(kw));
 
-    if (isTelemetria) {
-        score += 25; // Oportunidade base alta para visita técnica
-        if (lead.total_ratings > 50) score += 15;
-        if (lead.rating && lead.rating < 4.4) score += 10;
-        if (!lead.phone) score += 5;
-    } else {
-        // Regras Presença Digital Tradicionais
-        if (!lead.website) {
-            score += 25;
-        } else if (audit) {
-            if (!audit.isSecure) score += 10;
-            if (audit.performanceScore < 50) score += 10;
-            if (audit.isResponsive === false) score += 10;
-            if (!audit.seoBasics) score += 5;
-            if (!audit.ctaClarity) score += 5;
-        }
+    // Regras Presença Digital Tradicionais
+    if (!lead.website) {
+        score += 25;
+    } else if (audit) {
+        if (!audit.isSecure) score += 10;
+        if (audit.performanceScore < 50) score += 10;
+        if (audit.isResponsive === false) score += 10;
+        if (!audit.seoBasics) score += 5;
+        if (!audit.ctaClarity) score += 5;
+    }
 
-        if (lead.instagram || (audit?.socialLinks?.instagram)) score += 10;
-        if (lead.facebook || (audit?.socialLinks?.facebook)) score += 5;
-        if (lead.total_ratings > 50) score += 10;
-        if (lead.rating && lead.rating < 4.4) score += 5;
+    if (lead.instagram || (audit?.socialLinks?.instagram)) score += 10;
+    if (lead.facebook || (audit?.socialLinks?.facebook)) score += 5;
+    if (lead.total_ratings > 50) score += 10;
+    if (lead.rating && lead.rating < 4.4) score += 5;
 
-        const premiumNiches = ['advocacia', 'clinica', 'medico', 'estetica', 'energia_solar', 'imobiliaria', 'arquitetura'];
-        if (premiumNiches.some(n => nicheLower.includes(n))) {
-            score += 15;
-        }
+    const premiumNiches = ['advocacia', 'clinica', 'medico', 'estetica', 'energia_solar', 'imobiliaria', 'arquitetura'];
+    if (premiumNiches.some(n => nicheLower.includes(n))) {
+        score += 15;
     }
 
     if (lead.phone || lead.whatsapp) {
@@ -551,20 +498,6 @@ async function searchLeads(nicheId, city) {
 
                 const name = (r.name || '').toLowerCase();
 
-                // 🔥 FILTRO POSITIVO (apenas para Telemetria/Condomínios)
-                if (nicheNormalized === 'telemetria' || nicheNormalized === 'monitoramento_condominios' || nicheNormalized.includes('condomínio')) {
-                    const isValidStructure =
-                        name.includes('condom') || name.includes('residencial') || name.includes('edif') ||
-                        name.includes('prédio') || name.includes('corporat') || name.includes('logístic') ||
-                        name.includes('industrial') || name.includes('shopping') || name.includes('galp') ||
-                        name.includes('distribui') || name.includes('hospital') || name.includes('clínica') ||
-                        name.includes('clinica') || name.includes('complexo') || name.includes('centro') ||
-                        name.includes('moinho') || name.includes('fábrica') || name.includes('fabrica') ||
-                        name.includes('administradora') || name.includes('administra') || name.includes('conservadora') ||
-                        name.includes('gestão') || name.includes('síndic') || name.includes('sindic') || name.includes('terceiriz');
-
-                    if (!isValidStructure) continue;
-                }
 
                 // 🔥 BLACKLIST SINCRONIZADA
                 const isBlacklisted = blacklistTerms.some(term => {

@@ -48,18 +48,7 @@ export const searchRawBusinesses = async (niche: string, city: string, pageToken
   if (!pageToken) {
     const citiesArray = city.split(',').map(c => c.trim()).filter(Boolean);
     for (const c of citiesArray) {
-      let queriesToRun = [];
-      if (niche.toLowerCase().includes('condomínio') || niche === 'monitoramento_condominios' || niche === 'telemetria') {
-        queriesToRun = [
-          `Condomínio Logístico em ${c}`, `Condomínio Residencial em ${c}`, `Shopping Center em ${c}`,
-          `Edifício Comercial em ${c}`, `Supermercado e hipermercados em ${c}`, `Indústria e fábrica em ${c}`,
-          `Centro Logístico em ${c}`, `Hospital e Clínica Grande em ${c}`, `Prédio Corporate em ${c}`,
-          `Moinho e Indústria Pesada em ${c}`, `Geradora de Energia em ${c}`, `Administradora de Condomínios em ${c}`,
-          `Conservadora Predial em ${c}`, `Síndico Profissional em ${c}`
-        ];
-      } else {
-        queriesToRun = [`${niche} em ${c}`];
-      }
+      let queriesToRun = [`${niche} em ${c}`];
 
       for (const q of queriesToRun) {
         const query = encodeURIComponent(q);

@@ -1497,7 +1497,7 @@ export default function Automation() {
                                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
                                         {NICHES.filter(n => {
                                             if (n.value === 'terapias_holisticas') {
-                                                return userEmail === 'junioemanuel38@gmail.com' || userEmail === 'helgonhc19@yahoo.com.br';
+                                                return userEmail === 'admin@seudominio.com';
                                             }
                                             if (n.value === 'telemetria') {
                                                 return userEmail === 'junioemanuel38@gmail.com' ||

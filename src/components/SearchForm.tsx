@@ -26,15 +26,7 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
     getUser();
   }, []);
 
-  const filteredNiches = NICHES.filter(n => {
-    if (n.value === 'terapias_holisticas') {
-      return userEmail === 'junioemanuel38@gmail.com' || userEmail === 'helgonhc19@yahoo.com.br';
-    }
-    if (['telemetria', 'condominio_logistico', 'condominio_residencial', 'shopping_center', 'edificio_comercial', 'rede_varejo', 'industria_infra'].includes(n.value)) {
-      return userEmail === 'junioemanuel38@gmail.com' || userEmail === 'helgonhc19@yahoo.com.br' || userEmail === 'operacaomg@eletricom.me';
-    }
-    return true;
-  });
+  const filteredNiches = NICHES;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,12 +99,12 @@ export function SearchForm({ onSearch, loading }: SearchFormProps) {
         {loading ? (
           <>
             <Zap className="w-5 h-5 sm:w-4 sm:h-4 animate-pulse" />
-            {['telemetria', 'condominio_logistico', 'condominio_residencial', 'shopping_center', 'edificio_comercial', 'rede_varejo', 'industria_infra'].includes(niche) ? 'Mapeando Infra...' : 'Escaneando...'}
+            {loading ? 'Escaneando...' : 'Escanear Presença Digital'}
           </>
         ) : (
           <>
             <Search className="w-5 h-5 sm:w-4 sm:h-4" />
-            {['telemetria', 'condominio_logistico', 'condominio_residencial', 'shopping_center', 'edificio_comercial', 'rede_varejo', 'industria_infra'].includes(niche) ? 'Mapear Infraestrutura' : 'Escanear Presença Digital'}
+            {loading ? 'Escaneando...' : 'Escanear Presença Digital'}
           </>
         )}
       </Button>

@@ -1,12 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = "https://mteiqxhtdibjvsrlnylh.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10ZWlxeGh0ZGlianZzcmxueWxoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0MjI2NTEsImV4cCI6MjA4Njk5ODY1MX0.ldvUtrtS3QUcHyGlyUDzt-pKUq4tLSsHLEHD8CqeJ6s";
+const SUPABASE_URL = "https://[SEU_PROJETO].supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "[SUA_CHAVE_ANON]";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-const email = 'junioemanuel38@gmail.com';
-const password = 'teste@123';
+const email = 'admin@seudominio.com';
+const password = 'sua_senha_segura';
 
 console.log(`Tentando criar usuário: ${email}...`);
 

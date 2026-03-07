@@ -87,7 +87,6 @@ export interface SearchParams {
 export type GeneratorType = 'script' | 'prompt' | 'analysis' | 'design' | 'script_system' | 'script_website' | 'battle_plan' | 'xeque_mate' | 'objections' | 'website_html';
 
 export const NICHES = [
-  { value: 'terapias_holisticas', label: '🌿 Terapias Holísticas', keyword: 'terapia holística reiki acupuntura aromaterapia' },
   { value: 'energia_solar', label: '☀️ Energia Solar', keyword: 'energia solar instalação fotovoltaica' },
   { value: 'estetica', label: '✨ Clínica de Estética', keyword: 'clínica estética harmonização facial' },
   { value: 'dentista', label: '🦷 Dentista / Odonto', keyword: 'consultório odontológico dentista' },
@@ -109,6 +108,5 @@ export const NICHES = [
   { value: 'salao_beleza', label: '💇 Salão de Beleza', keyword: 'salão de beleza cabeleireiro' },
   { value: 'barbearia', label: '💈 Barbearia', keyword: 'barbearia moderna' },
   { value: 'farmacia', label: '💊 Farmácia', keyword: 'farmácia drogaria' },
-  { value: 'telemetria', label: '📡 Telemetria (Geral)', keyword: "condomínio edifício prédio shopping indústria clínica hospital moinho geradora administradora conservadora síndico gestão" },
   { value: 'outro', label: '🔍 Outro (personalizado)', keyword: "" },
 ];

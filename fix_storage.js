@@ -1,6 +1,6 @@
 
 // Script to create the 'branding' bucket in Supabase via REST API
-const SUPABASE_URL = "https://mteiqxhtdibjvsrlnylh.supabase.co";
+const SUPABASE_URL = "https://[SEU_PROJETO].supabase.co";
 // NOTE: This requires a SERVICE_ROLE_KEY to bypass RLS and create buckets. 
 // Using the anon key might fail if policies prevent bucket creation.
 // Since we don't have the service role key in .env, we'll try with the anon key and hope for the best, 
@@ -9,7 +9,7 @@ const SUPABASE_URL = "https://mteiqxhtdibjvsrlnylh.supabase.co";
 // However, based on the user's "Erro ao carregar logo", it's likely a permission/existence issue.
 // Let's try to list buckets first.
 
-const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10ZWlxeGh0ZGlianZzcmxueWxoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0MjI2NTEsImV4cCI6MjA4Njk5ODY1MX0.ldvUtrtS3QUcHyGlyUDzt-pKUq4tLSsHLEHD8CqeJ6s";
+const ANON_KEY = "[SUA_CHAVE_ANON]";
 
 async function createBucket() {
     console.log("Checking storage buckets...");
