@@ -47,8 +47,7 @@ const NICHES = [
     { value: 'contabilidade', keyword: 'escritório contabilidade contador' },
     { value: 'salao_beleza', keyword: 'salão de beleza cabeleireiro' },
     { value: 'barbearia', keyword: 'barbearia moderna' },
-    { value: 'farmacia', keyword: 'farmácia drogaria' },
-    { value: 'holistico', keyword: 'terapias holísticas reiki acupuntura florais' }
+    { value: 'farmacia', keyword: 'farmácia drogaria' }
 ];
 
 const getNicheVariations = (niche) => {
@@ -140,7 +139,6 @@ async function logToSupabase(message, type = 'info') {
 async function generateAIContent(business, type, siteAuditData = null, stage = 'D0') {
     if (!groqApiKey) return null;
     const isCourts = business.niche?.toLowerCase().includes('quadra') || business.niche?.toLowerCase().includes('beach') || business.niche?.toLowerCase().includes('fut');
-    const isHolistic = business.niche?.toLowerCase().includes('holistico') || business.niche?.toLowerCase().includes('terapia') || business.niche?.toLowerCase().includes('holística');
 
     let systemPrompt = `Você é um Estrategista de Vendas Consultivas de Elite. Sua missão é criar mensagens de abordagem via WhatsApp que sejam impossíveis de ignorar. 
     Seu tom é profissional, direto e focado em gerar curiosidade através de diagnósticos técnicos reais (Ferida Aberta).
@@ -150,10 +148,6 @@ async function generateAIContent(business, type, siteAuditData = null, stage = '
         systemPrompt = `Dada a auditoria técnica de um site, identifique 3 pontos fracos e 1 ponto forte. 
         Dados Técnicos: ${JSON.stringify(siteAuditData)}.
         Se for uma QUADRA DE ESPORTES e não tiver sistema de agendamento detectado, mencione especificamente a falta de automação de horários.`;
-    } else if (isHolistic) {
-        systemPrompt = `Você é um Estrategista de Vendas Consultivas de Elite focado em Terapias e Tecnologia Orgonial. 
-        Sua missão é oferecer a implementação de uma Caixa Orgônica (Acumulador Orgone) como um diferencial competitivo e de cura energética. 
-        Seu tom é místico mas profissional, focando no impacto biológico real de Wilhelm Reich.`;
     } else if (isCourts) {
         const hasScheduling = siteAuditData?.bookingSystemDetected;
         const brand = "ReservaAí (https://reservaai.com.br/)";
