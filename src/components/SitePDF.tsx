@@ -547,8 +547,13 @@ export async function generateSitePDF(business: BusinessData, customGoodHtml?: s
             </html>
         `;
 
-    // 3. Dispara POST na API Node.js Local
-    const response = await fetch("http://localhost:3001/generate-pdf", {
+    // 3. Dispara POST na API (Híbrido Local/Vercel)
+    const isLocal = window.location.hostname === 'localhost';
+    const apiUrl = isLocal
+      ? "http://localhost:3001/generate-pdf"
+      : "/api/generate-pdf";
+
+    const response = await fetch(apiUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ html: fullHtmlPayload })
