@@ -1,4 +1,5 @@
 node_modules
 wa_session
+wa_session_test
 .env
 *.log
