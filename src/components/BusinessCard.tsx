@@ -1495,7 +1495,11 @@ export const BusinessCard = memo(function BusinessCard({
                           foundItems: business.foundItems,
                           performanceScore: business.performanceScore,
                           isSecure: business.isSecure,
-                          mobileFriendly: business.mobileFriendly
+                          mobileFriendly: business.mobileFriendly,
+                          instagram: business.instagram,
+                          facebook: business.facebook,
+                          tiktok: business.tiktok,
+                          whatsapp: business.whatsapp
                         }
                       });
                       if (error) throw error;
