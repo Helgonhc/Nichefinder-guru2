@@ -795,11 +795,7 @@ async function runBot() {
             const isAutomatedScanDue = scheduler.active && scheduler.autoAnalyze && isWithinWindowGeneral && (now - lastScanTime > (24 * 60 * 60 * 1000) / scheduler.scansPerDay);
             const pendingActions = scheduler.forceCapture || scheduler.forceSend || isAutomatedScanDue;
 
-            // O navegador abre via botão "Conectar" OU se o usuário permitiu abertura automática de fundo para varreduras
-            const autoOpenAllowed = scheduler.autoOpenBrowser === true && pendingActions;
-            const needsBrowser = config.connected === true || autoOpenAllowed;
-
-            if (needsBrowser && !browser) {
+            if (!browser) {
                 await logToSupabase('🌐 Abrindo Navegador e acessando WhatsApp...');
                 browser = await puppeteer.launch({
                     headless: false,
@@ -809,14 +805,6 @@ async function runBot() {
                 page = await browser.newPage();
                 await page.goto('https://web.whatsapp.com', { waitUntil: 'domcontentloaded', timeout: 60000 });
                 await logToSupabase('✅ Navegador pronto. Aguardando conexão...');
-            }
-
-            // Só fechamos se explícito no frontend E o navegador existir
-            else if (!needsBrowser && browser) {
-                await logToSupabase('💤 Desconectando: Fechando navegador a pedido do usuário.');
-                await browser.close();
-                browser = null;
-                page = null;
             }
 
             // --- 0. VARREDURA (SCAN) ---
