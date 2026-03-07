@@ -548,13 +548,13 @@ const Index = () => {
               .sort((a, b) => a.presenceScore - b.presenceScore)
               .map((business, i) => (
                 <BusinessCard
-                  key={business.id ? `lead-${business.id}-${i}` : `search-${i}-${business.name}`}
+                  key={business.id}
                   business={business}
                   index={i}
                   onGenerateScript={handleGenerateScript}
                   onGeneratePrompt={handleGeneratePrompt}
                   onUpdateBusiness={(updatedLead) => {
-                    setBusinesses(prev => prev.map((b, idx) => (b.id && b.id === updatedLead.id) || idx === i ? updatedLead : b));
+                    setBusinesses(prev => prev.map(b => b.id === updatedLead.id ? updatedLead : b));
                   }}
                 />
               ))}
