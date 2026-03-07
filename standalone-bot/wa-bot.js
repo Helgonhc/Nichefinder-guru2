@@ -929,7 +929,7 @@ async function runBot() {
                                     website: lead.website,
                                     user_id: botOwnerId,
                                     status: 'new',
-                                    automation_status: schedulerConfig.autoSend ? 'queued' : 'idle',
+                                    automation_status: scheduler.autoSend ? 'queued' : 'idle',
                                     last_scan_at: new Date().toISOString(),
                                     meta_data: {
                                         ...lead.meta_data,
