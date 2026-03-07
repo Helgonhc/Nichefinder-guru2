@@ -51,7 +51,7 @@ const NICHES = [
 ];
 
 
-console.log(`\n\x1b[36m🤖 [ROBOT] Iniciando Monitoramento de Condomínios v${ROBOT_VERSION}...`);
+console.log(`\n\x1b[36m🤖 [ROBOT] Iniciando Motor Standalone Autônomo v${ROBOT_VERSION}...`);
 console.log(`📡 Supabase URL: ${supabaseUrl}`);
 console.log(`🔑 Owner ID: ${botOwnerId || '\x1b[31mAUSENTE (Favor configurar no .env)\x1b[36m'}`);
 console.log(`------------------------------------------\x1b[0m\n`);
@@ -62,8 +62,7 @@ let page = null;
 
 async function logToSupabase(message, type = 'info') {
     const timestamp = new Date().toLocaleTimeString();
-    // Filtro Semântico de Nicho: Garante que os logs não contaminem a percepção do usuário sobre o que o robô está fazendo.
-    const logLine = `[${timestamp}] ${displayMessage}`;
+    const logLine = `[${timestamp}] ${message}`;
     console.log(logLine);
 
     robotConsole.push(logLine);
