@@ -1,6 +1,8 @@
 
 import { createClient } from '@supabase/supabase-js';
 import puppeteer from 'puppeteer';
+import express from 'express';
+import cors from 'cors';
 import * as dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -21,7 +23,48 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Log de Diagnóstico Inicial
 const botOwnerId = process.env.BOT_OWNER_ID;
-const ROBOT_VERSION = "2.5.0-FIREWALL-BILLING";
+const ROBOT_VERSION = "2.6.0-UNIFIED-PDF";
+
+// --- CONFIGURAÇÃO DO SERVIDOR DE PDF UNIFICADO ---
+const pdfServer = express();
+const PDF_PORT = 3001;
+
+pdfServer.use(cors());
+pdfServer.use(express.json({ limit: "5mb" }));
+
+pdfServer.post("/generate-pdf", async (req, res) => {
+    const { html } = req.body;
+    if (!html) return res.status(400).json({ error: "Faltou o HTML." });
+
+    let browserInstance = null;
+    try {
+        console.log("🦅 [PDF Unified] Renderizando proposta...");
+        browserInstance = await puppeteer.launch({
+            headless: 'new',
+            args: ["--no-sandbox", "--disable-setuid-sandbox"]
+        });
+        const page = await browserInstance.newPage();
+        await page.emulateMediaType("print");
+        await page.setContent(html, { waitUntil: "networkidle0", timeout: 30000 });
+        const pdfBuffer = await page.pdf({
+            format: "A4",
+            printBackground: true,
+            preferCSSPageSize: true,
+            margin: { top: "0", right: "0", bottom: "0", left: "0" }
+        });
+        res.setHeader("Content-Type", "application/pdf");
+        res.send(pdfBuffer);
+    } catch (error) {
+        console.error("❌ [PDF Unified] Erro:", error);
+        res.status(500).json({ error: error.message });
+    } finally {
+        if (browserInstance) await browserInstance.close();
+    }
+});
+
+pdfServer.listen(PDF_PORT, () => {
+    console.log(`\n🚀 [PDF SERVER] Integrado e rodando na porta ${PDF_PORT}`);
+});
 
 
 
@@ -1015,6 +1058,10 @@ async function runBot() {
                                                 has_website: true,
                                                 insta_active: !!auditResult.socialLinks?.instagram,
                                                 socialLinks: auditResult.socialLinks,
+                                                instagram: auditResult.socialLinks?.instagram,
+                                                facebook: auditResult.socialLinks?.facebook,
+                                                tiktok: auditResult.socialLinks?.tiktok,
+                                                whatsapp: auditResult.socialLinks?.whatsapp,
                                                 motivoPrincipalDaOferta: offerReason,
                                                 site_phones: auditResult.sitePhones
                                             }
