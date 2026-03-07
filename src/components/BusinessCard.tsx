@@ -1519,6 +1519,17 @@ export const BusinessCard = memo(function BusinessCard({
                   <FileDown className="w-3.5 h-3.5 mr-1" />
                   Gerar Proposta
                 </Button>
+                <Button
+                  variant="outline"
+                  className="h-9 text-[10px] font-bold uppercase tracking-wider border-[#D4AF37]/30 bg-[#D4AF37]/5 hover:bg-[#D4AF37]/10 text-[#B8860B] rounded-xl shadow-sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleGeneratePDFSite();
+                  }}
+                >
+                  <Zap className="w-3.5 h-3.5 mr-1" />
+                  Alta Conversão
+                </Button>
               </div>
             </div>
           ) : (
@@ -1529,6 +1540,14 @@ export const BusinessCard = memo(function BusinessCard({
               >
                 <Target className="w-4 h-4" />
                 Plano de Batalha IA
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full h-11 border-[#D4AF37]/30 bg-[#D4AF37]/5 hover:bg-[#D4AF37]/10 text-[#B8860B] font-bold uppercase tracking-wider text-[10px] rounded-xl gap-2 shadow-sm"
+                onClick={(e) => { e.stopPropagation(); handleGeneratePDFSite(); }}
+              >
+                <Sparkles className="w-4 h-4" />
+                Proposta de Alta Conversão
               </Button>
               <div className="flex gap-2">
                 <select

@@ -47,8 +47,22 @@ const NICHES = [
     { value: 'contabilidade', keyword: 'escritório contabilidade contador' },
     { value: 'salao_beleza', keyword: 'salão de beleza cabeleireiro' },
     { value: 'barbearia', keyword: 'barbearia moderna' },
-    { value: 'farmacia', keyword: 'farmácia drogaria' }
+    { value: 'farmacia', keyword: 'farmácia drogaria' },
+    { value: 'holistico', keyword: 'terapias holísticas reiki acupuntura florais' }
 ];
+
+const getNicheVariations = (niche) => {
+    const list = [];
+    const base = niche.keyword || niche.value;
+    list.push(base);
+    // Variações para ampliar captura
+    if (base.includes('clínica')) list.push(base.replace('clínica', 'centro médico'));
+    if (base.includes('escritório')) list.push(base.replace('escritório', 'consultoria'));
+    if (base.includes('restaurante')) list.push(base.replace('restaurante', 'gastronomia gourmet'));
+    if (base.includes('escola')) list.push(base.replace('escola', 'ensino curso'));
+    if (base.includes('academia')) list.push(base.replace('academia', 'studio fitness'));
+    return list;
+};
 
 
 console.log(`\n\x1b[36m🤖 [ROBOT] Iniciando Motor Standalone Autônomo v${ROBOT_VERSION}...`);
@@ -126,6 +140,7 @@ async function logToSupabase(message, type = 'info') {
 async function generateAIContent(business, type, siteAuditData = null, stage = 'D0') {
     if (!groqApiKey) return null;
     const isCourts = business.niche?.toLowerCase().includes('quadra') || business.niche?.toLowerCase().includes('beach') || business.niche?.toLowerCase().includes('fut');
+    const isHolistic = business.niche?.toLowerCase().includes('holistico') || business.niche?.toLowerCase().includes('terapia') || business.niche?.toLowerCase().includes('holística');
 
     let systemPrompt = `Você é um Estrategista de Vendas Consultivas de Elite. Sua missão é criar mensagens de abordagem via WhatsApp que sejam impossíveis de ignorar. 
     Seu tom é profissional, direto e focado em gerar curiosidade através de diagnósticos técnicos reais (Ferida Aberta).
@@ -465,8 +480,12 @@ async function searchLeads(nicheId, city) {
         ];
     } else {
         const nicheObj = NICHES.find(n => n.value === nicheNormalized);
-        const searchTerm = nicheObj ? nicheObj.keyword : nicheNormalized;
-        queriesToRun = [`${searchTerm} em ${city}`];
+        const baseTerms = nicheObj ? getNicheVariations(nicheObj) : [nicheNormalized];
+        baseTerms.forEach(term => {
+            queriesToRun.push(`${term} em ${city}`);
+            // busca específica por "melhor" ou "perto" para forçar resultados diferentes da API
+            queriesToRun.push(`melhor ${term} em ${city}`);
+        });
     }
 
     let allResults = [];
@@ -483,36 +502,49 @@ async function searchLeads(nicheId, city) {
     ];
 
     for (const q of queriesToRun) {
-        const query = encodeURIComponent(q);
-        const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&key=${googleApiKey}&language=pt-BR`;
+        let pageToken = '';
+        let pagesCrawled = 0;
 
-        try {
-            const res = await fetch(url);
-            const data = await res.json();
-            const results = data.results || [];
+        do {
+            const query = encodeURIComponent(q);
+            let url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&key=${googleApiKey}&language=pt-BR`;
+            if (pageToken) url += `&pagetoken=${pageToken}`;
 
-            for (const r of results) {
-                if (sessionSeen.has(r.place_id)) continue;
-                if (existingPlaceIds.has(r.place_id)) continue;
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                const results = data.results || [];
+                pageToken = data.next_page_token || '';
 
-                const name = (r.name || '').toLowerCase();
+                for (const r of results) {
+                    if (sessionSeen.has(r.place_id)) continue;
+                    if (existingPlaceIds.has(r.place_id)) continue;
 
+                    const name = (r.name || '').toLowerCase();
 
-                // 🔥 BLACKLIST SINCRONIZADA
-                const isBlacklisted = blacklistTerms.some(term => {
-                    const t = term.toLowerCase().trim();
-                    if (t.length <= 3) return name.includes(` ${t} `) || name.startsWith(`${t} `) || name.endsWith(` ${t}`);
-                    return name.includes(t);
-                });
+                    // 🔥 BLACKLIST SINCRONIZADA
+                    const isBlacklisted = blacklistTerms.some(term => {
+                        const t = term.toLowerCase().trim();
+                        if (t.length <= 3) return name.includes(` ${t} `) || name.startsWith(`${t} `) || name.endsWith(` ${t}`);
+                        return name.includes(t);
+                    });
 
-                if (isBlacklisted) continue;
+                    if (isBlacklisted) continue;
 
-                sessionSeen.add(r.place_id);
-                allResults.push(r);
+                    sessionSeen.add(r.place_id);
+                    allResults.push(r);
+                }
+
+                if (pageToken) {
+                    console.log(`[Google] Mais resultados disponíveis para "${q}", aguardando cooldown da API...`);
+                    await new Promise(r => setTimeout(r, 2000)); // Google exige delay entre chamadas de pagetoken
+                }
+                pagesCrawled++;
+            } catch (e) {
+                console.error(`Erro na query "${q}":`, e.message);
+                pageToken = '';
             }
-        } catch (e) {
-            console.error(`Erro na query "${q}":`, e.message);
-        }
+        } while (pageToken && pagesCrawled < 3); // Limite de 3 páginas (60 resultados) por query
     }
 
     const enriched = [];
@@ -1079,18 +1111,46 @@ async function runBot() {
                             await page.goto(`https://web.whatsapp.com/send?phone=${phone}`, { waitUntil: 'networkidle2', timeout: 30000 });
                             await new Promise(r => setTimeout(r, 5000)); // Wait for messages to load
 
-                            const hasReply = await page.evaluate(() => {
-                                // Find all message containers
-                                const messages = document.querySelectorAll('.message-in');
-                                if (messages.length === 0) return false;
+                            const replyData = await page.evaluate(() => {
+                                const messagesIn = document.querySelectorAll('.message-in');
+                                if (messagesIn.length === 0) return null;
 
-                                // Get the last message to see if it's incoming
                                 const allMessages = document.querySelectorAll('[class*="message-"]');
                                 const lastMessage = allMessages[allMessages.length - 1];
-                                return lastMessage && lastMessage.classList.contains('message-in');
+
+                                if (lastMessage && lastMessage.classList.contains('message-in')) {
+                                    const textElement = lastMessage.querySelector('.copyable-text span');
+                                    return {
+                                        text: textElement ? textElement.innerText : '',
+                                        timestamp: new Date().toISOString()
+                                    };
+                                }
+                                return null;
                             });
 
-                            if (hasReply) {
+                            if (replyData && replyData.text) {
+                                await logToSupabase(`💬 Resposta de ${lead.name}: "${replyData.text.substring(0, 30)}..."`);
+
+                                // IA para classificar intenção
+                                const intentPrompt = `Classifique a intenção desta mensagem de um lead: "${replyData.text}". 
+                                Responda APENAS com uma destas palavras: INTERESTED, CALLBACK, NOT_INTERESTED.
+                                Considere frases como "sim", "tenho interesse", "podemos falar", "mande a proposta" como INTERESTED.`;
+
+                                const intent = await generateAIContent({ name: 'IntentChecker' }, 'custom', null, intentPrompt);
+                                const isInterested = intent && intent.includes('INTERESTED');
+
+                                if (isInterested) {
+                                    await logToSupabase(`🎯 Interesse Real detectado! Gerando Proposta PDF para ${lead.name}...`);
+
+                                    // 1. Gera o PDF chamando o pdf-engine local
+                                    // Nota: Reutilizaremos o template de Alta Conversão
+                                    const pdfBuffer = await generateProposalBuffer(lead);
+
+                                    if (pdfBuffer) {
+                                        await sendWAFile(page, pdfBuffer, `Proposta_Vip_${lead.name.replace(/\s+/g, '_')}.pdf`);
+                                        await logToSupabase(`🚀 Proposta Enviada com Sucesso para ${lead.name}!`);
+                                    }
+                                }
                                 await logToSupabase(`🎉 Resposta detectada de: ${lead.name}! Pausando automação.`);
 
                                 const interactionLog = {
@@ -1315,6 +1375,135 @@ async function runBot() {
             await logToSupabase(`❌ Erro no loop: ${err.message}`);
         }
         await new Promise(r => setTimeout(r, 3000));
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MOTOR DE GERAÇÃO DE PDF (STANDALONE)
+// ═══════════════════════════════════════════════════════════════════
+async function generateProposalBuffer(lead) {
+    try {
+        const { data: profile } = await supabase.from('profiles').select('*').eq('id', botOwnerId).maybeSingle();
+        const sellerName = profile?.full_name || "Especialista Digital";
+        const sellerWebsite = profile?.website_url || "";
+        const dateStr = new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
+
+        // Template HTML 1:1 com o frontend (simplificado para string)
+        const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <script src="https://cdn.tailwindcss.com"></script>
+            <style>
+                @page { margin: 0; size: A4 portrait; }
+                body { margin: 0; padding: 0; background: #0a0a0c; font-family: sans-serif; -webkit-print-color-adjust: exact; }
+                .pdf-page { width: 210mm; height: 296.8mm; overflow: hidden; page-break-after: always; position: relative; color: white; }
+            </style>
+        </head>
+        <body>
+            <!-- PÁGINA 1: CAPA -->
+            <div class="pdf-page bg-[#0a0a0c] flex flex-col justify-center px-16">
+                <div class="absolute left-6 top-16 w-[3px] h-32 bg-[#D4AF37]"></div>
+                <h3 class="text-[#D4AF37] font-bold text-xs tracking-widest mb-4">PROJETO DE POSICIONAMENTO DIGITAL</h3>
+                <h1 class="text-[54px] font-black leading-tight uppercase mb-8">${lead.name}</h1>
+                <p class="text-xl text-[#9696a0]">A ARTE DE CONVERTER CLIQUES EM CLIENTES LEAIS.</p>
+                <div class="absolute bottom-16 left-16">
+                    <p class="text-[#9696a0] font-bold text-[10px] tracking-widest mb-1">DESENVOLVIDO POR</p>
+                    <p class="text-white font-bold text-lg">${sellerName.toUpperCase()}</p>
+                </div>
+            </div>
+
+            <!-- PÁGINA 2: O CUSTO DA CONCORRÊNCIA -->
+            <div class="pdf-page bg-[#0a0a0c] px-16 py-20 flex flex-col">
+                <h2 class="text-4xl font-black mb-8">O GOOGLE NÃO PERDOA AMADORES.</h2>
+                <p class="text-lg text-[#e6e6eb] mb-6">Atualmente em <span class="text-white font-bold">${lead.city}</span>, a <span class="text-white font-bold">${lead.name}</span> está perdendo espaço para quem investe em design.</p>
+                <div class="bg-[#141418] border border-[#28282d] p-8 rounded-2xl flex items-center gap-8 mt-10">
+                    <div style="font-size: 40px; font-weight: 900; color: #D4AF37;">${lead.presence_score || 0}%</div>
+                    <div>
+                        <div class="text-white font-bold tracking-widest">SCORE DE AUTORIDADE</div>
+                        <div class="text-[#9696a0] text-xs">Abaixo do padrão de mercado para nicho de ${lead.niche}.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PÁGINA 3: PROPOSTA DE VALOR -->
+            <div class="pdf-page bg-[#0a0a0c] px-16 py-20 flex flex-col justify-center items-center text-center">
+               <h2 class="text-[#D4AF37] text-3xl font-black mb-10">TRANSFORMAÇÃO DIGITAL COMPLETA</h2>
+               <div class="grid grid-cols-2 gap-10 w-full">
+                  <div class="bg-[#141418] border border-[#28282d] p-6 rounded-xl">
+                     <div class="text-[#D4AF37] font-bold mb-2 uppercase">Design VIP</div>
+                     <div class="text-xs text-[#9696a0]">Interface luxuosa focada em conversão.</div>
+                  </div>
+                  <div class="bg-[#141418] border border-[#28282d] p-6 rounded-xl">
+                     <div class="text-[#D4AF37] font-bold mb-2 uppercase">Velocidade</div>
+                     <div class="text-xs text-[#9696a0]">Site ultra rápido (LCP < 1.5s).</div>
+                  </div>
+               </div>
+               <div class="mt-20 border-2 border-[#D4AF37] p-8">
+                  <div class="text-2xl font-bold mb-4">MÁQUINA DE VENDAS 24H</div>
+                  <p class="text-sm">Seu novo site será seu melhor vendedor.</p>
+               </div>
+               <div class="mt-auto pt-10 border-t border-[#28282d] w-full text-xs text-[#9696a0]">
+                  Gerado automaticamente pelo Motor NicheFinder Guru v2.5
+               </div>
+            </div>
+        </body>
+        </html>`;
+
+        const response = await fetch("http://localhost:3001/generate-pdf", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ html })
+        });
+
+        if (!response.ok) throw new Error("Erro no pdf-engine");
+
+        const arrayBuffer = await response.arrayBuffer();
+        return Buffer.from(arrayBuffer);
+    } catch (e) {
+        console.error("Erro ao gerar Buffer do PDF:", e.message);
+        return null;
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ENVIO DE ARQUIVO VIA PUPPETEER (WA WEB HACK)
+// ═══════════════════════════════════════════════════════════════════
+async function sendWAFile(page, buffer, fileName) {
+    try {
+        // Salva temporariamente o buffer para dar upload
+        const fs = await import('fs');
+        const path = await import('path');
+        const tmpPath = path.join(__dirname, '..', 'tmp', fileName);
+
+        // Garante que tmp existe
+        if (!fs.existsSync(path.dirname(tmpPath))) fs.mkdirSync(path.dirname(tmpPath));
+
+        fs.writeFileSync(tmpPath, buffer);
+
+        // Abre o menu de anexo
+        await page.click('span[data-icon="plus"]');
+        await new Promise(r => setTimeout(r, 1000));
+
+        // Seleciona o input de arquivo (Documento)
+        // O WhatsApp usa inputs escondidos
+        const inputHandle = await page.$('input[type="file"][accept*="*"]');
+        if (!inputHandle) throw new Error("Input de arquivo não encontrado");
+
+        await inputHandle.uploadFile(tmpPath);
+        await new Promise(r => setTimeout(r, 2000));
+
+        // Clica no botão de enviar o arquivo
+        await page.click('span[data-icon="send"]');
+        await new Promise(r => setTimeout(r, 3000));
+
+        // Limpa arquivo temporário
+        fs.unlinkSync(tmpPath);
+        return true;
+    } catch (e) {
+        console.error("Erro ao enviar arquivo via Puppeteer:", e.message);
+        return false;
     }
 }
 
