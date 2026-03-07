@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NicheFinder Guru 🚀 | Open Source Architecture</title>
+    <title>NicheFinder Guru 🚀 | Documentação Exaustiva</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -68,12 +68,13 @@
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-top: 1px solid rgba(255, 255, 255, 0.15);
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-            transition: transform 0.3s ease, border-color 0.3s ease;
         }
 
-        .glass-card:hover {
-            border-color: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
+        .detailed-feature {
+            border-left: 2px solid #3b82f6;
+            padding-left: 1.5rem;
+            margin-top: 1.5rem;
+            margin-bottom: 3rem;
         }
 
         /* Imagens reais envelopadas no estilo macOS (Browser fictício) */
@@ -84,6 +85,7 @@
             position: relative;
             background: #000;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 40px rgba(59, 130, 246, 0.1);
+            margin: 2rem 0;
         }
 
         .mockup-header {
@@ -144,171 +146,224 @@
             <a href="https://github.com/Helgonhc/Nichefinder-guru2" target="_blank"
                 class="flex items-center gap-2 text-sm font-medium text-muted hover:text-white transition-colors bg-surface border border-surfaceBorder px-4 py-1.5 rounded-full">
                 <i data-lucide="github" class="w-4 h-4"></i>
-                Ver no GitHub
+                GitHub
             </a>
         </div>
     </nav>
 
     <!-- Header Hero -->
-    <main class="pt-32 pb-24 max-w-6xl mx-auto px-6">
+    <main class="pt-32 pb-24 max-w-4xl mx-auto px-6">
 
-        <div class="text-center max-w-3xl mx-auto mb-20 mt-10">
+        <div class="text-center mb-16 mt-10">
             <div
                 class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-surfaceBorder bg-surface text-xs font-mono text-muted mb-6">
                 <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                v2.4 Open Source Release
+                Whitepaper de Funcionalidades
             </div>
-            <h1 class="text-5xl md:text-7xl font-extrabold tracking-tighter mb-6 text-gradient drop-shadow-lg">
-                Automação B2B <br />que parece Mágica.
+            <h1 class="text-4xl md:text-6xl font-extrabold tracking-tighter mb-6 text-gradient drop-shadow-lg">
+                O Guia Definitivo e Absoluto.
             </h1>
-            <p class="text-lg text-muted md:text-xl leading-relaxed mb-8">
-                Um ecossistema React & Node projetado para achar a <strong class="text-white">mina de ouro
-                    invisível</strong> do Google Maps: Empresas que faturam físico, mas não possuem um site na internet.
+            <p class="text-lg text-muted md:text-xl leading-relaxed mb-8 text-center">
+                Você pediu para explicarmos <strong>TUDO</strong>. Este documento detalha, botão por botão, bit por bit,
+                cada módulo, regra de negócio, limite e inteligência contida no NicheFinder Guru.
             </p>
-            <div class="flex justify-center gap-4 text-sm font-mono text-muted">
-                <span class="px-3 py-1 rounded-md bg-surface border border-surfaceBorder flex items-center gap-2"><i
-                        data-lucide="zap" class="w-4 h-4 text-yellow-400"></i>React 18</span>
-                <span class="px-3 py-1 rounded-md bg-surface border border-surfaceBorder flex items-center gap-2"><i
-                        data-lucide="database" class="w-4 h-4 text-green-500"></i>Supabase</span>
-                <span class="px-3 py-1 rounded-md bg-surface border border-surfaceBorder flex items-center gap-2"><i
-                        data-lucide="bot" class="w-4 h-4 text-purple-400"></i>Node + Puppeteer</span>
+        </div>
+
+        <!-- MÓDULO 1: RADAR E EXTRAÇÃO DE DADOS -->
+        <h2 class="text-3xl font-bold mb-8 mt-24 border-b border-surfaceBorder pb-4 flex items-center gap-3"><i
+                data-lucide="radar" class="text-accent"></i> Módulo 1: O Radar (Data Mining)</h2>
+
+        <div class="detailed-feature">
+            <h3 class="text-xl font-semibold mb-3">1.1. Buscas de Múltiplas Cidades Simultâneas</h3>
+            <p class="text-muted leading-relaxed mb-4">A barra de busca do Radar não pesquisa apenas um local por vez.
+                Ela foi projetada para aceitar um <strong>Array de Localidades</strong> separado por vírgulas. Ex: <code
+                    class="bg-surface px-1 text-blue-300">Oficina Mecânica</code> em <code
+                    class="bg-surface px-1 text-blue-300">Campinas, Valinhos, Vinhedo</code>. O React divide essa string
+                e dispara buscas assíncronas paralelas via Edge Functions no Supabase, trazendo centenas de resultados
+                de todas as cidades aglutinados em uma única tabela instantaneamente.</p>
+        </div>
+
+        <div class="detailed-feature">
+            <h3 class="text-xl font-semibold mb-3">1.2. Integração Dupla (Google Places API + Serper API)</h3>
+            <p class="text-muted leading-relaxed mb-4">Não dependemos de apenas uma fonte. O Google Places traz as
+                geolocalizações precisas, Nota de Estrelas (ex: 4.8), Número de Avaliações e o Telefone Oficial.
+                Simultaneamente, a ferramenta aciona a <strong>Serper API</strong> (Motor de busca orgânica do Google)
+                para cavar links de redes sociais (Instagram, Facebook) e dados corporativos que o Maps costuma
+                esconder. Isso cria um Dossiê ultra-enriquecido de cada Lead.</p>
+        </div>
+
+        <div class="detailed-feature">
+            <h3 class="text-xl font-semibold mb-3">1.3. O Motor Anti-Concorrência (Blacklist Automática)</h3>
+            <p class="text-muted leading-relaxed mb-4">Quando os resultados chegam do Google, eles passam por um funil
+                de purificação em Javascript. Nosso código tem um dicionário extenso que bloqueia e oculta da sua visão
+                entidades inúteis para venda de Marketing: Prefeituras, Escolas Públicas, SEBRAE, e o principal:
+                <strong>Agências de Marketing (seus concorrentes) e desenvolvedores de software</strong>.</p>
+        </div>
+
+        <div class="system-mockup">
+            <div class="mockup-header">
+                <div class="mockup-dot bg-red-500"></div>
+                <div class="mockup-dot bg-yellow-500"></div>
+                <div class="mockup-dot bg-green-500"></div>
             </div>
+            <img src="./docs/assets/radar_main.png" alt="O Radar Vendo Leads" class="w-full h-auto" />
         </div>
 
-        <!-- A JORNADA (Didática Visual) -->
-        <div class="space-y-32">
 
-            <!-- FASE 1: O RADAR -->
-            <section class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <div class="order-2 lg:order-1 relative group">
-                    <div
-                        class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200">
-                    </div>
-                    <div class="system-mockup">
-                        <div class="mockup-header">
-                            <div class="mockup-dot bg-red-500"></div>
-                            <div class="mockup-dot bg-yellow-500"></div>
-                            <div class="mockup-dot bg-green-500"></div>
-                        </div>
-                        <img src="./docs/assets/radar_main.png" alt="O Radar em Ação" class="w-full h-auto" />
-                    </div>
-                </div>
-                <div class="order-1 lg:order-2">
-                    <div
-                        class="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 mb-6">
-                        <i data-lucide="radar"></i>
-                    </div>
-                    <h2 class="text-3xl font-bold mb-4">1. O Radar (Data Mining)</h2>
-                    <p class="text-muted leading-relaxed mb-6">
-                        Acabou o Ctrl+C e Ctrl+V no Google Maps. O Front-end bate em uma Edge Function segura que varre
-                        cidades inteiras e cospe milhares de leads de uma vez.
-                    </p>
-                    <div class="glass-card p-5 rounded-xl">
-                        <p class="text-sm text-muted mb-2"><strong class="text-white">O Pulo do Gato (O
-                                Código):</strong></p>
-                        <p class="text-sm font-mono text-blue-300">
-                            A lista negra (Blacklist) roda <em>antes</em> de você ver a tela. Advogados da união e
-                            concorrentes são destruídos do Array. Só sobra lead qualificado.
-                        </p>
-                    </div>
-                </div>
-            </section>
+        <!-- MÓDULO 2: CRM INTELIGENTE E THERMAL SCORE -->
+        <h2 class="text-3xl font-bold mb-8 mt-24 border-b border-surfaceBorder pb-4 flex items-center gap-3"><i
+                data-lucide="layers" class="text-red-500"></i> Módulo 2: CRM e Classificação da Dor (Scoring)</h2>
 
-            <!-- FASE 2: A DOR E A AUDITORIA -->
-            <section class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <div>
-                    <div
-                        class="w-10 h-10 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 mb-6">
-                        <i data-lucide="target"></i>
-                    </div>
-                    <h2 class="text-3xl font-bold mb-4">2. Encontrando quem "Sangra" (A Falta de Site)</h2>
-                    <p class="text-muted leading-relaxed mb-6">
-                        O algoritmo varre centenas de alvos na hora. Se o Google responde que o campo
-                        <code>website</code> está vazio... Bingo! O sistema coloca uma tarja vermelha absurda na sua
-                        tela informando <strong>"SEM SITE"</strong>. Essa é a empresa que está perdendo dinheiro.
-                    </p>
-                    <div class="glass-card p-5 rounded-xl border-red-900/30">
-                        <p class="text-sm text-muted mb-2"><strong class="text-white">Extra - Auditoria
-                                Profunda:</strong></p>
-                        <p class="text-sm font-mono text-red-300">
-                            Se a empresa TEM um site, não damos trégua. Batemos na API do PageSpeed. Se faltar
-                            certificado SSL ou estiver lento no celular, a gente pinta ele de vermelho também!
-                        </p>
-                    </div>
-                </div>
-                <div class="relative group">
-                    <div
-                        class="absolute -inset-1 bg-gradient-to-r from-red-600 to-orange-600 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200">
-                    </div>
-                    <div class="system-mockup">
-                        <div class="mockup-header">
-                            <div class="mockup-dot bg-red-500"></div>
-                            <div class="mockup-dot bg-yellow-500"></div>
-                            <div class="mockup-dot bg-green-500"></div>
-                        </div>
-                        <img src="./docs/assets/audit_modal.png" alt="Score e Auditoria" class="w-full h-auto" />
-                    </div>
-                </div>
-            </section>
-
-            <!-- FASE 3: O ROBO E O PDF -->
-            <section class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <div class="order-2 lg:order-1 relative group">
-                    <div
-                        class="absolute -inset-1 bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200">
-                    </div>
-                    <div class="system-mockup">
-                        <div class="mockup-header">
-                            <div class="mockup-dot bg-red-500"></div>
-                            <div class="mockup-dot bg-yellow-500"></div>
-                            <div class="mockup-dot bg-green-500"></div>
-                        </div>
-                        <img src="./docs/assets/automation_main.png" alt="Painel do Robô Standalone"
-                            class="w-full h-auto" />
-                    </div>
-                </div>
-                <div class="order-1 lg:order-2">
-                    <div
-                        class="w-10 h-10 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-green-400 mb-6">
-                        <i data-lucide="bot"></i>
-                    </div>
-                    <h2 class="text-3xl font-bold mb-4">3. A Fábrica de Conversão (WA Standalone)</h2>
-                    <p class="text-muted leading-relaxed mb-6">
-                        O painel joga o lead pra fila do Supabase. Daqui pra frente você não faz nada. Um Robô em Node
-                        (totalmente isolado da web pra evitar Bans da Meta) lê o banco. Ele pede para a Inteligência
-                        Artificial (<strong>Groq</strong>) montar uma mensagem hiper-pessoal sobre a dor do cliente.
-                    </p>
-                    <div class="glass-card p-5 rounded-xl border-green-900/30">
-                        <p class="text-sm text-muted mb-2"><strong class="text-white">A Mágica do Puppeteer (PDF
-                                On-The-Fly):</strong></p>
-                        <p class="text-sm font-mono text-green-300">
-                            Fazer o navegador do usuário gerar PDF toda hora travaria ele. Nós levantamos uma porta
-                            <code>:3001</code> escondida num servidor Node. Um Chrome fantasma tira "foto" das cores do
-                            cliente e envia um PDF VIP via API direto no número de zap dele como Base64!
-                        </p>
-                    </div>
-                </div>
-            </section>
-
+        <div class="detailed-feature border-l-red-500">
+            <h3 class="text-xl font-semibold mb-3">2.1. O Alerta Supremo: A Tag "SEM SITE"</h3>
+            <p class="text-muted leading-relaxed mb-4">Esta é a regra de negócio número 1 do sistema. Durante a
+                varredura, o código cruza o <code>places_data</code> gerado. Se a URL oficial do estabelecimento estiver
+                ausente, vazia ou apontando para um provedor morto, a empresa é pintada automaticamente de
+                <strong>Vermelho</strong>. Nós chamamos isso de <strong class="text-white">DOR MÁXIMA</strong>, pois ela
+                fatura no mundo físico, mas não existe no tráfego online.</p>
         </div>
 
-        <div class="mt-32 text-center p-12 glass-card rounded-2xl max-w-4xl mx-auto">
-            <h3 class="text-2xl font-bold mb-4">Gostou desse código absurdo?</h3>
-            <p class="text-muted mb-8 max-w-xl mx-auto">Feito para programadores e marqueteiros que querem converter
-                chumbo em ouro na internet usando ecossistemas reativos. Sem desculpas e sem travar PC.</p>
+        <div class="detailed-feature border-l-red-500">
+            <h3 class="text-xl font-semibold mb-3">2.2. Thermal Sorting (Ordenação Térmica)</h3>
+            <p class="text-muted leading-relaxed mb-4">Sua tabela de leads não é alfabética. Ela flutua os piores casos
+                primeiro. <br><br>
+                🔥 <strong>Topo 100 Pontos:</strong> Empresas Sem Site ou Sem Redes Sociais.<br>
+                🔥 <strong>Meio 50 Pontos:</strong> Tem site, mas está caindo aos pedaços (detectado pelo Auditor
+                abaixo).<br>
+                ❄️ <strong>Fundo 0 Pontos (Azul):</strong> Site perfeito, rápido. O sistema joga pro final pra você não
+                perder tempo vendendo pra quem não precisa.</p>
+        </div>
+
+        <div class="detailed-feature border-l-red-500">
+            <h3 class="text-xl font-semibold mb-3">2.3. O Gerenciamento da Interface (React + Zustand)</h3>
+            <p class="text-muted leading-relaxed mb-4">A tabela gerencia milhares de contatos sem travar o navegador do
+                usuário porque usa um motor de <strong>Paginação e Virtualização Virtual</strong>. Seleções em massa
+                permitem adicionar centenas de Leads direto para o Banco do Supabase em um milissegundo, criando filas
+                assíncronas prontas pro robô abater mais tarde.</p>
+        </div>
+
+
+        <!-- MÓDULO 3: O AUDITOR TÉCNICO -->
+        <h2 class="text-3xl font-bold mb-8 mt-24 border-b border-surfaceBorder pb-4 flex items-center gap-3"><i
+                data-lucide="code-2" class="text-yellow-500"></i> Módulo 3: O Auditor Técnico Pen-Test</h2>
+
+        <div class="detailed-feature border-l-yellow-500">
+            <h3 class="text-xl font-semibold mb-3">3.1. Hook de Checagem HTTPS (SSL)</h3>
+            <p class="text-muted leading-relaxed mb-4">Se a empresa TEM um site, você pode apertar o botão "Auditoria".
+                Nosso código TypeScript força conexões de socket de baixo nível para testar certificados. Se o site do
+                cara abrir como "Ir para site Inseguro" pelo Chrome, pegamos isso e montamos a argumentação: <em>"Seu
+                    cliente entra no site, o celular diz que tem vírus, ele desiste da compra."</em></p>
+        </div>
+
+        <div class="detailed-feature border-l-yellow-500">
+            <h3 class="text-xl font-semibold mb-3">3.2. Integração com Google PageSpeed Mobile</h3>
+            <p class="text-muted leading-relaxed mb-4">Nós varremos a URL do lead pelo motor Core Web Vitals do Google
+                via API. Se o tempo de carregamento no Mobile (First Contentful Paint) for maior que 2.5 segundos ou o
+                Score geral for menor que 50, anexamos a tag de lentidão. Nós dizemos pra ele que as pessoas clicam,
+                cansam de esperar e fecham a aba.</p>
+        </div>
+
+        <div class="system-mockup">
+            <div class="mockup-header">
+                <div class="mockup-dot bg-red-500"></div>
+                <div class="mockup-dot bg-yellow-500"></div>
+                <div class="mockup-dot bg-green-500"></div>
+            </div>
+            <img src="./docs/assets/audit_modal.png" alt="Score e Auditoria" class="w-full h-auto" />
+        </div>
+
+
+        <!-- MÓDULO 4: MAGIA NEGRA DO PDF E SUPABASE -->
+        <h2 class="text-3xl font-bold mb-8 mt-24 border-b border-surfaceBorder pb-4 flex items-center gap-3"><i
+                data-lucide="file-type-pdf" class="text-purple-500"></i> Módulo 4: Fábrica Invisible de PDF</h2>
+
+        <div class="detailed-feature border-l-purple-500">
+            <h3 class="text-xl font-semibold mb-3">4.1. Por que NÃO geramos o PDF no seu navegador</h3>
+            <p class="text-muted leading-relaxed mb-4">Gerar um arquivo gráfico super complexo exige absurdos do
+                Javascript do Chrome do seu computador. Montar 100 PDFs em loop faria sua máquina superaquecer. Para
+                consertar isso, criamos a arquitetura do <strong>Motor Node.js Isolado (Porta 3001)</strong>.</p>
+        </div>
+
+        <div class="detailed-feature border-l-purple-500">
+            <h3 class="text-xl font-semibold mb-3">4.2. O Chrome Fantasma e o Puppeteer</h3>
+            <p class="text-muted leading-relaxed mb-4">O React compila um pacote de dados incrivelmente otimizado com
+                nome da empresa, imagens e as falhas dela cruas. Ele envia isso (POST API) para o nosso projeto backend
+                Node, que dispara a biblioteca <code>Puppeteer</code>. Um Google Chrome <em>Healdess</em> (invisível)
+                acorda na memória RAM do computador, desenha com HTML as réguas das propostas VIP, tira as "fotos da
+                tela", converte isso tudo pra um arquivo formato Adobe PDF real, e joga o texto do arquivo como
+                <strong>Base64</strong> puro de volta pro servidor. Nunca salvamos 1 byte de lixo no sistema de arquivos
+                do HD.</p>
+        </div>
+
+
+        <!-- MÓDULO 5: O CÉREBRO DA IA (GROQ) E O ROBÔ AUTÔNOMO -->
+        <h2 class="text-3xl font-bold mb-8 mt-24 border-b border-surfaceBorder pb-4 flex items-center gap-3"><i
+                data-lucide="cpu" class="text-green-500"></i> Módulo 5: Motor de Disparo Standalone & IA</h2>
+
+        <div class="detailed-feature border-l-green-500">
+            <h3 class="text-xl font-semibold mb-3">5.1. Copywriting Instantâneo via Groq Llama</h3>
+            <p class="text-muted leading-relaxed mb-4">Quando o robô começa a processar a Fila do Banco Supabase (tabela
+                <code>whatsapp_queue</code>), o primeiro passo é pedir para a inteligência artificial formular o ataque
+                verbal. Usamos a API Groq (por ter latência zero). Os Prompts internos do sistema orientam a IA a agir
+                não como um robô que quer vender, mas como um "Consultor preocupado na região de [Cidade do Lead] que
+                notou que os clientes do [Nicho do Lead] não estão conseguindo achar o [Erro Detectado]". Textos
+                minúsculos, diretos, sem "Prezado Sr/Sra", e 100% orgânicos.</p>
+        </div>
+
+        <div class="detailed-feature border-l-green-500">
+            <h3 class="text-xl font-semibold mb-3">5.2. O Robô Baileys Multi-Device (Fora do Navegador)</h3>
+            <p class="text-muted leading-relaxed mb-4">Você **não** vai escanear QR Code numa extensão de Chrome praca
+                do Meta que toma Ban com 10 cliques. Nosso projeto utiliza o módulo <code>@whiskeysockets/baileys</code>
+                dentro do ecossistema NodeJS isolado. Ele abre WebSockets oficiais do WhatsApp via protocolo MQTT,
+                simulando ser um celular real. Você lê o QR Code direto no Terminal/Console.</p>
+        </div>
+
+        <div class="detailed-feature border-l-green-500">
+            <h3 class="text-xl font-semibold mb-3">5.3. Defesas Anti-Ban Absurdas do Automação</h3>
+            <p class="text-muted leading-relaxed mb-4">O Bot nunca ataca cego. Segue a lógica blindada:<br>
+                1️⃣ <strong>Checagem nativa de Jid:</strong> Verifica silenciosamente com a rede do Facebook se o número
+                do Lead tem WhatsApp ativo antes de ousar tentar enviar qualquer byte.<br>
+                2️⃣ <strong>Presença Falsa de Atividade (Typing Indicator):</strong> O bot liga a tag "Digitando..." e
+                paralisa entre 4 a 12 segundos antes de mandar mensagem, simulando um polegar humano.<br>
+                3️⃣ <strong>O Intervalo Randômico do Caos:</strong> O Loop Assíncrono para. Ele sorteia um fator
+                matemático de espera longo (45 a 120 Segundos de Paralisação). Isso achata totalmente a curva de
+                disparos, ficando impossível do algoritmo de Spam do WhatsApp banir seu número de chip, pois você está
+                apenas dialogando no mesmo ritmo de um ser humano respondendo várias pessoas de manhã.
+            </p>
+        </div>
+
+        <div class="system-mockup">
+            <div class="mockup-header">
+                <div class="mockup-dot bg-red-500"></div>
+                <div class="mockup-dot bg-yellow-500"></div>
+                <div class="mockup-dot bg-green-500"></div>
+            </div>
+            <img src="./docs/assets/automation_main.png" alt="Painel do Robô Standalone" class="w-full h-auto" />
+        </div>
+
+        <div class="detailed-feature border-l-green-500">
+            <h3 class="text-xl font-semibold mb-3">5.4. Interface WebSocket em Tempo Real Mágica</h3>
+            <p class="text-muted leading-relaxed mb-4">Enquanto isso, voltando para a interface bonita em React no seu
+                navegador, a tela de Automação está completamente atualizada sozinha. Assim que o robô Node processa o
+                envio com sucesso no terminal, ele altera a linha no banco Supabase para <code>status: 'sent'</code>. Se
+                conectamos um <em>Subscribe</em> via WebSockets nativo no banco. A sua tela do navegador reage no mesmo
+                piscar de olhos mudando os crachás de estado e empurrando barrinhas gráficas circulares de "Progresso
+                %". Você monitora mil envios bebendo um café na rua enquanto o PC em casa esmaga a fila.</p>
+        </div>
+
+
+        <!-- CONCLUSION -->
+        <div class="mt-32 text-center p-12 glass-card rounded-2xl border-t border-accent/30 mb-20">
+            <h3 class="text-2xl font-bold mb-4">A Arquitetura Supremamente Desenhada</h3>
+            <p class="text-muted mb-8 max-w-xl mx-auto">Este é o limite do detalhamento das regras. Do
+                <code>fetch</code> mais simples à engenharia matemática de WebSockets do motor NodeJS que salva seu
+                número contra robôs do Facebook. E o código tá livre.</p>
             <a href="https://github.com/Helgonhc/Nichefinder-guru2" target="_blank"
                 class="inline-flex items-center gap-2 bg-white text-black font-semibold px-6 py-3 rounded-full hover:bg-gray-200 transition-colors">
                 <i data-lucide="github" class="w-5 h-5"></i> Clonar o Repositório
             </a>
         </div>
     </main>
-
-    <footer class="border-t border-surfaceBorder py-8 mt-12 bg-black">
-        <div class="max-w-6xl mx-auto px-6 text-center">
-            <p class="text-sm text-muted font-mono uppercase tracking-widest"><span class="text-accent">Nichefinder
-                    Guru</span> - Vibecoded in Brazil</p>
-        </div>
-    </footer>
 
     <script>
         lucide.createIcons();
