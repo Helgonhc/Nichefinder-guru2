@@ -18,6 +18,7 @@ const serperApiKey = "6fa1237bfce1d3d220c28d3cada8fd261463732d";
 const groqApiKey = process.env.VITE_GROQ_API_KEY;
 
 const supabase = createClient(supabaseUrl, supabaseKey);
+const botOwnerId = process.env.BOT_OWNER_ID;
 
 // Log de Diagnóstico Inicial
 const ROBOT_VERSION = "2.6.0-AUTONOMOUS";
@@ -81,7 +82,6 @@ async function logToSupabase(message, type = 'info') {
     if (robotConsole.length > 15) robotConsole.shift();
 
     try {
-        const botOwnerId = process.env.BOT_OWNER_ID;
         if (!botOwnerId) return;
 
         const { data: systemLeads } = await supabase
