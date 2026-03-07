@@ -114,31 +114,50 @@ const SitePDFTemplate: React.FC<PdfTemplateProps> = ({ business, m, badHtml, goo
       {/* Posições relativas de páginas para A4: w-full h-[296.8mm] */}
 
       {/* ------------------------ PÁGINA 1: CAPA ------------------------ */}
-      <div className="pdf-page bg-[#0a0a0c] relative flex flex-col justify-center px-16 overflow-hidden">
+      <div className="pdf-page bg-[#050507] relative flex flex-col justify-center px-24 overflow-hidden border-[15px] border-[#0a0a0c]">
+        {/* Decorative Gradients */}
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-600/10 rounded-full blur-[120px]" />
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-amber-600/10 rounded-full blur-[120px]" />
+
         {/* Tech Grid Background */}
-        <div className="absolute inset-0 pointer-events-none opacity-20" style={{ backgroundImage: "linear-gradient(#28282d 1px, transparent 1px), linear-gradient(90deg, #28282d 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
+        <div className="absolute inset-0 pointer-events-none opacity-[0.07]" style={{ backgroundImage: "linear-gradient(#D4AF37 1px, transparent 1px), linear-gradient(90deg, #D4AF37 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
 
         {/* Dourado Accents */}
-        <div className="absolute left-6 top-16 w-[3px] h-32 bg-[#D4AF37]" />
-        <div className="absolute right-6 bottom-16 w-[3px] h-32 bg-[#D4AF37]" />
+        <div className="absolute left-10 top-24 w-[2px] h-48 bg-gradient-to-b from-[#D4AF37] to-transparent" />
+        <div className="absolute right-10 bottom-24 w-[2px] h-48 bg-gradient-to-t from-[#D4AF37] to-transparent" />
 
-        {m.logoB64 && <img src={m.logoB64} className="h-12 w-auto object-contain mb-32 z-10" alt="Logo" />}
+        <div className="z-10 flex flex-col items-start">
+          {m.logoB64 ? (
+            <img src={m.logoB64} className="h-16 w-auto object-contain mb-16" alt="Logo" />
+          ) : (
+            <div className="h-16 flex items-center gap-3 mb-16">
+              <div className="w-10 h-10 bg-[#D4AF37] rounded-lg"></div>
+              <span className="text-2xl font-black tracking-tighter text-white">LEADRADAR</span>
+            </div>
+          )}
 
-        <div className="z-10 mt-10">
-          <h3 className="text-[#D4AF37] font-bold text-xs tracking-[0.2em] mb-4">PROJETO DE POSICIONAMENTO E DESTRUIÇÃO DA CONCORRÊNCIA</h3>
-          <h1 className="text-[54px] font-black text-white leading-[1.1] tracking-tight max-w-[700px] uppercase mb-8">
-            {business.name}
-          </h1>
-          <p className="text-xl text-[#e6e6eb] font-medium tracking-wide">
-            A ARTE DE CONVERTER CLIQUES EM CLIENTES LEAIS.
-          </p>
+          <div className="space-y-6">
+            <h3 className="text-[#D4AF37] font-bold text-sm tracking-[0.4em] uppercase border-b border-[#D4AF37]/30 pb-2 inline-block">DOSSIÊ ESTRATÉGICO B2B</h3>
+            <h1 className="text-[68px] font-black text-white leading-[1] tracking-tighter max-w-[750px] uppercase">
+              PLANO DE <span className="text-[#D4AF37]">DOMINAÇÃO</span> DIGITAL
+            </h1>
+            <div className="w-32 h-[4px] bg-[#D4AF37]" />
+            <h2 className="text-3xl font-light text-slate-400 tracking-tight">
+              PROPOSTA EXCLUSIVA PARA: <span className="text-white font-black">{business.name.toUpperCase()}</span>
+            </h2>
+          </div>
         </div>
 
-        <div className="absolute bottom-16 left-16 z-10">
-          <div className="w-16 h-1 bg-[#D4AF37] mb-4" />
-          <p className="text-[#9696a0] font-bold text-[10px] tracking-[0.2em] mb-1">DESENVOLVIDO POR</p>
-          <p className="text-white font-bold text-lg tracking-wider mb-1">{m.sellerName.toUpperCase()}</p>
-          {m.sellerWebsite && <p className="text-[#F0D278] font-medium text-sm">{m.sellerWebsite}</p>}
+        <div className="absolute bottom-24 left-24 z-10 flex items-center gap-12">
+          <div>
+            <p className="text-[#9696a0] font-bold text-[10px] tracking-[0.3em] mb-2 uppercase">ARQUITETO DE SOLUÇÕES</p>
+            <p className="text-white font-black text-2xl tracking-wider">{m.sellerName.toUpperCase()}</p>
+          </div>
+          <div className="h-12 w-[1px] bg-slate-800" />
+          <div>
+            <p className="text-[#9696a0] font-bold text-[10px] tracking-[0.3em] mb-2 uppercase">DATA DE EMISSÃO</p>
+            <p className="text-white font-medium text-lg">{m.dateStr}</p>
+          </div>
         </div>
       </div>
 
@@ -188,47 +207,71 @@ const SitePDFTemplate: React.FC<PdfTemplateProps> = ({ business, m, badHtml, goo
           </h2>
 
           {/* COMPARAÇÃO DE SITES */}
-          <div className="flex gap-6 mt-4 flex-1">
+          <div className="flex gap-10 mt-6 flex-1">
 
             {/* THE BAD SITE */}
-            <div className="flex-1 bg-[#141418] border border-[#28282d] rounded-xl flex flex-col overflow-hidden relative shadow-[0_10px_40px_rgba(239,68,68,0.05)]">
-              <div className="bg-rose-500 py-2 text-center text-[10px] font-black tracking-widest text-white uppercase z-10 shadow-md">
-                SITE AMADOR (MERCADO COMUM)
-              </div>
-              <div className="flex-1 p-6 flex flex-col items-center">
-                {/* Monitor frame */}
-                <div className="w-full bg-[#1e1e23] border border-[#28282d] rounded-lg p-[8px] pb-4 flex flex-col items-center shadow-xl">
-                  <div className="w-full aspect-[16/9] bg-white overflow-hidden relative" dangerouslySetInnerHTML={{ __html: badHtml }} />
-                  <div className="w-16 h-4 bg-[#323237] mt-[-2px] z-0"></div>
-                  <div className="w-32 h-2 bg-[#3c3c41] rounded-b-md z-0"></div>
+            <div className="flex-1 flex flex-col">
+              <div className="bg-rose-600/10 border border-rose-600/20 py-3 px-6 rounded-t-2xl flex justify-between items-center">
+                <span className="text-rose-500 text-[11px] font-black tracking-widest uppercase">CENÁRIO ATUAL</span>
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 rounded-full bg-rose-600"></div>
+                  <div className="w-2 h-2 rounded-full bg-rose-600/30"></div>
                 </div>
-                <div className="w-full mt-6 pl-4">
-                  <ul className="space-y-3">
-                    <li className="flex items-start gap-2 text-sm text-[#9696a0] font-medium"><span className="text-rose-500 font-bold mt-[2px]">x</span> Experiência confusa no Desktop</li>
-                    <li className="flex items-start gap-2 text-sm text-[#9696a0] font-medium"><span className="text-rose-500 font-bold mt-[2px]">x</span> Código amador e sem velocidade</li>
-                    <li className="flex items-start gap-2 text-sm text-[#9696a0] font-medium"><span className="text-rose-500 font-bold mt-[2px]">x</span> Afasta decisores que compram B2B</li>
+              </div>
+              <div className="flex-1 bg-[#141418] border-x border-b border-slate-800 rounded-b-2xl p-8 flex flex-col shadow-2xl">
+                <div className="w-full bg-[#1e1e23] border border-slate-700 rounded-xl p-2 pb-6 flex flex-col items-center">
+                  <div className="w-full aspect-[16/10] bg-white overflow-hidden relative rounded-lg border border-slate-700" dangerouslySetInnerHTML={{ __html: badHtml }} />
+                </div>
+                <div className="w-full mt-10 space-y-4">
+                  <div className="h-[1px] bg-gradient-to-r from-rose-600/50 to-transparent" />
+                  <p className="text-rose-400 font-bold text-[10px] tracking-widest uppercase">FALHAS DE IDENTIDADE</p>
+                  <ul className="space-y-4">
+                    {[
+                      "Layout 'esmagado' em telas grandes",
+                      "Cores que não transmitem autoridade",
+                      "Dificuldade de leitura e navegação"
+                    ].map((txt, ii) => (
+                      <li key={ii} className="flex items-center gap-3 text-[13px] text-slate-500 font-medium">
+                        <div className="w-4 h-4 rounded-full bg-rose-600/10 flex items-center justify-center text-rose-500">✕</div>
+                        {txt}
+                      </li>
+                    ))}
                   </ul>
                 </div>
               </div>
             </div>
 
             {/* THE GOOD SITE */}
-            <div className="flex-1 bg-[#141418] border border-[#D4AF37] rounded-xl flex flex-col overflow-hidden relative shadow-[0_10px_50px_rgba(212,175,55,0.08)]">
-              <div className="bg-[#D4AF37] py-2 text-center text-[10px] font-black tracking-widest text-[#0a0a0c] uppercase z-10 shadow-md">
-                NOSSA ENGENHARIA VIP
-              </div>
-              <div className="flex-1 p-6 flex flex-col items-center">
-                {/* Monitor frame */}
-                <div className="w-full bg-[#28282d] border border-[#D4AF37] rounded-lg p-[8px] pb-4 flex flex-col items-center shadow-[0_15px_30px_rgba(0,0,0,0.5)]">
-                  <div className="w-[1280px] h-[720px] bg-[#0a0a0c] overflow-hidden relative" style={{ transform: 'scale(0.25)', transformOrigin: 'top left', marginBottom: '-540px' }} dangerouslySetInnerHTML={{ __html: goodHtml }} />
-                  <div className="w-16 h-4 bg-[#46464b] mt-[-2px] z-0"></div>
-                  <div className="w-32 h-2 bg-[#5a5a5f] rounded-b-md z-0"></div>
+            <div className="flex-1 flex flex-col">
+              <div className="bg-amber-600/10 border border-amber-600/20 py-3 px-6 rounded-t-2xl flex justify-between items-center">
+                <span className="text-amber-500 text-[11px] font-black tracking-widest uppercase">ENGENHARIA GURU</span>
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 rounded-full bg-amber-500"></div>
+                  <div className="w-2 h-2 rounded-full bg-amber-500"></div>
+                  <div className="w-2 h-2 rounded-full bg-amber-500"></div>
                 </div>
-                <div className="w-full mt-6 pl-4">
-                  <ul className="space-y-3">
-                    <li className="flex items-start gap-2 text-sm text-[#D4AF37] font-bold"><span>✓</span> Visual Widescreen Imersivo</li>
-                    <li className="flex items-start gap-2 text-sm text-[#D4AF37] font-bold"><span>✓</span> Máxima retenção corporativa</li>
-                    <li className="flex items-start gap-2 text-sm text-[#D4AF37] font-bold"><span>✓</span> Posiciona você no Topo do Nicho</li>
+              </div>
+              <div className="flex-1 bg-[#1a1a20] border-x border-b border-amber-900/30 rounded-b-2xl p-8 flex flex-col shadow-[0_30px_60px_-15px_rgba(212,175,55,0.15)] relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-3xl" />
+
+                <div className="w-full bg-[#282830] border border-amber-500/30 rounded-xl p-2 pb-6 flex flex-col items-center shadow-2xl z-10">
+                  <div className="w-[1280px] h-[800px] bg-[#050507] overflow-hidden relative rounded-lg" style={{ transform: 'scale(0.24)', transformOrigin: 'top left', marginBottom: '-608px' }} dangerouslySetInnerHTML={{ __html: goodHtml }} />
+                </div>
+
+                <div className="w-full mt-10 space-y-4 z-10">
+                  <div className="h-[1px] bg-gradient-to-r from-amber-500/50 to-transparent" />
+                  <p className="text-amber-400 font-bold text-[10px] tracking-widest uppercase">ELEMENTOS DE ALTA CONVERSÃO</p>
+                  <ul className="space-y-4">
+                    {[
+                      "Visual Imersivo Full-Width",
+                      "Design de Elite (Efeito Apple/Vercel)",
+                      "Foco absoluto em conversão B2B"
+                    ].map((txt, ii) => (
+                      <li key={ii} className="flex items-center gap-3 text-[13px] text-slate-300 font-bold">
+                        <div className="w-4 h-4 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-500">✓</div>
+                        {txt}
+                      </li>
+                    ))}
                   </ul>
                 </div>
               </div>
@@ -248,30 +291,26 @@ const SitePDFTemplate: React.FC<PdfTemplateProps> = ({ business, m, badHtml, goo
       </div>
 
       {/* ------------------------ PÁGINA 4: ENGENHARIA ------------------------ */}
-      <div className="pdf-page bg-[#0a0a0c] relative px-16 py-20 flex flex-col">
+      <div className="pdf-page bg-[#050507] relative px-16 py-20 flex flex-col border-[15px] border-[#0a0a0c]">
         <Header title="" />
         <div className="z-10 mt-12 flex-1 relative">
-          <p className="text-[#D4AF37] font-bold text-[13px] tracking-[0.2em] mb-4">03 // ENGENHARIA DE CONVERSÃO</p>
-          <h2 className="text-[34px] font-black text-white tracking-tight leading-[1.1] mb-12 max-w-[750px] uppercase">
-            NÃO FAZEMOS 'SITINHOS'. CONSTRUIMOS POSICIONAMENTO IMPLACÁVEL.
+          <p className="text-[#D4AF37] font-bold text-[13px] tracking-[0.3em] mb-4 uppercase">03 // ENGENHARIA DE ALTA PRECISÃO</p>
+          <h2 className="text-[44px] font-black text-white tracking-tighter leading-[1] mb-12 max-w-[750px] uppercase">
+            SISTEMAS DESENHADOS PARA <span className="text-[#D4AF37]">CONVERSÃO IMPLACÁVEL.</span>
           </h2>
 
-          <div className="space-y-6">
+          <div className="grid grid-cols-2 gap-6">
             {[
-              { t: "Design Editorial de Luxo", d: "Criamos interfaces hipnóticas baseadas na psicologia do seu nicho. O cliente sentirá o peso e a qualidade do seu serviço antes mesmo de te ligar." },
-              { t: "Velocidade Extrema (LCP < 1.5s)", d: "Código limpo e infraestrutura de ponta. Seu site vai abrir mais rápido que um estalar de dedos, matando a taxa de rejeição do Google." },
-              { t: "SEO Local Sangrento", d: "Vamos injetar palavras-chave estratégicas no código-fonte para que sua empresa domine as buscas na sua cidade." },
-              { t: "Arquitetura Focada em Vendas", d: "Botões de ação estratégicos (CTAs), integração fluida com WhatsApp e formulários que convertem curiosos em clientes pagantes." }
+              { t: "Design Sensorial", d: "Interfaces hipnóticas baseadas na psicologia do seu nicho. O cliente sente a qualidade antes mesmo do primeiro contato." },
+              { t: "Velocidade de Elite", d: "Código limpo e infraestrutura Vercel/Next.js. Carregamento instantâneo que elimina a taxa de rejeição." },
+              { t: "Injeção de SEO Local", d: "Arquitetura de dados otimizada para que sua empresa domine as buscas em todas as regiões de " + business.city + "." },
+              { t: "Foco em Transação", d: "CTAs estratégicos e integração fluida com WhatsApp, transformando tráfego em faturamento real." }
             ].map((pil, idx) => (
-              <div key={idx} className="bg-[#141418] border border-[#28282d] rounded-xl flex items-center shadow-lg relative overflow-hidden">
-                <div className="absolute left-0 top-0 bottom-0 w-[5px] bg-[#D4AF37]"></div>
-                <div className="w-20 flex justify-center items-center shrink-0">
-                  <span className="text-4xl font-black text-[#28282d]">0{idx + 1}</span>
-                </div>
-                <div className="py-7 pr-8 flex-1">
-                  <h4 className="text-[16px] font-bold text-white tracking-wide uppercase mb-2">{pil.t}</h4>
-                  <p className="text-[13px] text-[#9696a0] font-medium leading-relaxed">{pil.d}</p>
-                </div>
+              <div key={idx} className="bg-[#141418] border border-slate-800 rounded-2xl p-8 shadow-xl relative overflow-hidden group">
+                <div className="absolute left-0 top-0 bottom-0 w-[4px] bg-[#D4AF37]"></div>
+                <span className="text-5xl font-black text-slate-800 absolute -right-4 -bottom-4 opacity-50">{idx + 1}</span>
+                <h4 className="text-[18px] font-black text-white tracking-wide uppercase mb-3">{pil.t}</h4>
+                <p className="text-[14px] text-slate-400 font-medium leading-relaxed z-10 relative">{pil.d}</p>
               </div>
             ))}
           </div>
@@ -280,47 +319,47 @@ const SitePDFTemplate: React.FC<PdfTemplateProps> = ({ business, m, badHtml, goo
       </div>
 
       {/* ------------------------ PÁGINA 5: PLANOS ------------------------ */}
-      <div className="pdf-page bg-[#0a0a0c] relative px-12 py-20 flex flex-col">
+      <div className="pdf-page bg-[#050507] relative px-12 py-20 flex flex-col border-[15px] border-[#0a0a0c]">
         <Header title="" />
         <div className="z-10 mt-8 flex-1">
-          <p className="text-[#D4AF37] font-bold text-[12px] tracking-[0.2em] mb-3 ml-4">04 // ESCOLHA SEU ARSENAL</p>
-          <h2 className="text-[28px] font-black text-white tracking-tight leading-[1.1] mb-10 ml-4 max-w-[700px] uppercase">
-            SOLUÇÕES PROJETADAS PARA O SEU MOMENTO DE DOMINÂNCIA.
+          <p className="text-[#D4AF37] font-bold text-[12px] tracking-[0.3em] mb-3 ml-4 uppercase">04 // ARSENAL DE COMBATE</p>
+          <h2 className="text-[32px] font-black text-white tracking-tight leading-[1] mb-12 ml-4 max-w-[700px] uppercase">
+            INVESTIMENTOS CALCULADOS PARA <span className="text-[#D4AF37]">RETORNO MÁXIMO.</span>
           </h2>
 
           <div className="flex gap-4 items-stretch h-[550px]">
             {[
               {
-                n: "ESSENTIAL", pc: "Fundação Tática", isPro: false, bgc: 'bg-[#0a0a0c]', brd: 'border-[#28282d]', tx: 'text-[#9696a0]', tk: 'text-[#9696a0]',
-                f: ["One-Page Alta Conversão", "Design Responsivo UI/UX", "Segurança Criptografada", "Botão Mágico WhatsApp", "Fundação de SEO Local", "Hospedagem por 1 Ano"]
+                n: "ESSENTIAL", pc: "Fundação de Presença", isPro: false, bgc: 'bg-[#0a0a0c]', brd: 'border-slate-800', tx: 'text-slate-400', tk: 'text-slate-600',
+                f: ["Single-Page Imersiva", "Design Responsivo Elite", "Segurança Blindada SSL", "Integração WhatsApp", "Fundação de SEO Local", "Hospedagem Gerenciada"]
               },
               {
-                n: "DOMINANCE", pc: "Máquina de Vendas", isPro: true, bgc: 'bg-[#141418]', brd: 'border-[#D4AF37]', tx: 'text-white', tk: 'text-[#D4AF37]',
-                f: ["Site Multi-Páginas Premium", "Animações Fluídas de Luxo", "Integração de Analytics", "Google Maps Local", "Copywriting Persuasivo", "Treinamento para Equipe"]
+                n: "DOMINANCE", pc: "Padrão Indústria", isPro: true, bgc: 'bg-[#141418]', brd: 'border-amber-500/50', tx: 'text-white', tk: 'text-[#D4AF37]',
+                f: ["Multi-Page de Luxo", "Animações High-End", "Analytics Avançado", "Google Maps Expert", "Copywriting de Elite", "Selo de Autoridade"]
               },
               {
-                n: "IMPERIUM", pc: "Monopólio Tecnológico", isPro: false, bgc: 'bg-[#0a0a0c]', brd: 'border-[#28282d]', tx: 'text-[#e6e6eb]', tk: 'text-[#e6e6eb]',
-                f: ["Arquitetura de E-Commerce", "Velocidade Extrema Vercel", "Painel de Gestão (CMS)", "Estrutura para Tráfego Pago", "Suporte Manutenção Mensal", "Atendimento via C-Level"]
+                n: "IMPERIUM", pc: "Monopólio Digital", isPro: false, bgc: 'bg-[#0a0a0c]', brd: 'border-slate-800', tx: 'text-slate-300', tk: 'text-slate-500',
+                f: ["Ecossistema Full Stack", "Infra de Alta Escala", "Gestão de Conteúdo", "Ads Ready Architecture", "Support VIP 24/7", "Consultoria de Escala"]
               }
             ].map((t, i) => (
-              <div key={i} className={`flex-1 rounded-2xl flex flex-col items-center border ${t.bgc} ${t.brd} relative ${t.isPro ? 'shadow-[0_20px_50px_rgba(212,175,55,0.08)] -mt-4 mb-4' : 'shadow-lg my-4'}`}>
+              <div key={i} className={`flex-1 rounded-3xl flex flex-col items-center border ${t.bgc} ${t.brd} relative ${t.isPro ? 'shadow-[0_40px_80px_-20px_rgba(212,175,55,0.2)] -mt-6 mb-6' : 'shadow-xl my-4'}`}>
                 {t.isPro && (
-                  <div className="w-full bg-[#D4AF37] rounded-t-xl py-[6px] text-center text-[9px] font-black uppercase tracking-widest text-[#0a0a0c]">
-                    ESCOLHA ABSOLUTA
+                  <div className="w-full bg-[#D4AF37] rounded-t-[22px] py-2 text-center text-[10px] font-black uppercase tracking-[0.2em] text-[#000]">
+                    RECOMENDAÇÃO GURU
                   </div>
                 )}
-                <div className="p-8 w-full flex flex-col items-center border-b border-[#28282d]">
-                  <h3 className={`text-xl font-black uppercase tracking-widest text-center ${t.isPro ? 'text-[#D4AF37]' : 'text-white'}`}>{t.n}</h3>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#9696a0] mt-1 text-center">{t.pc}</span>
+                <div className="p-10 w-full flex flex-col items-center border-b border-slate-800/50">
+                  <h3 className={`text-2xl font-black uppercase tracking-tighter text-center ${t.isPro ? 'text-[#D4AF37]' : 'text-white'}`}>{t.n}</h3>
+                  <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500 mt-2 text-center">{t.pc}</span>
                 </div>
-                <div className="p-6 pt-8 w-full flex-1">
-                  <ul className="space-y-5">
+                <div className="p-8 w-full flex-1">
+                  <ul className="space-y-6">
                     {t.f.map((feat, fi) => (
-                      <li key={fi} className="flex items-start gap-3">
-                        <svg className={`w-4 h-4 mt-[2px] ${t.tk}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span className={`text-[12px] font-medium leading-[1.3] ${t.isPro ? 'text-white' : 'text-[#9696a0]'}`}>{feat}</span>
+                      <li key={fi} className="flex items-start gap-4">
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${t.isPro ? 'bg-amber-500/10 text-amber-500' : 'bg-slate-800 text-slate-500'}`}>
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                        </div>
+                        <span className={`text-[13px] font-semibold leading-tight ${t.isPro ? 'text-white' : 'text-slate-400'}`}>{feat}</span>
                       </li>
                     ))}
                   </ul>
@@ -333,92 +372,104 @@ const SitePDFTemplate: React.FC<PdfTemplateProps> = ({ business, m, badHtml, goo
       </div>
 
       {/* ------------------------ PÁGINA 6: TABELA TÉCNICA ------------------------ */}
-      <div className="pdf-page bg-[#0a0a0c] relative px-16 py-20 flex flex-col">
+      <div className="pdf-page bg-[#050507] relative px-16 py-20 flex flex-col border-[15px] border-[#0a0a0c]">
         <Header title="" />
         <div className="z-10 mt-12 flex-1">
-          <p className="text-[#D4AF37] font-bold text-[13px] tracking-[0.2em] mb-4">05 // ESPECIFICAÇÕES TÁTICAS</p>
-          <h2 className="text-[30px] font-black text-white tracking-tight leading-[1.1] mb-12 max-w-[700px] uppercase">
-            O QUE ESTÁ RODANDO POR DEBAIXO DO CAPÔ.
+          <p className="text-[#D4AF37] font-bold text-[13px] tracking-[0.3em] mb-4 uppercase">05 // ESPECIFICAÇÕES DE ENGENHARIA</p>
+          <h2 className="text-[34px] font-black text-white tracking-tighter leading-[1.1] mb-12 max-w-[700px] uppercase">
+            COMPARAÇÃO DE <span className="text-[#D4AF37]">CAPACIDADES TÉCNICAS.</span>
           </h2>
 
-          <div className="w-full border border-[#28282d] rounded-xl overflow-hidden bg-[#141418]">
-            <div className="grid grid-cols-4 border-b border-[#28282d] bg-[#1e1e23] py-4">
-              <div className="col-span-1 border-r border-[#28282d] px-6 flex items-center">
-                <span className="text-[#F0D278] font-bold text-xs uppercase tracking-widest">Recursos do Projeto</span>
+          <div className="w-full border border-slate-800 rounded-3xl overflow-hidden bg-[#0a0a0c] shadow-2xl">
+            <div className="grid grid-cols-4 border-b border-slate-800 bg-[#141418] py-5">
+              <div className="col-span-1 border-r border-slate-800 px-8 flex items-center">
+                <span className="text-slate-500 font-black text-[10px] uppercase tracking-widest">FUNCIONALIDADES</span>
               </div>
-              <div className="col-span-1 border-r border-[#28282d] px-4 flex justify-center items-center">
-                <span className="text-[#F0D278] font-bold text-xs uppercase tracking-widest text-center">ESSENTIAL</span>
+              <div className="col-span-1 border-r border-slate-800 px-4 flex justify-center items-center">
+                <span className="text-white font-black text-[10px] uppercase tracking-widest">ESSENTIAL</span>
               </div>
-              <div className="col-span-1 border-r border-[#28282d] px-4 flex justify-center items-center">
-                <span className="text-[#F0D278] font-bold text-xs uppercase tracking-widest text-center">DOMINANCE</span>
+              <div className="col-span-1 border-r border-slate-800 px-4 flex justify-center items-center">
+                <span className="text-[#D4AF37] font-black text-[10px] uppercase tracking-widest underline decoration-2 underline-offset-8">DOMINANCE</span>
               </div>
               <div className="col-span-1 px-4 flex justify-center items-center">
-                <span className="text-[#F0D278] font-bold text-xs uppercase tracking-widest text-center">IMPERIUM</span>
+                <span className="text-white font-black text-[10px] uppercase tracking-widest">IMPERIUM</span>
               </div>
             </div>
 
             {[
-              ["Design Interface Premium", true, true, true],
+              ["Design Interface High-End", true, true, true],
               ["Otimização Mobile Absoluta", true, true, true],
               ["Segurança Criptografada SSL", true, true, true],
               ["Gatilhos Visuais de Conversão", true, true, true],
-              ["Dashboard Analítico (Google)", false, true, true],
-              ["Sistema de Gerenciamento (CMS)", false, true, true],
-              ["Arquitetura IA SEO Avançada", false, true, true],
-              ["Catálogo de Produtos Multi", false, false, true],
-              ["Setup Comercial (Google/Face Ads)", false, false, true],
-              ["Consultoria Dedicada", false, false, true]
+              ["Dashboard de Métricas (Google)", false, true, true],
+              ["Painel de Gestão (CMS)", false, true, true],
+              ["Arquitetura de Dados SEO", false, true, true],
+              ["Catálogo Multi-Produtos", false, false, true],
+              ["Setup de Tráfego Pago", false, false, true],
+              ["Suporte C-Level Prioritário", false, false, true]
             ].map((row, ri) => (
-              <div key={ri} className={`grid grid-cols-4 border-b border-[#28282d] py-3 ${ri % 2 === 0 ? 'bg-[#141418]' : 'bg-[#0a0a0c]'}`}>
-                <div className="col-span-1 border-r border-[#28282d] px-6 flex items-center">
-                  <span className="text-white text-[11px] font-medium tracking-wide uppercase">{row[0]}</span>
+              <div key={ri} className={`grid grid-cols-4 border-b border-slate-800/50 py-4 ${ri % 2 === 0 ? 'bg-[#0a0a0c]' : 'bg-[#050507]'}`}>
+                <div className="col-span-1 border-r border-slate-800/50 px-8 flex items-center">
+                  <span className="text-slate-300 text-[12px] font-bold tracking-tight">{row[0]}</span>
                 </div>
-                <div className="col-span-1 border-r border-[#28282d] px-4 flex justify-center items-center">
-                  {row[1] && <svg className="w-5 h-5 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                <div className="col-span-1 border-r border-slate-800/50 px-4 flex justify-center items-center">
+                  {row[1] ? <div className="w-2 h-2 rounded-full bg-slate-700"></div> : <span className="text-slate-800 text-[10px]">✕</span>}
                 </div>
-                <div className="col-span-1 border-r border-[#28282d] px-4 flex justify-center items-center">
-                  {row[2] && <svg className="w-5 h-5 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                <div className="col-span-1 border-r border-slate-800/50 px-4 flex justify-center items-center">
+                  {row[2] && <div className="w-5 h-5 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500"><svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg></div>}
                 </div>
                 <div className="col-span-1 px-4 flex justify-center items-center">
-                  {row[3] && <svg className="w-5 h-5 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                  {row[3] && <div className="w-5 h-5 rounded-full bg-slate-800 flex items-center justify-center text-white"><svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg></div>}
                 </div>
               </div>
             ))}
+          </div>
+
+          <div className="mt-12 bg-amber-500/5 border border-amber-500/10 p-6 rounded-2xl">
+            <p className="text-amber-500/70 text-[11px] font-medium leading-relaxed italic text-center">
+              * Todas as soluções incluem infraestrutura de nuvem de baixa latência e backups automáticos semanais.
+            </p>
           </div>
         </div>
         <Footer page={6} />
       </div>
 
       {/* ------------------------ PÁGINA 7: CTA ------------------------ */}
-      <div className="pdf-page bg-[#0a0a0c] relative px-16 py-32 flex flex-col justify-center">
+      <div className="pdf-page bg-[#0a0a0c] relative px-24 py-32 flex flex-col justify-center border-[15px] border-[#0a0a0c] overflow-hidden">
         <Header title="" />
 
-        {/* Tech Grid Background (Faint) */}
-        <div className="absolute inset-0 pointer-events-none opacity-10" style={{ backgroundImage: "radial-gradient(circle at center, #D4AF37 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
+        {/* Big Decorative Number BG */}
+        <div className="absolute -right-20 top-1/2 -translate-y-1/2 text-[500px] font-black text-slate-900 leading-none pointer-events-none opacity-20">06</div>
 
         <div className="z-10 w-full flex flex-col flex-1 mt-10">
-          <p className="text-[#D4AF37] font-bold text-[14px] tracking-[0.2em] mb-4">06 // ASSUMA O CONTROLE</p>
-          <h2 className="text-[44px] font-black text-white tracking-tight leading-[1.05] mb-8 max-w-[700px] uppercase">
-            SEU PRÓXIMO CLIENTE ESTÁ BUSCANDO NO GOOGLE AGORA MESMO.
+          <p className="text-[#D4AF37] font-bold text-[14px] tracking-[0.4em] mb-6 uppercase">06 // ASSUMA A LIDERANÇA</p>
+          <h2 className="text-[52px] font-black text-white tracking-tighter leading-[1] mb-8 max-w-[700px] uppercase">
+            SEU PRÓXIMO GRANDE CLIENTE ESTÁ BUSCANDO <span className="text-[#D4AF37]">AGORA.</span>
           </h2>
 
-          <p className="text-2xl text-[#D4AF37] font-bold tracking-wide mb-12">Quem ele vai encontrar? Você ou seu concorrente?</p>
+          <p className="text-2xl text-slate-400 font-medium tracking-tight mb-16 max-w-[600px]">Quem ele vai encontrar? Sua autoridade ou um concorrente amador?</p>
 
-          <p className="text-[17px] text-[#e6e6eb] font-medium leading-relaxed mb-16 max-w-[650px]">
-            A sua competência já é comprovada. Nossa função é pavimentar um tapete vermelho digital, blindado de autoridade, para que o seu cliente converta no primeiro impulso. Não adie o seu próprio crescimento.
+          <p className="text-[18px] text-[#e6e6eb] font-medium leading-relaxed mb-20 max-w-[650px] border-l-4 border-amber-500 pl-8">
+            A excelência da <span className="text-white font-black">${business.name}</span> merece um palco digital à altura. Não estamos oferecendo um site, estamos oferecendo um <span className="text-white font-black">Ativo de Vendas Implacável</span>.
           </p>
 
-          <div className="w-full flex justify-center mb-24">
+          <div className="w-full mb-24">
             <a href={m.sellerWhatsapp ? `https://wa.me/55${m.sellerWhatsapp.replace(/\D/g, "")}` : "#"}
-              className="bg-transparent border border-[#D4AF37] rounded-none py-4 px-12 uppercase tracking-widest text-[#D4AF37] font-black hover:bg-[#D4AF37] hover:text-[#0a0a0c] transition-colors inline-block text-center no-underline border-2">
-              INICIAR PROJETO VIP AGORA
+              className="bg-[#D4AF37] rounded-none py-6 px-16 uppercase tracking-[0.3em] text-[#000] font-black hover:bg-white transition-all inline-block text-center no-underline shadow-[0_20px_40px_rgba(212,175,55,0.3)] text-lg">
+              INICIAR PROJETO VIP
             </a>
           </div>
 
-          <div className="mt-auto pl-4 border-l-2 border-[#28282d]">
-            <p className="text-[#9696a0] font-medium text-xs mb-2 uppercase tracking-wider">Com máxima consideração e brutalidade comercial,</p>
-            <p className="text-white font-black text-2xl tracking-widest mb-1 uppercase">{m.sellerName}</p>
-            <p className="text-[#D4AF37] font-bold text-[10px] tracking-[0.2em] uppercase">ESPECIALISTA EM ENGENHARIA DIGITAL</p>
+          <div className="mt-auto flex items-end justify-between">
+            <div className="pl-6 border-l-2 border-slate-800">
+              <p className="text-slate-500 font-bold text-[10px] mb-2 uppercase tracking-[0.2em]">CONSIDERAÇÃO FINAL</p>
+              <p className="text-white font-black text-3xl tracking-widest mb-1 uppercase">{m.sellerName}</p>
+              <p className="text-[#D4AF37] font-black text-[11px] tracking-[0.3em] uppercase">HEAD DE ESTRATÉGIA DIGITAL</p>
+            </div>
+
+            <div className="text-right">
+              <p className="text-slate-600 text-[10px] font-bold uppercase tracking-widest">LeadRadar • Protocolo de Elite</p>
+            </div>
           </div>
         </div>
         <Footer page={7} />
@@ -469,36 +520,50 @@ export async function generateSitePDF(business: BusinessData, customGoodHtml?: s
         `;
 
     const goodHtml = customGoodHtml || `
-            <div style="background: #0a0a0c; color: #ffffff; font-family: system-ui, -apple-system, sans-serif; padding: 50px 70px; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; position: relative; border: 4px solid #D4AF37;">
-                <!-- Grid Bg -->
-                <div style="position: absolute; inset: 0; background-image: linear-gradient(#1e1e23 2px, transparent 2px), linear-gradient(90deg, #1e1e23 2px, transparent 2px); background-size: 60px 60px; opacity: 0.3; pointer-events: none;"></div>
+            <div style="background: #050507; color: #ffffff; font-family: 'Inter', sans-serif; padding: 0; min-height: 100vh; display: flex; flex-direction: column; position: relative;">
+                <div style="position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, #1e1e2d 0%, #050507 100%); z-index: 1;"></div>
                 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 60px; z-index: 10;">
-                   <div style="font-weight: 900; font-size: 38px; letter-spacing: 4px; color: #D4AF37;">${business.name.toUpperCase().substring(0, 20)}</div>
-                   <div style="display: flex; gap: 50px; font-size: 20px; font-weight: 600; color: #9696a0;">
-                     <span style="color: #fff;">Premium</span><span>Metodologia</span><span>Resultados</span>
+                <!-- Navbar -->
+                <nav style="display: flex; justify-content: space-between; align-items: center; padding: 40px 80px; z-index: 10; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                   <div style="font-weight: 900; font-size: 28px; letter-spacing: -1px; color: #fff;">
+                      <span style="color: #D4AF37;">${business.name.toUpperCase().substring(0, 1)}</span>${business.name.toUpperCase().substring(1, 15)}
                    </div>
-                </div>
+                   <div style="display: flex; gap: 40px; font-size: 14px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 2px;">
+                      <span style="color: #D4AF37; border-bottom: 2px solid #D4AF37;">Início</span><span>Estratégia</span><span>Diferencial</span><span>Contato</span>
+                   </div>
+                </nav>
                 
-                <div style="display: flex; gap: 60px; flex: 1; align-items: center; z-index: 10;">
-                   <div style="flex: 1.2;">
-                     <div style="color: #D4AF37; font-weight: 800; letter-spacing: 4px; font-size: 22px; margin-bottom: 25px;">ENGENHARIA DIGITAL PARA ${business.niche.toUpperCase()}</div>
-                     <h1 style="font-size: 85px; font-weight: 900; line-height: 1.05; margin: 0 0 35px 0; color: #fff;">
-                       O PADRÃO OURO DE<br/><span style="color: #D4AF37;">ALTA CONVERSÃO.</span>
-                     </h1>
-                     <p style="font-size: 26px; color: #e6e6eb; line-height: 1.6; margin: 0 0 60px 0; max-width: 90%;">A autoridade incontestável que o seu negócio precisa para dominar as buscas e atrair clientes de alto valor na região de ${business.city}.</p>
-                     
-                     <div style="display: flex; gap: 20px;">
-                       <div style="background: transparent; border: 3px solid #D4AF37; color: #D4AF37; padding: 25px 50px; font-weight: 900; font-size: 24px; letter-spacing: 2px;">
-                         AGENDAR REUNIÃO VIP
-                       </div>
-                     </div>
+                <!-- Hero Section -->
+                <main style="flex: 1; display: flex; align-items: center; padding: 0 80px; z-index: 10;">
+                   <div style="max-width: 800px;">
+                      <div style="display: flex; items-center; gap: 15px; margin-bottom: 30px;">
+                         <div style="width: 40px; h: 1px; background: #D4AF37;"></div>
+                         <span style="color: #D4AF37; font-weight: 800; letter-spacing: 4px; font-size: 14px; text-transform: uppercase;">REFERÊNCIA EM ${business.niche.toUpperCase()}</span>
+                      </div>
+                      
+                      <h1 style="font-size: 100px; font-weight: 900; line-height: 0.9; margin: 0 0 40px 0; color: #fff; letter-spacing: -4px;">
+                        DOMINE A<br/><span style="color: #D4AF37;">ERADIGITAL.</span>
+                      </h1>
+                      
+                      <p style="font-size: 22px; color: #aaa; line-height: 1.5; margin: 0 0 50px 0; max-width: 650px; font-weight: 400;">
+                        Projetamos o posicionamento de elite para a <span style="color: #fff; font-weight: 700;">${business.name}</span> em <span style="color: #fff; font-weight: 700;">${business.city}</span> através de engenharia digital de alta precisão.
+                      </p>
+                      
+                      <div style="display: flex; gap: 20px;">
+                        <div style="background: #D4AF37; color: #000; padding: 22px 45px; font-weight: 900; font-size: 16px; letter-spacing: 1px; border-radius: 4px; text-transform: uppercase;">
+                          Agendar Especialista
+                        </div>
+                        <div style="background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 22px 45px; font-weight: 700; font-size: 16px; border-radius: 4px; text-transform: uppercase;">
+                          Ver Portfólio
+                        </div>
+                      </div>
                    </div>
-                   
-                   <div style="flex: 0.8; height: 100%; background: #141418; border-radius: 30px; border: 2px solid #28282d; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 20px 50px rgba(212,175,55,0.1);">
-                      <div style="width: 350px; height: 350px; border-radius: 50%; background: radial-gradient(circle, rgba(212,175,55,0.15) 0%, rgba(10,10,12,0) 70%);"></div>
-                      <div style="position: absolute; font-size: 34px; font-weight: 900; color: #D4AF37; text-align: center; letter-spacing: 4px;">DESIGN<br/><span style="color: #fff;">SENSORIAL</span></div>
-                   </div>
+                </main>
+                
+                <!-- Floating Card -->
+                <div style="position: absolute; bottom: 80px; right: 80px; background: rgba(255,255,255,0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); padding: 40px; border-radius: 20px; z-index: 10; width: 300px;">
+                   <div style="font-size: 40px; font-weight: 900; color: #D4AF37; margin-bottom: 5px;">99.9%</div>
+                   <div style="color: #888; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Satisfação de Clientes Corporativos</div>
                 </div>
             </div>
         `;

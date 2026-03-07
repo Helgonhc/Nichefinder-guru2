@@ -69,9 +69,9 @@ app.use((req, res, next) => {
 // Rate limiting aplicado globalmente
 app.use(rateLimiter);
 
-// Limite de payload (5MB máximo para HTML + imagens base64)
-app.use(express.json({ limit: "5mb" }));
-app.use(express.urlencoded({ limit: "5mb", extended: true }));
+// Limite de payload (20MB máximo para HTML + imagens base64)
+app.use(express.json({ limit: "20mb" }));
+app.use(express.urlencoded({ limit: "20mb", extended: true }));
 
 
 app.post("/generate-pdf", async (req, res) => {
@@ -87,8 +87,8 @@ app.post("/generate-pdf", async (req, res) => {
         return res.status(400).json({ error: "Payload HTML inválido." });
     }
 
-    // Validação 3: tamanho máximo (4MB)
-    const MAX_HTML_BYTES = 4 * 1024 * 1024;
+    // Validação 3: tamanho máximo (15MB)
+    const MAX_HTML_BYTES = 15 * 1024 * 1024;
     if (Buffer.byteLength(html, 'utf8') > MAX_HTML_BYTES) {
         return res.status(413).json({ error: "Payload HTML excede o tamanho máximo permitido (4MB)." });
     }
