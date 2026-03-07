@@ -1,11 +1,11 @@
-import { supabase } from "@/integrations/supabase/client";
+import React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { toast } from "sonner";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 import { BusinessData } from "@/types/business";
+import { supabase } from "@/integrations/supabase/client";
 
 // ═══════════════════════════════════════════════════════════════════
-// Helpers
+// Helpers Reutilizados
 // ═══════════════════════════════════════════════════════════════════
 async function fetchFreshProfile(): Promise<any> {
   try {
@@ -52,531 +52,534 @@ async function urlToBase64(url: string): Promise<string> {
   } catch { return ""; }
 }
 
-async function loadImageDims(b64: string): Promise<{ w: number; h: number }> {
-  if (!b64) return { w: 0, h: 0 };
-  return new Promise((r) => {
-    const img = new Image();
-    img.onload = () => r({ w: img.naturalWidth, h: img.naturalHeight });
-    img.onerror = () => r({ w: 0, h: 0 });
-    img.src = b64;
-  });
-}
-
-function fitBox(ow: number, oh: number, mw: number, mh: number) {
-  if (!ow || !oh) return { w: 0, h: 0 };
-  let w = ow, h = oh;
-  if (w > mw) { h *= mw / w; w = mw; }
-  if (h > mh) { w *= mh / h; h = mh; }
-  return { w, h };
-}
-function imgFmt(b64: string): "PNG" | "JPEG" { return b64.indexOf("image/png") !== -1 ? "PNG" : "JPEG"; }
-
-async function renderHtmlToB64(htmlString: string, w: number, h: number): Promise<string> {
-  const container = document.createElement("div");
-  container.style.position = "absolute";
-  container.style.left = "-9999px";
-  container.style.top = "-9999px";
-  container.style.width = w + "px";
-  container.style.height = h + "px";
-  container.style.overflow = "hidden";
-  container.innerHTML = htmlString;
-  document.body.appendChild(container);
-
-  try {
-    const canvas = await html2canvas(container, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: null,
-      logging: false,
-    });
-    return canvas.toDataURL("image/jpeg", 0.9);
-  } catch (err) {
-    console.error("html2canvas error:", err);
-    return "";
-  } finally {
-    document.body.removeChild(container);
-  }
-}
-
 // ═══════════════════════════════════════════════════════════════════
-// Layout (A4 = 210 × 297)
+// UI components 
 // ═══════════════════════════════════════════════════════════════════
-const PW = 210, PH = 297, ML = 25, CW = PW - ML * 2;
-const HDR_H = 28;
-const FTR_H = 16;
-const CT = HDR_H + 16; // content top con respiro
-
-type RGB = [number, number, number];
-const NAVY: RGB = [15, 15, 20]; // Onyx / Black Premium
-const INDIGO: RGB = [212, 175, 55]; // Dourado Premium (Gold)
-const IND_L: RGB = [234, 203, 110]; // Dourado Claro
-const WHITE: RGB = [255, 255, 255], TXT: RGB = [63, 63, 70], TXT_D: RGB = [24, 24, 27];
-const GRAY: RGB = [113, 113, 122], LGRAY: RGB = [161, 161, 170], BORDER: RGB = [228, 228, 231];
-const GRN_BG: RGB = [253, 252, 245], GRN_BD: RGB = [212, 175, 55], GRN_T: RGB = [110, 85, 20];
-const PUR_BG: RGB = [253, 252, 248]; // Fundo creme premium para destaques
-
-const lh = (pt: number, m = 1.5) => pt * 0.352778 * m;
-
-// ═══════════════════════════════════════════════════════════════════
-// Draw helpers
-// ═══════════════════════════════════════════════════════════════════
-const Fl = (p: jsPDF, c: RGB) => p.setFillColor(...c);
-const St = (p: jsPDF, c: RGB) => p.setDrawColor(...c);
-const Tc = (p: jsPDF, c: RGB) => p.setTextColor(...c);
-
-function bg(p: jsPDF, x: number, y: number, w: number, h: number, c: RGB) { Fl(p, c); p.rect(x, y, w, h, "F"); }
-function rr(p: jsPDF, x: number, y: number, w: number, h: number, r: number, fc: RGB, bc?: RGB) {
-  Fl(p, fc);
-  if (bc) { St(p, bc); p.setLineWidth(0.4); p.roundedRect(x, y, w, h, r, r, "FD"); }
-  else p.roundedRect(x, y, w, h, r, r, "F");
-}
-function pill(p: jsPDF, text: string, cx: number, cy: number, sz: number, tc: RGB, bc: RGB) {
-  p.setFontSize(sz); p.setFont("helvetica", "bold");
-  const tw = p.getTextWidth(text), pw = tw + 14, ph = sz * 0.35 + 5;
-  St(p, bc); p.setLineWidth(0.5);
-  p.roundedRect(cx - pw / 2, cy - ph / 2, pw, ph, ph / 2, ph / 2, "S");
-  Tc(p, tc); p.text(text, cx, cy + sz * 0.12, { align: "center" });
-}
-function txt(p: jsPDF, s: string, x: number, y: number, sz = 10, c: RGB = TXT, bold = false, al: "left" | "center" | "right" = "left") {
-  p.setFontSize(sz); Tc(p, c); p.setFont("helvetica", bold ? "bold" : "normal");
-  p.text(s, x, y, { align: al });
-}
-function wrap(p: jsPDF, s: string, x: number, y: number, mw: number, sz = 10, c: RGB = TXT, bold = false, mul = 1.5): number {
-  p.setFontSize(sz); Tc(p, c); p.setFont("helvetica", bold ? "bold" : "normal");
-  const lines: string[] = p.splitTextToSize(s, mw);
-  const sp = lh(sz, mul);
-  lines.forEach((l, i) => p.text(l, x, y + i * sp));
-  return lines.length * sp;
-}
-function hline(p: jsPDF, x1: number, y: number, x2: number, c: RGB, w = 0.5) { St(p, c); p.setLineWidth(w); p.line(x1, y, x2, y); }
-function circ(p: jsPDF, cx: number, cy: number, r: number, c: RGB) { Fl(p, c); p.circle(cx, cy, r, "F"); }
-function drawCheck(p: jsPDF, cx: number, cy: number, sz: number, c: RGB) {
-  St(p, c); p.setLineWidth(sz * 0.22);
-  p.line(cx - sz * 0.45, cy - sz * 0.05, cx - sz * 0.1, cy + sz * 0.4);
-  p.line(cx - sz * 0.1, cy + sz * 0.4, cx + sz * 0.45, cy - sz * 0.35);
-}
-function drawMedal(p: jsPDF, cx: number, cy: number, r: number, fc: RGB, label: string) {
-  St(p, fc); p.setLineWidth(1.2); p.circle(cx, cy, r + 1.5, "S");
-  circ(p, cx, cy, r, fc);
-  txt(p, label, cx, cy + 3, 16, WHITE, true, "center");
-}
-function safeLogo(p: jsPDF, b64: string, x: number, y: number, mw: number, mh: number, dims: { w: number; h: number }) {
-  if (!b64 || !dims.w) return;
-  const f = fitBox(dims.w, dims.h, mw, mh);
-  try { p.addImage(b64, imgFmt(b64), x, y, f.w, f.h); } catch { /* ok */ }
-}
-function addLink(p: jsPDF, x: number, y: number, w: number, h: number, url: string) {
-  try { p.link(x, y - h, w, h, { url }); } catch { /* ok */ }
-}
-function linkedTxt(p: jsPDF, s: string, x: number, y: number, sz: number, c: RGB, bold: boolean, url: string, al: "left" | "center" | "right" = "left") {
-  txt(p, s, x, y, sz, c, bold, al);
-  p.setFontSize(sz); p.setFont("helvetica", bold ? "bold" : "normal");
-  const tw = p.getTextWidth(s);
-  const th = sz * 0.352778;
-  let lx = x;
-  if (al === "center") lx = x - tw / 2;
-  else if (al === "right") lx = x - tw;
-  addLink(p, lx, y, tw, th, url);
+interface PdfTemplateProps {
+  business: BusinessData;
+  m: {
+    logoB64: string;
+    sellerName: string;
+    sellerWebsite: string;
+    sellerWhatsapp: string;
+    dateStr: string;
+  };
+  badHtml: string;
+  goodHtml: string;
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// Meta & Layout Components
-// ═══════════════════════════════════════════════════════════════════
-interface Meta {
-  logoB64: string; logoDims: { w: number; h: number };
-  businessName: string; businessNiche: string; businessCity: string;
-  sellerName: string; sellerEmail: string; sellerWebsite: string;
-  propNum: string; dateStr: string; pn: number; tp: number;
-}
+const SitePDFTemplate: React.FC<PdfTemplateProps> = ({ business, m, badHtml, goodHtml }) => {
 
-const PITCH: RGB = [10, 10, 12]; // Fundo super escuro
-const GOLD: RGB = [212, 175, 55]; // Dourado principal
-const GOLD_L: RGB = [240, 210, 120]; // Dourado suave para textos
-const DARK_SURFACE: RGB = [20, 20, 24]; // Cards escuros
-const TEXT_LIGHT: RGB = [230, 230, 235];
-const TEXT_MUTED: RGB = [150, 150, 160];
-const BORDER_D: RGB = [40, 40, 45];
+  // Header e Footer Genéricos
+  const Header = ({ title }: { title: string }) => (
+    <div className="w-full h-12 flex justify-between items-center border-b border-[#28282d] px-10 pt-4 absolute top-0 left-0 bg-[#0a0a0c] z-20">
+      <div className="flex items-center gap-4">
+        {m.logoB64 && <img src={m.logoB64} alt="Logo" className="h-6" />}
+        <div>
+          <div className="text-white font-bold text-[11px] tracking-widest">{business.name.toUpperCase()}</div>
+          <div className="text-[#D4AF37] font-semibold text-[8px] tracking-widest leading-none">PROJETO DE ENGENHARIA DIGITAL • {business.city.toUpperCase()}</div>
+        </div>
+      </div>
+      <div className="text-right">
+        <div className="text-white font-bold text-[9px] tracking-widest">PROPOSTA EXCLUSIVA</div>
+        <div className="text-[#9696a0] font-medium text-[8px] tracking-wider">{m.dateStr}</div>
+      </div>
+    </div>
+  );
 
-function drawHeaderDark(p: jsPDF, m: Meta) {
-  bg(p, 0, 0, PW, HDR_H, PITCH);
-  hline(p, 0, HDR_H, PW, BORDER_D, 0.5);
-  let lx = ML;
-  if (m.logoB64 && m.logoDims.w) {
-    safeLogo(p, m.logoB64, ML, 6, 22, 14, m.logoDims);
-    lx = ML + 26;
-  }
+  const Footer = ({ page }: { page: number }) => (
+    <div className="w-full h-10 flex justify-between items-center border-t border-[#28282d] px-10 pb-4 pt-2 absolute bottom-0 left-0 bg-[#0a0a0c] z-20">
+      <div className="flex items-center gap-4">
+        {m.logoB64 && <img src={m.logoB64} alt="Logo" className="h-4 grayscale opacity-60" />}
+        <div className="text-[#9696a0] font-medium text-[8px] tracking-widest">CONFIDENCIAL • USO EXCLUSIVO</div>
+      </div>
+      <div className="text-[#d4af37] font-bold text-[9px] tracking-widest text-center absolute left-1/2 -translate-x-1/2">
+        {m.sellerName.toUpperCase()}
+      </div>
+      <div className="text-[#9696a0] font-medium text-[9px] tracking-wider">
+        Página {page} de 7
+      </div>
+    </div>
+  );
 
-  let bName = m.businessName.toUpperCase();
-  if (bName.length > 25) bName = bName.substring(0, 25) + "...";
+  const safeUrl = (url: string) => {
+    try {
+      return `https://${url.replace(/^https?:\/\//, '')}`;
+    } catch { return url; }
+  };
 
-  txt(p, bName, lx, 13, 10, WHITE, true);
-  txt(p, `PROJETO DE ENGENHARIA DIGITAL \u00b7 ${m.businessCity.toUpperCase()}`, lx, 18, 6, GOLD, true);
+  return (
+    <div className="font-sans antialiased text-white bg-[#0a0a0c] leading-relaxed">
 
-  const rx = PW - ML;
-  txt(p, "PROPOSTA EXCLUSIVA", rx, 13, 8, WHITE, true, "right");
-  txt(p, `${m.dateStr}`, rx, 18, 6, TEXT_MUTED, false, "right");
-}
+      {/* Posições relativas de páginas para A4: w-full h-[296.8mm] */}
 
-function drawFooterDark(p: jsPDF, m: Meta) {
-  const fy = PH - FTR_H;
-  bg(p, 0, fy, PW, FTR_H, PITCH);
-  hline(p, 0, fy, PW, BORDER_D, 0.5);
-  let lx = ML;
-  if (m.logoB64 && m.logoDims.w) {
-    safeLogo(p, m.logoB64, ML, fy + 4, 14, 6, m.logoDims);
-    lx = ML + 18;
-  }
-  txt(p, "CONFIDENCIAL \u00b7 USO EXCLUSIVO", lx, fy + 8, 6, TEXT_MUTED, false);
+      {/* ------------------------ PÁGINA 1: CAPA ------------------------ */}
+      <div className="pdf-page bg-[#0a0a0c] relative flex flex-col justify-center px-16 overflow-hidden">
+        {/* Tech Grid Background */}
+        <div className="absolute inset-0 pointer-events-none opacity-20" style={{ backgroundImage: "linear-gradient(#28282d 1px, transparent 1px), linear-gradient(90deg, #28282d 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
 
-  const cx = PW / 2;
-  txt(p, m.sellerName.toUpperCase(), cx, fy + 8, 7, GOLD_L, true, "center");
-  txt(p, `P\u00e1gina ${m.pn} de ${m.tp}`, PW - ML, fy + 8, 7, TEXT_MUTED, false, "right");
-}
+        {/* Dourado Accents */}
+        <div className="absolute left-6 top-16 w-[3px] h-32 bg-[#D4AF37]" />
+        <div className="absolute right-6 bottom-16 w-[3px] h-32 bg-[#D4AF37]" />
 
+        {m.logoB64 && <img src={m.logoB64} className="h-12 w-auto object-contain mb-32 z-10" alt="Logo" />}
+
+        <div className="z-10 mt-10">
+          <h3 className="text-[#D4AF37] font-bold text-xs tracking-[0.2em] mb-4">PROJETO DE POSICIONAMENTO E DESTRUIÇÃO DA CONCORRÊNCIA</h3>
+          <h1 className="text-[54px] font-black text-white leading-[1.1] tracking-tight max-w-[700px] uppercase mb-8">
+            {business.name}
+          </h1>
+          <p className="text-xl text-[#e6e6eb] font-medium tracking-wide">
+            A ARTE DE CONVERTER CLIQUES EM CLIENTES LEAIS.
+          </p>
+        </div>
+
+        <div className="absolute bottom-16 left-16 z-10">
+          <div className="w-16 h-1 bg-[#D4AF37] mb-4" />
+          <p className="text-[#9696a0] font-bold text-[10px] tracking-[0.2em] mb-1">DESENVOLVIDO POR</p>
+          <p className="text-white font-bold text-lg tracking-wider mb-1">{m.sellerName.toUpperCase()}</p>
+          {m.sellerWebsite && <p className="text-[#F0D278] font-medium text-sm">{m.sellerWebsite}</p>}
+        </div>
+      </div>
+
+      {/* ------------------------ PÁGINA 2: A VERDADE CRUA ------------------------ */}
+      <div className="pdf-page bg-[#0a0a0c] relative px-16 py-20 flex flex-col">
+        <Header title="" />
+        <div className="z-10 mt-12 flex-1">
+          <p className="text-[#D4AF37] font-bold text-[13px] tracking-[0.2em] mb-4">01 // A VERDADE NUA E CRUA</p>
+          <h2 className="text-4xl font-black text-white tracking-tight mb-8">O GOOGLE NÃO PERDOA AMADORES.</h2>
+
+          <p className="text-[17px] text-[#e6e6eb] font-medium leading-relaxed mb-6 max-w-[650px]">
+            Atualmente, quando um cliente em <span className="text-white">{business.city}</span> procura pelos serviços da <span className="text-white font-bold">{business.name}</span>, qual é a primeira impressão que ele tem?
+          </p>
+          <p className="text-[15px] text-[#9696a0] font-medium leading-relaxed mb-12 max-w-[650px]">
+            Não ter um site de alta conversão é entregar dinheiro nas mãos da sua concorrência todos os dias. O seu cliente sente desconfiança quando encontra apenas um link de Instagram ou um site lento e desatualizado.
+          </p>
+
+          {/* Score Card */}
+          <div className="bg-[#141418] border border-[#28282d] rounded-2xl p-8 mb-16 flex items-center gap-8 shadow-xl max-w-[700px]">
+            <div className="relative w-28 h-28 flex items-center justify-center shrink-0">
+              <div className="absolute inset-0 rounded-full border-4 border-[#D4AF37] opacity-20"></div>
+              <div className="absolute inset-0 rounded-full border-4 border-[#D4AF37] border-t-transparent" style={{ transform: `rotate(${(business.presenceScore || 0) * 3.6}deg)` }}></div>
+              <span className="text-3xl font-black text-white">{business.presenceScore ?? 0}%</span>
+            </div>
+            <div>
+              <h4 className="text-lg font-bold text-white tracking-widest mb-1 uppercase">SEU SCORE DE AUTORIDADE DIGITAL</h4>
+              <p className="text-rose-500 font-medium text-sm mb-2">Muito abaixo do padrão exigido por consumidores premium.</p>
+              <p className="text-[#9696a0] text-xs">Isso afeta diretamente o valor percebido do seu negócio na internet.</p>
+            </div>
+          </div>
+
+          <p className="text-[#D4AF37] font-bold text-[15px] tracking-[0.2em] mb-4 uppercase">NOSSA MISSÃO:</p>
+          <p className="text-xl text-white font-medium leading-relaxed max-w-[700px]">
+            Construir uma Máquina de Vendas disfarçada de Site Institucional. Um ativo digital que trabalha 24h por dia vendendo a excelência da sua marca enquanto você dorme.
+          </p>
+        </div>
+        <Footer page={2} />
+      </div>
+
+      {/* ------------------------ PÁGINA 3: O CUSTO DO AMADORISMO (MOCKUPS HTML) ------------------------ */}
+      <div className="pdf-page bg-[#0a0a0c] relative px-10 py-20 flex flex-col">
+        <Header title="" />
+        <div className="z-10 mt-6 flex-1 flex flex-col">
+          <p className="text-[#D4AF37] font-bold text-[12px] tracking-[0.2em] mb-3 ml-6">02 // O CUSTO DO AMADORISMO VISUAL</p>
+          <h2 className="text-[32px] font-black text-white tracking-tight leading-[1.1] mb-6 ml-6 max-w-[700px]">
+            A PRIMEIRA IMPRESSÃO DITA O VALOR DO SEU SERVIÇO.
+          </h2>
+
+          {/* COMPARAÇÃO DE SITES */}
+          <div className="flex gap-6 mt-4 flex-1">
+
+            {/* THE BAD SITE */}
+            <div className="flex-1 bg-[#141418] border border-[#28282d] rounded-xl flex flex-col overflow-hidden relative shadow-[0_10px_40px_rgba(239,68,68,0.05)]">
+              <div className="bg-rose-500 py-2 text-center text-[10px] font-black tracking-widest text-white uppercase z-10 shadow-md">
+                SITE AMADOR (MERCADO COMUM)
+              </div>
+              <div className="flex-1 p-6 flex flex-col items-center">
+                {/* Monitor frame */}
+                <div className="w-full bg-[#1e1e23] border border-[#28282d] rounded-lg p-[8px] pb-4 flex flex-col items-center shadow-xl">
+                  <div className="w-full aspect-[16/9] bg-white overflow-hidden relative" dangerouslySetInnerHTML={{ __html: badHtml }} />
+                  <div className="w-16 h-4 bg-[#323237] mt-[-2px] z-0"></div>
+                  <div className="w-32 h-2 bg-[#3c3c41] rounded-b-md z-0"></div>
+                </div>
+                <div className="w-full mt-6 pl-4">
+                  <ul className="space-y-3">
+                    <li className="flex items-start gap-2 text-sm text-[#9696a0] font-medium"><span className="text-rose-500 font-bold mt-[2px]">x</span> Experiência confusa no Desktop</li>
+                    <li className="flex items-start gap-2 text-sm text-[#9696a0] font-medium"><span className="text-rose-500 font-bold mt-[2px]">x</span> Código amador e sem velocidade</li>
+                    <li className="flex items-start gap-2 text-sm text-[#9696a0] font-medium"><span className="text-rose-500 font-bold mt-[2px]">x</span> Afasta decisores que compram B2B</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* THE GOOD SITE */}
+            <div className="flex-1 bg-[#141418] border border-[#D4AF37] rounded-xl flex flex-col overflow-hidden relative shadow-[0_10px_50px_rgba(212,175,55,0.08)]">
+              <div className="bg-[#D4AF37] py-2 text-center text-[10px] font-black tracking-widest text-[#0a0a0c] uppercase z-10 shadow-md">
+                NOSSA ENGENHARIA VIP
+              </div>
+              <div className="flex-1 p-6 flex flex-col items-center">
+                {/* Monitor frame */}
+                <div className="w-full bg-[#28282d] border border-[#D4AF37] rounded-lg p-[8px] pb-4 flex flex-col items-center shadow-[0_15px_30px_rgba(0,0,0,0.5)]">
+                  <div className="w-[1280px] h-[720px] bg-[#0a0a0c] overflow-hidden relative" style={{ transform: 'scale(0.25)', transformOrigin: 'top left', marginBottom: '-540px' }} dangerouslySetInnerHTML={{ __html: goodHtml }} />
+                  <div className="w-16 h-4 bg-[#46464b] mt-[-2px] z-0"></div>
+                  <div className="w-32 h-2 bg-[#5a5a5f] rounded-b-md z-0"></div>
+                </div>
+                <div className="w-full mt-6 pl-4">
+                  <ul className="space-y-3">
+                    <li className="flex items-start gap-2 text-sm text-[#D4AF37] font-bold"><span>✓</span> Visual Widescreen Imersivo</li>
+                    <li className="flex items-start gap-2 text-sm text-[#D4AF37] font-bold"><span>✓</span> Máxima retenção corporativa</li>
+                    <li className="flex items-start gap-2 text-sm text-[#D4AF37] font-bold"><span>✓</span> Posiciona você no Topo do Nicho</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div className="mt-8 ml-6">
+            <p className="text-[#D4AF37] font-bold text-[13px] tracking-[0.15em] mb-2 uppercase">O IMPACTO DO COMPUTADOR CORPORATIVO:</p>
+            <p className="text-[14px] text-white font-medium max-w-[700px] leading-relaxed">
+              Muitas decisões B2B ou compras de alto valor são tomadas no Desktop do escritório do seu cliente. Se o seu site esmaga a concorrência nessa tela grande, a venda já está 80% garantida antes dele pegar o telefone.
+            </p>
+          </div>
+
+        </div>
+        <Footer page={3} />
+      </div>
+
+      {/* ------------------------ PÁGINA 4: ENGENHARIA ------------------------ */}
+      <div className="pdf-page bg-[#0a0a0c] relative px-16 py-20 flex flex-col">
+        <Header title="" />
+        <div className="z-10 mt-12 flex-1 relative">
+          <p className="text-[#D4AF37] font-bold text-[13px] tracking-[0.2em] mb-4">03 // ENGENHARIA DE CONVERSÃO</p>
+          <h2 className="text-[34px] font-black text-white tracking-tight leading-[1.1] mb-12 max-w-[750px] uppercase">
+            NÃO FAZEMOS 'SITINHOS'. CONSTRUIMOS POSICIONAMENTO IMPLACÁVEL.
+          </h2>
+
+          <div className="space-y-6">
+            {[
+              { t: "Design Editorial de Luxo", d: "Criamos interfaces hipnóticas baseadas na psicologia do seu nicho. O cliente sentirá o peso e a qualidade do seu serviço antes mesmo de te ligar." },
+              { t: "Velocidade Extrema (LCP < 1.5s)", d: "Código limpo e infraestrutura de ponta. Seu site vai abrir mais rápido que um estalar de dedos, matando a taxa de rejeição do Google." },
+              { t: "SEO Local Sangrento", d: "Vamos injetar palavras-chave estratégicas no código-fonte para que sua empresa domine as buscas na sua cidade." },
+              { t: "Arquitetura Focada em Vendas", d: "Botões de ação estratégicos (CTAs), integração fluida com WhatsApp e formulários que convertem curiosos em clientes pagantes." }
+            ].map((pil, idx) => (
+              <div key={idx} className="bg-[#141418] border border-[#28282d] rounded-xl flex items-center shadow-lg relative overflow-hidden">
+                <div className="absolute left-0 top-0 bottom-0 w-[5px] bg-[#D4AF37]"></div>
+                <div className="w-20 flex justify-center items-center shrink-0">
+                  <span className="text-4xl font-black text-[#28282d]">0{idx + 1}</span>
+                </div>
+                <div className="py-7 pr-8 flex-1">
+                  <h4 className="text-[16px] font-bold text-white tracking-wide uppercase mb-2">{pil.t}</h4>
+                  <p className="text-[13px] text-[#9696a0] font-medium leading-relaxed">{pil.d}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <Footer page={4} />
+      </div>
+
+      {/* ------------------------ PÁGINA 5: PLANOS ------------------------ */}
+      <div className="pdf-page bg-[#0a0a0c] relative px-12 py-20 flex flex-col">
+        <Header title="" />
+        <div className="z-10 mt-8 flex-1">
+          <p className="text-[#D4AF37] font-bold text-[12px] tracking-[0.2em] mb-3 ml-4">04 // ESCOLHA SEU ARSENAL</p>
+          <h2 className="text-[28px] font-black text-white tracking-tight leading-[1.1] mb-10 ml-4 max-w-[700px] uppercase">
+            SOLUÇÕES PROJETADAS PARA O SEU MOMENTO DE DOMINÂNCIA.
+          </h2>
+
+          <div className="flex gap-4 items-stretch h-[550px]">
+            {[
+              {
+                n: "ESSENTIAL", pc: "Fundação Tática", isPro: false, bgc: 'bg-[#0a0a0c]', brd: 'border-[#28282d]', tx: 'text-[#9696a0]', tk: 'text-[#9696a0]',
+                f: ["One-Page Alta Conversão", "Design Responsivo UI/UX", "Segurança Criptografada", "Botão Mágico WhatsApp", "Fundação de SEO Local", "Hospedagem por 1 Ano"]
+              },
+              {
+                n: "DOMINANCE", pc: "Máquina de Vendas", isPro: true, bgc: 'bg-[#141418]', brd: 'border-[#D4AF37]', tx: 'text-white', tk: 'text-[#D4AF37]',
+                f: ["Site Multi-Páginas Premium", "Animações Fluídas de Luxo", "Integração de Analytics", "Google Maps Local", "Copywriting Persuasivo", "Treinamento para Equipe"]
+              },
+              {
+                n: "IMPERIUM", pc: "Monopólio Tecnológico", isPro: false, bgc: 'bg-[#0a0a0c]', brd: 'border-[#28282d]', tx: 'text-[#e6e6eb]', tk: 'text-[#e6e6eb]',
+                f: ["Arquitetura de E-Commerce", "Velocidade Extrema Vercel", "Painel de Gestão (CMS)", "Estrutura para Tráfego Pago", "Suporte Manutenção Mensal", "Atendimento via C-Level"]
+              }
+            ].map((t, i) => (
+              <div key={i} className={`flex-1 rounded-2xl flex flex-col items-center border ${t.bgc} ${t.brd} relative ${t.isPro ? 'shadow-[0_20px_50px_rgba(212,175,55,0.08)] -mt-4 mb-4' : 'shadow-lg my-4'}`}>
+                {t.isPro && (
+                  <div className="w-full bg-[#D4AF37] rounded-t-xl py-[6px] text-center text-[9px] font-black uppercase tracking-widest text-[#0a0a0c]">
+                    ESCOLHA ABSOLUTA
+                  </div>
+                )}
+                <div className="p-8 w-full flex flex-col items-center border-b border-[#28282d]">
+                  <h3 className={`text-xl font-black uppercase tracking-widest text-center ${t.isPro ? 'text-[#D4AF37]' : 'text-white'}`}>{t.n}</h3>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#9696a0] mt-1 text-center">{t.pc}</span>
+                </div>
+                <div className="p-6 pt-8 w-full flex-1">
+                  <ul className="space-y-5">
+                    {t.f.map((feat, fi) => (
+                      <li key={fi} className="flex items-start gap-3">
+                        <svg className={`w-4 h-4 mt-[2px] ${t.tk}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span className={`text-[12px] font-medium leading-[1.3] ${t.isPro ? 'text-white' : 'text-[#9696a0]'}`}>{feat}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <Footer page={5} />
+      </div>
+
+      {/* ------------------------ PÁGINA 6: TABELA TÉCNICA ------------------------ */}
+      <div className="pdf-page bg-[#0a0a0c] relative px-16 py-20 flex flex-col">
+        <Header title="" />
+        <div className="z-10 mt-12 flex-1">
+          <p className="text-[#D4AF37] font-bold text-[13px] tracking-[0.2em] mb-4">05 // ESPECIFICAÇÕES TÁTICAS</p>
+          <h2 className="text-[30px] font-black text-white tracking-tight leading-[1.1] mb-12 max-w-[700px] uppercase">
+            O QUE ESTÁ RODANDO POR DEBAIXO DO CAPÔ.
+          </h2>
+
+          <div className="w-full border border-[#28282d] rounded-xl overflow-hidden bg-[#141418]">
+            <div className="grid grid-cols-4 border-b border-[#28282d] bg-[#1e1e23] py-4">
+              <div className="col-span-1 border-r border-[#28282d] px-6 flex items-center">
+                <span className="text-[#F0D278] font-bold text-xs uppercase tracking-widest">Recursos do Projeto</span>
+              </div>
+              <div className="col-span-1 border-r border-[#28282d] px-4 flex justify-center items-center">
+                <span className="text-[#F0D278] font-bold text-xs uppercase tracking-widest text-center">ESSENTIAL</span>
+              </div>
+              <div className="col-span-1 border-r border-[#28282d] px-4 flex justify-center items-center">
+                <span className="text-[#F0D278] font-bold text-xs uppercase tracking-widest text-center">DOMINANCE</span>
+              </div>
+              <div className="col-span-1 px-4 flex justify-center items-center">
+                <span className="text-[#F0D278] font-bold text-xs uppercase tracking-widest text-center">IMPERIUM</span>
+              </div>
+            </div>
+
+            {[
+              ["Design Interface Premium", true, true, true],
+              ["Otimização Mobile Absoluta", true, true, true],
+              ["Segurança Criptografada SSL", true, true, true],
+              ["Gatilhos Visuais de Conversão", true, true, true],
+              ["Dashboard Analítico (Google)", false, true, true],
+              ["Sistema de Gerenciamento (CMS)", false, true, true],
+              ["Arquitetura IA SEO Avançada", false, true, true],
+              ["Catálogo de Produtos Multi", false, false, true],
+              ["Setup Comercial (Google/Face Ads)", false, false, true],
+              ["Consultoria Dedicada", false, false, true]
+            ].map((row, ri) => (
+              <div key={ri} className={`grid grid-cols-4 border-b border-[#28282d] py-3 ${ri % 2 === 0 ? 'bg-[#141418]' : 'bg-[#0a0a0c]'}`}>
+                <div className="col-span-1 border-r border-[#28282d] px-6 flex items-center">
+                  <span className="text-white text-[11px] font-medium tracking-wide uppercase">{row[0]}</span>
+                </div>
+                <div className="col-span-1 border-r border-[#28282d] px-4 flex justify-center items-center">
+                  {row[1] && <svg className="w-5 h-5 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                </div>
+                <div className="col-span-1 border-r border-[#28282d] px-4 flex justify-center items-center">
+                  {row[2] && <svg className="w-5 h-5 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                </div>
+                <div className="col-span-1 px-4 flex justify-center items-center">
+                  {row[3] && <svg className="w-5 h-5 text-[#D4AF37]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <Footer page={6} />
+      </div>
+
+      {/* ------------------------ PÁGINA 7: CTA ------------------------ */}
+      <div className="pdf-page bg-[#0a0a0c] relative px-16 py-32 flex flex-col justify-center">
+        <Header title="" />
+
+        {/* Tech Grid Background (Faint) */}
+        <div className="absolute inset-0 pointer-events-none opacity-10" style={{ backgroundImage: "radial-gradient(circle at center, #D4AF37 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
+
+        <div className="z-10 w-full flex flex-col flex-1 mt-10">
+          <p className="text-[#D4AF37] font-bold text-[14px] tracking-[0.2em] mb-4">06 // ASSUMA O CONTROLE</p>
+          <h2 className="text-[44px] font-black text-white tracking-tight leading-[1.05] mb-8 max-w-[700px] uppercase">
+            SEU PRÓXIMO CLIENTE ESTÁ BUSCANDO NO GOOGLE AGORA MESMO.
+          </h2>
+
+          <p className="text-2xl text-[#D4AF37] font-bold tracking-wide mb-12">Quem ele vai encontrar? Você ou seu concorrente?</p>
+
+          <p className="text-[17px] text-[#e6e6eb] font-medium leading-relaxed mb-16 max-w-[650px]">
+            A sua competência já é comprovada. Nossa função é pavimentar um tapete vermelho digital, blindado de autoridade, para que o seu cliente converta no primeiro impulso. Não adie o seu próprio crescimento.
+          </p>
+
+          <div className="w-full flex justify-center mb-24">
+            <a href={m.sellerWhatsapp ? `https://wa.me/55${m.sellerWhatsapp.replace(/\D/g, "")}` : "#"}
+              className="bg-transparent border border-[#D4AF37] rounded-none py-4 px-12 uppercase tracking-widest text-[#D4AF37] font-black hover:bg-[#D4AF37] hover:text-[#0a0a0c] transition-colors inline-block text-center no-underline border-2">
+              INICIAR PROJETO VIP AGORA
+            </a>
+          </div>
+
+          <div className="mt-auto pl-4 border-l-2 border-[#28282d]">
+            <p className="text-[#9696a0] font-medium text-xs mb-2 uppercase tracking-wider">Com máxima consideração e brutalidade comercial,</p>
+            <p className="text-white font-black text-2xl tracking-widest mb-1 uppercase">{m.sellerName}</p>
+            <p className="text-[#D4AF37] font-bold text-[10px] tracking-[0.2em] uppercase">ESPECIALISTA EM ENGENHARIA DIGITAL</p>
+          </div>
+        </div>
+        <Footer page={7} />
+      </div>
+
+    </div>
+  );
+};
+
+// -------------------------------------------------------------------------------------------------
+// ENGINE ENTRY-POINT
+// -------------------------------------------------------------------------------------------------
 export async function generateSitePDF(business: BusinessData, customGoodHtml?: string): Promise<void> {
-  const toastId = "pdf-site-dark";
-  toast.loading("Forjando Proposta de Alto Nível...", { id: toastId });
+  const toastId = "pdf-puppeteer-b2b";
+  toast.loading("Comunicando com Servidor Puppeteer Local...", { id: toastId });
 
   try {
     const profile = await fetchFreshProfile();
     const sellerName = profile?.full_name || "Especialista Digital";
     const sellerEmail = profile?.contact_email || "";
     const sellerWhatsapp = profile?.whatsapp || "";
-    const sellerInsta = (profile?.instagram || "").replace(/^@/, "").replace(/[^a-zA-Z0-9._]/g, "");
     const sellerWebsite = profile?.website_site_url || profile?.website_url || "";
     const logoB64 = await urlToBase64(profile?.logo_site_url || profile?.logo_url || "");
-    const logoDims = await loadImageDims(logoB64);
 
     const dateStr = new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
-    const propNum = String(Date.now()).slice(-6);
-    const TP = 7;
 
-    const m: Meta = {
-      logoB64, logoDims, businessName: business.name,
-      businessNiche: business.niche, businessCity: business.city,
-      sellerName, sellerEmail, sellerWebsite,
-      propNum, dateStr, pn: 1, tp: TP,
+    const m = {
+      logoB64, sellerName, sellerWebsite, sellerWhatsapp, dateStr
     };
 
-    const p = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4", compress: true });
-
-    // ==========================================
-    // PAGE 1 — COVER (IMPACT)
-    // ==========================================
-    bg(p, 0, 0, PW, PH, PITCH);
-
-    // Decorative Tech Grid
-    St(p, BORDER_D); p.setLineWidth(0.1);
-    for (let i = 10; i < PW; i += 15) p.line(i, 0, i, PH);
-    for (let i = 10; i < PH; i += 15) p.line(0, i, PW, i);
-
-    // Abstract geometric accents
-    St(p, GOLD); p.setLineWidth(1.5);
-    p.line(10, 30, 10, 60);
-    p.line(PW - 10, PH - 60, PW - 10, PH - 30);
-
-    if (logoB64 && logoDims.w) safeLogo(p, logoB64, ML, 40, 50, 25, logoDims);
-
-    let cy = 130;
-    txt(p, "PROJETO DE POSICIONAMENTO E DESTRUI\u00c7\u00c3O DA CONCORR\u00caNCIA", ML, cy, 8, GOLD, true); cy += 12;
-
-    p.setFontSize(32); Tc(p, WHITE); p.setFont("helvetica", "bold");
-    const nameLines = p.splitTextToSize(business.name.toUpperCase(), CW);
-    nameLines.forEach((l: string, i: number) => p.text(l, ML, cy + i * lh(32, 1.25)));
-    cy += nameLines.length * lh(32, 1.25) + 8;
-
-    txt(p, "A ARTE DE CONVERTER CLIQUES EM CLIENTES LEAIS.", ML, cy, 14, TEXT_LIGHT, false);
-
-    cy = PH - 40;
-    hline(p, ML, cy, ML + 40, GOLD, 1.5); cy += 8;
-    txt(p, "DESENVOLVIDO POR", ML, cy, 7, TEXT_MUTED, true); cy += 6;
-    txt(p, sellerName.toUpperCase(), ML, cy, 12, WHITE, true); cy += 5;
-    if (sellerWebsite) txt(p, sellerWebsite, ML, cy, 8, GOLD_L, false);
-
-    // ==========================================
-    // PAGE 2 — THE WAKE UP CALL
-    // ==========================================
-    p.addPage(); m.pn = 2; bg(p, 0, 0, PW, PH, PITCH); drawHeaderDark(p, m); drawFooterDark(p, m);
-    let ly = CT + 10;
-
-    txt(p, "01 // A VERDADE N\u00d4A E CRUA", ML, ly, 10, GOLD, true); ly += 14;
-    p.setFontSize(26); Tc(p, WHITE); p.setFont("helvetica", "bold");
-    ly += wrap(p, "O GOOGLE N\u00c3O PERDOA AMADORES.", ML, ly, CW, 26, WHITE, true, 1.2) + 8;
-
-    ly += wrap(p, `Atualmente, quando um cliente em ${business.city} procura pelos servi\u00e7os da ${business.name}, qual \u00e9 a primeira impress\u00e3o que ele tem?`, ML, ly, CW - 20, 11, TEXT_LIGHT, false, 1.4) + 6;
-
-    ly += wrap(p, "N\u00e3o ter um site de alta convers\u00e3o \u00e9 entregar dinheiro nas m\u00e3os da sua concorr\u00eancia todos os dias. O seu cliente sente desconfian\u00e7a quando encontra apenas um link de Instagram ou um site lento e desatualizado.", ML, ly, CW - 20, 10, TEXT_MUTED, false, 1.4) + 12;
-
-    // Dark Card Score
-    rr(p, ML, ly, CW, 50, 4, DARK_SURFACE, BORDER_D);
-    circ(p, ML + 25, ly + 25, 18, PITCH);
-    St(p, GOLD); p.setLineWidth(2); p.circle(ML + 25, ly + 25, 18, "S");
-    txt(p, `${business.presenceScore ?? 0}%`, ML + 25, ly + 28, 18, WHITE, true, "center");
-
-    txt(p, "SEU SCORE DE AUTORIDADE DIGITAL", ML + 55, ly + 18, 10, WHITE, true);
-    txt(p, "Muito abaixo do padr\u00e3o exigido por consumidores premium.", ML + 55, ly + 24, 9, [239, 68, 68]);
-    txt(p, "Isso afeta diretamente o valor percebido do seu neg\u00f3cio na internet.", ML + 55, ly + 32, 9, TEXT_MUTED);
-    ly += 60;
-
-    txt(p, "NOSSA MISS\u00c3O:", ML, ly, 12, GOLD, true); ly += 6;
-    wrap(p, "Construir uma M\u00e1quina de Vendas disfar\u00e7ada de Site Institucional. Um ativo digital que trabalha 24h por dia vendendo a excel\u00eancia da sua marca enquanto voc\u00ea dorme.", ML, ly, CW, 14, WHITE, true, 1.25);
-
-    // ==========================================
-    // PAGE 3 — CONTRASTE VISUAL (REAL HTML HACK)
-    // ==========================================
-    toast.loading("Compilando Mockups HTML...", { id: toastId });
     const badHtml = `
-      <div style="background: #ffffff; color: #000; font-family: 'Times New Roman', serif; padding: 20px; height: 100%; box-sizing: border-box; overflow: hidden; display: flex; flex-direction: column;">
-        <div style="background: #0000ff; color: #fff; padding: 10px; text-align: left; font-size: 20px; display: flex; gap: 50px;">
-           <span>INICIO</span><span>SOBRE NÓS</span><span>SERVICOS</span><span>CONTATO</span>
-        </div>
-        <div style="margin-top: 20px; display: flex; flex-direction: row; gap: 20px; flex: 1;">
-          <div style="flex: 1.2; display: flex; flex-direction: column; justify-content: center;">
-            <h1 style="color: red; font-size: 44px; text-align: left; margin-top: 10px;">A melhor solucao em ${business.niche} para vcs!</h1>
-            <p style="font-size: 24px; text-align: justify; word-break: break-all; margin-top: 10px;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim.</p>
-            <button style="background: red; color: yellow; border: 8px solid green; padding: 20px; font-size: 28px; font-weight: bold; margin-top: 20px; cursor: pointer;">CLIQUE AQUI PARA FALAR CONCOSCO!!!</button>
-          </div>
-          <div style="flex: 0.8; height: 100%; background: #cccccc; display: flex; align-items: center; justify-content: center; border: 5px solid red; position: relative;">
-            <span style="position: absolute; color: red; font-size: 150px; font-weight: bold; opacity: 0.5;">X</span>
-            <span style="font-size: 40px;">Imagem Quebrada</span>
-          </div>
-        </div>
-        <div style="margin-top: 20px; color: blue; text-decoration: underline; font-size: 28px; text-align: center;">www.siteruimebarato.com.br - Visto no Desktop</div>
-      </div>
-    `;
+            <div style="background: #ffffff; color: #000; font-family: 'Times New Roman', serif; padding: 20px; height: 100%; box-sizing: border-box; overflow: hidden; display: flex; flex-direction: column;">
+                <div style="background: #0000ff; color: #fff; padding: 10px; text-align: left; font-size: 20px; display: flex; gap: 50px;">
+                   <span>INICIO</span><span>SOBRE NÓS</span><span>SERVICOS</span><span>CONTATO</span>
+                </div>
+                <div style="margin-top: 20px; display: flex; flex-direction: row; gap: 20px; flex: 1;">
+                   <div style="flex: 1.2; display: flex; flex-direction: column; justify-content: center;">
+                     <h1 style="color: red; font-size: 44px; text-align: left; margin-top: 10px; margin-bottom: 20px;">A melhor solucao em ${business.niche} para vcs!</h1>
+                     <p style="font-size: 24px; text-align: justify; word-break: break-all; margin-top: 10px;">A ${business.name} é a melhor opção de ${business.niche} em ${business.city}. Venham conferir!!</p>
+                     <p style="background: red; color: yellow; border: 8px solid green; padding: 20px; font-size: 28px; font-weight: bold; margin-top: 50px; text-align: center;">CLIQUE AQUI PARA FALAR CONCOSCO!!!</p>
+                   </div>
+                   <div style="flex: 0.8; height: 100%; background: #cccccc; display: flex; align-items: center; justify-content: center; border: 5px solid red; position: relative;">
+                     <span style="position: absolute; color: red; font-size: 150px; font-weight: bold; opacity: 0.5;">X</span>
+                     <span style="font-size: 40px; color: black;">Imagem Quebrada</span>
+                   </div>
+                </div>
+            </div>
+        `;
 
     const goodHtml = customGoodHtml || `
-      <div style="background: #101012; color: #ffffff; font-family: system-ui, -apple-system, sans-serif; padding: 40px 60px; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; position: relative; border: 3px solid #D4AF37;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 50px;">
-          <div style="font-weight: 900; font-size: 28px; letter-spacing: 3px; color: #D4AF37;">${business.name.toUpperCase().substring(0, 20)}</div>
-          <div style="display: flex; gap: 40px; font-size: 18px; font-weight: 500; color: #A1A1AA;">
-            <span style="color: #fff;">Premium</span><span>Metodologia</span><span>Resultados</span>
-          </div>
-        </div>
-        
-        <div style="display: flex; gap: 50px; flex: 1; align-items: center;">
-          <div style="flex: 1.2;">
-            <div style="color: #D4AF37; font-weight: bold; letter-spacing: 3px; font-size: 18px; margin-bottom: 20px;">ENGENHARIA DIGITAL PARA ${business.niche.toUpperCase()}</div>
-            <h1 style="font-size: 64px; font-weight: 900; line-height: 1.05; margin: 0 0 30px 0; color: #fff;">
-              O PADRÃO OURO DE<br/><span style="color: #D4AF37;">ALTA CONVERSÃO.</span>
-            </h1>
-            <p style="font-size: 22px; color: #A1A1AA; line-height: 1.6; margin: 0 0 50px 0;">A autoridade incontestável que o seu negócio precisa<br/>para dominar as buscas e atrair clientes de alto valor<br/>na região de ${business.city}.</p>
-            
-            <div style="display: flex; gap: 20px;">
-              <div style="background: #25D366; color: #ffffff; padding: 20px 40px; border-radius: 8px; font-weight: bold; font-size: 22px; display: inline-flex; box-shadow: 0 15px 35px rgba(37, 211, 102, 0.25);">
-                AGENDAR REUNIÃO VIP →
-              </div>
+            <div style="background: #0a0a0c; color: #ffffff; font-family: system-ui, -apple-system, sans-serif; padding: 50px 70px; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; position: relative; border: 4px solid #D4AF37;">
+                <!-- Grid Bg -->
+                <div style="position: absolute; inset: 0; background-image: linear-gradient(#1e1e23 2px, transparent 2px), linear-gradient(90deg, #1e1e23 2px, transparent 2px); background-size: 60px 60px; opacity: 0.3; pointer-events: none;"></div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 60px; z-index: 10;">
+                   <div style="font-weight: 900; font-size: 38px; letter-spacing: 4px; color: #D4AF37;">${business.name.toUpperCase().substring(0, 20)}</div>
+                   <div style="display: flex; gap: 50px; font-size: 20px; font-weight: 600; color: #9696a0;">
+                     <span style="color: #fff;">Premium</span><span>Metodologia</span><span>Resultados</span>
+                   </div>
+                </div>
+                
+                <div style="display: flex; gap: 60px; flex: 1; align-items: center; z-index: 10;">
+                   <div style="flex: 1.2;">
+                     <div style="color: #D4AF37; font-weight: 800; letter-spacing: 4px; font-size: 22px; margin-bottom: 25px;">ENGENHARIA DIGITAL PARA ${business.niche.toUpperCase()}</div>
+                     <h1 style="font-size: 85px; font-weight: 900; line-height: 1.05; margin: 0 0 35px 0; color: #fff;">
+                       O PADRÃO OURO DE<br/><span style="color: #D4AF37;">ALTA CONVERSÃO.</span>
+                     </h1>
+                     <p style="font-size: 26px; color: #e6e6eb; line-height: 1.6; margin: 0 0 60px 0; max-width: 90%;">A autoridade incontestável que o seu negócio precisa para dominar as buscas e atrair clientes de alto valor na região de ${business.city}.</p>
+                     
+                     <div style="display: flex; gap: 20px;">
+                       <div style="background: transparent; border: 3px solid #D4AF37; color: #D4AF37; padding: 25px 50px; font-weight: 900; font-size: 24px; letter-spacing: 2px;">
+                         AGENDAR REUNIÃO VIP
+                       </div>
+                     </div>
+                   </div>
+                   
+                   <div style="flex: 0.8; height: 100%; background: #141418; border-radius: 30px; border: 2px solid #28282d; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 20px 50px rgba(212,175,55,0.1);">
+                      <div style="width: 350px; height: 350px; border-radius: 50%; background: radial-gradient(circle, rgba(212,175,55,0.15) 0%, rgba(10,10,12,0) 70%);"></div>
+                      <div style="position: absolute; font-size: 34px; font-weight: 900; color: #D4AF37; text-align: center; letter-spacing: 4px;">DESIGN<br/><span style="color: #fff;">SENSORIAL</span></div>
+                   </div>
+                </div>
             </div>
-          </div>
-          
-          <div style="flex: 0.8; height: 100%; background: #18181B; border-radius: 20px; border: 2px solid #3F3F46; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-             <div style="width: 250px; height: 250px; border-radius: 50%; background: radial-gradient(circle, rgba(212,175,55,0.4) 0%, rgba(20,20,24,0) 70%);"></div>
-             <div style="position: absolute; font-size: 24px; font-weight: bold; color: #D4AF37; text-align: center;">DESIGN<br/>SENSORIAL</div>
-          </div>
-        </div>
-      </div>
-    `;
+        `;
 
-    const badB64 = await renderHtmlToB64(badHtml, 1280, 720);
-    const goodB64 = await renderHtmlToB64(goodHtml, 1280, 720);
+    // 1. Gera o HTML cru do React
+    const reactHtmlString = renderToStaticMarkup(<SitePDFTemplate business={business} m={m} badHtml={badHtml} goodHtml={goodHtml} />);
 
-    p.addPage(); m.pn = 3; bg(p, 0, 0, PW, PH, PITCH); drawHeaderDark(p, m); drawFooterDark(p, m);
-    let vy = CT + 5;
-    txt(p, "02 // O CUSTO DO AMADORISMO VISUAL", ML, vy, 10, GOLD, true); vy += 14;
-    p.setFontSize(22); Tc(p, WHITE); p.setFont("helvetica", "bold");
-    vy += wrap(p, "A PRIMEIRA IMPRESSÃO DITA O VALOR DO SEU SERVIÇO.", ML, vy, CW, 22, WHITE, true, 1.2) + 10;
+    // 2. Constrói o Envelope HTML
+    const fullHtmlPayload = `
+            <!DOCTYPE html>
+            <html lang="pt-BR">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <script src="https://cdn.tailwindcss.com"></script>
+                <link rel="preconnect" href="https://fonts.googleapis.com">
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+                <style>
+                    body { 
+                        font-family: 'Inter', sans-serif; 
+                        -webkit-print-color-adjust: exact; 
+                        print-color-adjust: exact;
+                        margin: 0;
+                        padding: 0;
+                        background: #0a0a0c;
+                    }
+                    @page { margin: 0; size: A4 portrait; }
+                    .pdf-page {
+                        width: 210mm;
+                        height: 296.8mm;
+                        overflow: hidden;
+                        page-break-after: always;
+                        position: relative;
+                        box-sizing: border-box;
+                    }
+                    .pdf-page:last-child {
+                        page-break-after: auto;
+                    }
+                    svg { display: block; }
+                </style>
+            </head>
+            <body>
+                ${reactHtmlString}
+            </body>
+            </html>
+        `;
 
-    const colW = (CW - 10) / 2; // ~85mm
-    const h = 138; // Panel Height
+    // 3. Dispara POST na API Node.js Local
+    const response = await fetch("http://localhost:3001/generate-pdf", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ html: fullHtmlPayload })
+    });
 
-    // Left Box: Amador (Monitor Real)
-    const lxBox = ML;
-    rr(p, lxBox, vy, colW, h, 4, DARK_SURFACE, BORDER_D);
-    bg(p, lxBox, vy, colW, 8, [239, 68, 68]);
-    txt(p, "SITE AMADOR (MERCADO COMUM)", lxBox + colW / 2, vy + 5.5, 7, WHITE, true, "center");
-
-    const monitorW = colW - 14;
-    const monitorH = monitorW * (9 / 16);
-    const badMonX = lxBox + 7;
-    const badMonY = vy + 18;
-
-    // Draw Monitor iMac style
-    rr(p, badMonX, badMonY, monitorW, monitorH + 5, 2, [30, 30, 35], BORDER_D); // Case
-    bg(p, badMonX + 1, badMonY + 1, monitorW - 2, monitorH, PITCH); // Bezel
-    // Stand
-    bg(p, badMonX + monitorW / 2 - 8, badMonY + monitorH + 5, 16, 6, [50, 50, 55]);
-    bg(p, badMonX + monitorW / 2 - 15, badMonY + monitorH + 11, 30, 2, [60, 60, 65]);
-
-    if (badB64) {
-      try { p.addImage(badB64, "JPEG", badMonX + 1, badMonY + 1, monitorW - 2, monitorH); } catch { /* ok */ }
+    if (!response.ok) {
+      const errData = await response.json();
+      throw new Error(errData.details || errData.error || "Erro desconhecido na API do Puppeteer");
     }
 
-    let ltextY = badMonY + monitorH + 20;
-    txt(p, "x Experi\u00eancia confusa no Desktop", lxBox + 5, ltextY, 8, TEXT_MUTED); ltextY += 6;
-    txt(p, "x C\u00f3digo amador e sem velocidade", lxBox + 5, ltextY, 8, TEXT_MUTED); ltextY += 6;
-    txt(p, "x Afasta decisores que compram B2B", lxBox + 5, ltextY, 8, TEXT_MUTED);
+    // 4. Converte o Binário Recebido e Força o Download
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    const safeFileName = (business.name || "CLIENTE").replace(/\s+/g, '_').toUpperCase();
+    a.download = `Projeto_Vip_${safeFileName}_${new Date().toISOString().slice(0, 10)}.pdf`;
+    document.body.appendChild(a);
+    a.click();
 
-    // Right Box: Premium (Monitor Real)
-    const rxBox = ML + colW + 10;
-    rr(p, rxBox, vy, colW, h, 4, DARK_SURFACE, GOLD);
-    bg(p, rxBox, vy, colW, 8, GOLD);
-    txt(p, "NOSSA ENGENHARIA VIP", rxBox + colW / 2, vy + 5.5, 7, PITCH, true, "center");
+    window.URL.revokeObjectURL(url);
+    a.remove();
 
-    const goodMonX = rxBox + 7;
-    const goodMonY = vy + 18;
+    toast.success("Design Editorial VIP Gerado via Arquitetura Headless!", { id: toastId });
 
-    // Draw Premium Monitor
-    rr(p, goodMonX, goodMonY, monitorW, monitorH + 5, 2, [40, 40, 45], GOLD); // Case
-    bg(p, goodMonX + 1, goodMonY + 1, monitorW - 2, monitorH, PITCH); // Bezel
-    // Stand
-    bg(p, goodMonX + monitorW / 2 - 8, goodMonY + monitorH + 5, 16, 6, [70, 70, 75]);
-    bg(p, goodMonX + monitorW / 2 - 15, goodMonY + monitorH + 11, 30, 2, [90, 90, 95]);
-
-    if (goodB64) {
-      try { p.addImage(goodB64, "JPEG", goodMonX + 1, goodMonY + 1, monitorW - 2, monitorH); } catch { /* ok */ }
-    }
-
-    let rtextY = goodMonY + monitorH + 20;
-    txt(p, "\u2713 Visual Widescreen Imersivo", rxBox + 5, rtextY, 8, GOLD); rtextY += 6;
-    txt(p, "\u2713 M\u00e1xima reten\u00e7\u00e3o corporativa", rxBox + 5, rtextY, 8, GOLD); rtextY += 6;
-    txt(p, "\u2713 Posiciona voc\u00ea no Topo do Nicho", rxBox + 5, rtextY, 8, GOLD);
-
-    vy += h + 15;
-    txt(p, "O IMPACTO DO COMPUTADOR CORPORATIVO:", ML, vy, 11, GOLD, true); vy += 6;
-    wrap(p, "Muitas decis\u00f5es B2B ou compras de alto valor s\u00e3o tomadas no Desktop do escrit\u00f3rio do seu cliente. Se o seu site esmaga a concorr\u00eancia nessa tela grande, a venda j\u00e1 est\u00e1 80% garantida antes dele pegar o telefone.", ML, vy, CW, 12, WHITE, false, 1.4);
-
-
-    // ==========================================
-    // PAGE 4 — THE SOLUTION (ENGINEERING)
-    // ==========================================
-    p.addPage(); m.pn = 4; bg(p, 0, 0, PW, PH, PITCH); drawHeaderDark(p, m); drawFooterDark(p, m);
-    let sy = CT + 10;
-    txt(p, "03 // ENGENHARIA DE CONVERS\u00c3O", ML, sy, 10, GOLD, true); sy += 14;
-    p.setFontSize(22); Tc(p, WHITE);
-    sy += wrap(p, "NÃO FAZEMOS 'SITINHOS'. CONSTRUIMOS POSICIONAMENTO IMPLACÁVEL.", ML, sy, CW, 22, WHITE, true, 1.3) + 12;
-
-    const pillars = [
-      { t: "Design Editorial de Luxo", d: "Criamos interfaces hipn\u00f3ticas baseadas na psicologia do seu nicho. O cliente sentir\u00e1 o peso e a qualidade do seu servi\u00e7o antes mesmo de te ligar." },
-      { t: "Velocidade Extrema (LCP < 1.5s)", d: "C\u00f3digo limpo e infraestrutura de ponta. Seu site vai abrir mais r\u00e1pido que um estalar de dedos, matando a taxa de rejei\u00e7\u00e3o do Google." },
-      { t: "SEO Local Sangrento", d: "Vamos injetar palavras-chave estrat\u00e9gicas no c\u00f3digo-fonte para que sua empresa domine as buscas na sua cidade." },
-      { t: "Arquitetura Focada em Vendas", d: "Bot\u00f5es de a\u00e7\u00e3o estrat\u00e9gicos (CTAs), integra\u00e7\u00e3o fluida com WhatsApp e formul\u00e1rios que convertem curiosos em clientes pagantes." }
-    ];
-
-    pillars.forEach((pil, i) => {
-      rr(p, ML, sy, CW, 30, 3, DARK_SURFACE, BORDER_D);
-      bg(p, ML, sy, 4, 30, GOLD);
-      txt(p, `0${i + 1}`, ML + 10, sy + 18, 18, BORDER_D, true); // Watermark number
-      txt(p, pil.t.toUpperCase(), ML + 24, sy + 10, 11, WHITE, true);
-      wrap(p, pil.d, ML + 24, sy + 16, CW - 30, 9, TEXT_MUTED, false, 1.4);
-      sy += 36;
-    });
-
-    // ==========================================
-    // PAGE 5 — INVESTMENT (THE TIERS)
-    // ==========================================
-    p.addPage(); m.pn = 5; bg(p, 0, 0, PW, PH, PITCH); drawHeaderDark(p, m); drawFooterDark(p, m);
-    let dy = CT + 5;
-    txt(p, "04 // ESCOLHA SEU ARSENAL", ML, dy, 10, GOLD, true); dy += 12;
-    p.setFontSize(20); Tc(p, WHITE);
-    dy += wrap(p, "SOLUÇÕES PROJETADAS PARA O SEU MOMENTO DE DOMINÂNCIA.", ML, dy, CW, 20, WHITE, true, 1.2) + 12;
-
-    const cW = (CW - 12) / 3, cH = 130;
-    const tiersD = [
-      { n: "ESSENTIAL", pc: "Fundação Tática", c: [50, 50, 55] as RGB, f: ["One-Page Alta Conversão", "Design Responsivo UI/UX", "Segurança Criptografada", "Botão Mágico WhatsApp", "Fundação de SEO Local", "Hospedagem por 1 Ano"] },
-      { n: "DOMINANCE", pc: "Máquina de Vendas", c: GOLD, f: ["Site Multi-Páginas Premium", "Animações Fluídas de Luxo", "Integração de Analytics", "Google Maps Local", "Copywriting Persuasivo", "Treinamento para Equipe"] },
-      { n: "IMPERIUM", pc: "Monopólio Tecnológico", c: [200, 200, 205] as RGB, f: ["Arquitetura de E-Commerce", "Velocidade Extrema Vercel", "Painel de Gestão (CMS)", "Estrutura para Tráfego Pago", "Suporte Manutenção Mensal", "Atendimento via C-Level"] }
-    ];
-
-    tiersD.forEach((t, i) => {
-      const cx = ML + i * (cW + 6), cy = dy, isPro = i === 1;
-      rr(p, cx, cy, cW, cH, 5, isPro ? DARK_SURFACE : PITCH, isPro ? GOLD : BORDER_D);
-
-      if (isPro) {
-        bg(p, cx, cy, cW, 8, GOLD);
-        txt(p, "ESCOLHA ABSOLUTA", cx + cW / 2, cy + 5.5, 7, PITCH, true, "center");
-      }
-
-      txt(p, t.n, cx + cW / 2, cy + 20, 10, t.c, true, "center");
-      txt(p, t.pc.toUpperCase(), cx + cW / 2, cy + 26, 7, TEXT_MUTED, true, "center");
-      hline(p, cx + 10, cy + 32, cx + cW - 10, BORDER_D, 0.5);
-
-      let fy = cy + 42;
-      t.f.forEach((feat) => {
-        drawCheck(p, cx + 8, fy - 1.5, 2.5, t.c);
-        fy += wrap(p, feat, cx + 14, fy, cW - 18, 7.5, TEXT_LIGHT, false, 1.4) + 3;
-      });
-    });
-
-    // ==========================================
-    // PAGE 6 — TECH TABLE
-    // ==========================================
-    p.addPage(); m.pn = 6; bg(p, 0, 0, PW, PH, PITCH); drawHeaderDark(p, m); drawFooterDark(p, m);
-    let ty = CT + 5;
-    txt(p, "05 // ESPECIFICAÇÕES TÁTICAS", ML, ty, 10, GOLD, true); ty += 12;
-    p.setFontSize(20); Tc(p, WHITE);
-    ty += wrap(p, "O QUE ESTÁ RODANDO POR DEBAIXO DO CAPÔ.", ML, ty, CW, 20, WHITE, true, 1.2) + 8;
-
-    const tX = ML, c1 = 80, c23 = (CW - c1) / 3, thH = 12, trH = 9;
-    bg(p, tX, ty, CW, thH, DARK_SURFACE);
-    txt(p, "Recursos do Projeto", tX + 4, ty + 8, 8, GOLD_L, true);
-    ["ESSENTIAL", "PRO", "IMPERIUM"].forEach((n, i) => txt(p, n, tX + c1 + c23 * (i + 0.5), ty + 8, 8, GOLD_L, true, "center"));
-    ty += thH;
-
-    const rowsD: [string, boolean, boolean, boolean][] = [
-      ["Design Interface Premium", true, true, true],
-      ["Otimização Mobile Absoluta", true, true, true],
-      ["Segurança Criptografada SSL", true, true, true],
-      ["Gatilhos Visuais de Conversão", true, true, true],
-      ["Dashboard Analítico (Google)", false, true, true],
-      ["Sistema de Gerenciamento (CMS)", false, true, true],
-      ["Arquitetura IA SEO Avançada", false, true, true],
-      ["Catálogo de Produtos Multi", false, false, true],
-      ["Setup Comercial (Google/Face Ads)", false, false, true],
-      ["Consultoria Dedicada", false, false, true]
-    ];
-
-    rowsD.forEach((r, ri) => {
-      const ry = ty + ri * trH;
-      if (ri % 2 === 0) bg(p, tX, ry, CW, trH, [15, 15, 18]);
-      hline(p, tX, ry + trH, tX + CW, BORDER_D, 0.3);
-      txt(p, r[0], tX + 4, ry + 6, 9, TEXT_LIGHT, true);
-      [r[1], r[2], r[3]].forEach((ok, ci) => {
-        if (ok) {
-          const ccx = tX + c1 + c23 * (ci + 0.5);
-          drawCheck(p, ccx, ry + 5, 3, GOLD);
-        }
-      });
-    });
-
-    // ==========================================
-    // PAGE 7 — ACTION (CLOSING)
-    // ==========================================
-    p.addPage(); m.pn = 7; bg(p, 0, 0, PW, PH, PITCH); drawHeaderDark(p, m); drawFooterDark(p, m);
-    let fY = CT + 15;
-
-    txt(p, "06 // ASSUMA O CONTROLE", ML, fY, 12, GOLD, true); fY += 14;
-    p.setFontSize(28); Tc(p, WHITE);
-    fY += wrap(p, `SEU PRÓXIMO CLIENTE ESTÁ BUSCANDO NO GOOGLE AGORA MESMO.`, ML, fY, CW, 28, WHITE, true, 1.1) + 10;
-
-    txt(p, "Quem ele vai encontrar? Voc\u00ea ou seu concorrente?", ML, fY, 14, GOLD_L, true); fY += 20;
-
-    wrap(p, "A sua compet\u00eancia j\u00e1 \u00e9 comprovada. Nossa fun\u00e7\u00e3o \u00e9 pavimentar um tapete vermelho digital, blindado de autoridade, para que o seu cliente converta no primeiro impulso. N\u00e3o adie o seu pr\u00f3prio crescimento.", ML, fY, CW - 20, 12, TEXT_LIGHT, false, 1.3); fY += 28;
-
-    rr(p, (PW - 90) / 2, fY, 90, 14, 2, GOLD);
-    txt(p, "INICIAR PROJETO VIP AGORA", PW / 2, fY + 9, 11, PITCH, true, "center");
-    if (sellerWhatsapp) addLink(p, (PW - 90) / 2, fY, 90, 14, `https://wa.me/${sellerWhatsapp.replace(/\D/g, "")}`);
-    fY += 40;
-
-    txt(p, "Com m\u00e1xima considera\u00e7\u00e3o e brutalidade comercial,", ML, fY, 10, TEXT_MUTED); fY += 8;
-    txt(p, sellerName.toUpperCase(), ML, fY, 16, WHITE, true); fY += 6;
-    txt(p, "ESPECIALISTA EM ENGENHARIA DIGITAL", ML, fY, 8, GOLD, true);
-
-    const safeN = (business.name || "site").replace(/[^a-zA-Z0-9]/g, "_").slice(0, 50);
-    p.save(`Projeto_Vip_${safeN}_${new Date().toISOString().slice(0, 10)}.pdf`);
-    toast.success("Design Editorial VIP Gerado!", { id: toastId });
   } catch (err: any) {
-    console.error("PDF Site Err:", err);
-    toast.error(`Erro fatal: ${err.message}`, { id: toastId });
+    console.error("Puppeteer Rendering Flight Crash:", err);
+    if (err.message === "Failed to fetch") {
+      toast.error("O Servidor Puppeteer não respondeu. Execute 'node server/pdf-engine.js' no terminal da pasta raiz e tente novamente.", { id: toastId, duration: 9000 });
+    } else {
+      toast.error(`Falha no motor: ${err.message}`, { id: toastId });
+    }
   }
 }
-
