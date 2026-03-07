@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NicheFinder Guru - Technical Whitepaper</title>
+    <title>NicheFinder Guru - Documentação Técnica</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -104,114 +104,115 @@
 
 <body class="flex flex-col md:flex-row min-h-screen">
 
-    <!-- Sidebar Navigation (Table of Contents) -->
+    <!-- Menu Lateral (Navegação) -->
     <aside
         class="w-full md:w-72 md:fixed md:top-0 md:left-0 md:h-screen bg-surface border-r border-border p-6 flex flex-col z-20">
         <div class="mb-10">
             <h1 class="font-black text-xl tracking-tighter uppercase whitespace-nowrap">
                 NicheFinder <span class="text-accent">GURU</span>
             </h1>
-            <p class="font-mono text-[10px] text-textMuted mt-1 tracking-widest uppercase">System Architecture v2.4.0
-            </p>
+            <p class="font-mono text-[10px] text-textMuted mt-1 tracking-widest uppercase">Arquitetura de Sistemas
+                v2.4.0</p>
         </div>
 
         <nav class="flex-1 space-y-1 font-mono text-xs overflow-y-auto pr-2">
-            <div class="text-[10px] uppercase text-textMuted font-bold mb-3 tracking-widest mt-4">1. Overview</div>
-            <a href="#arch" class="nav-link block px-3 py-2 text-textMain">System Architecture</a>
-            <a href="#stack" class="nav-link block px-3 py-2 text-textMain">Tech Stack</a>
+            <div class="text-[10px] uppercase text-textMuted font-bold mb-3 tracking-widest mt-4">1. Visão Geral</div>
+            <a href="#arch" class="nav-link block px-3 py-2 text-textMain">Arquitetura do Sistema</a>
+            <a href="#stack" class="nav-link block px-3 py-2 text-textMain">Stack Tecnológica</a>
 
-            <div class="text-[10px] uppercase text-textMuted font-bold mb-3 tracking-widest mt-8">2. Core Engines</div>
-            <a href="#radar" class="nav-link block px-3 py-2 text-textMain">Radar B2B (Data Mining)</a>
-            <a href="#audit" class="nav-link block px-3 py-2 text-textMain">Technical Auditor</a>
-            <a href="#score" class="nav-link block px-3 py-2 text-textMain">Thermal Sorting (Scoring)</a>
-
-            <div class="text-[10px] uppercase text-textMuted font-bold mb-3 tracking-widest mt-8">3. Attack Vectors
+            <div class="text-[10px] uppercase text-textMuted font-bold mb-3 tracking-widest mt-8">2. Motores Principais
             </div>
-            <a href="#ai" class="nav-link block px-3 py-2 text-textMain">Groq AI Integrations</a>
-            <a href="#pdf" class="nav-link block px-3 py-2 text-textMain">PDF VIP Generator</a>
-            <a href="#bot" class="nav-link block px-3 py-2 text-textMain">WhatsApp Standalone Bot</a>
+            <a href="#radar" class="nav-link block px-3 py-2 text-textMain">Radar B2B (Mineração)</a>
+            <a href="#audit" class="nav-link block px-3 py-2 text-textMain">Auditor Técnico</a>
+            <a href="#score" class="nav-link block px-3 py-2 text-textMain">Classificação (Score)</a>
 
-            <div class="text-[10px] uppercase text-textMuted font-bold mb-3 tracking-widest mt-8">4. User Interface
+            <div class="text-[10px] uppercase text-textMuted font-bold mb-3 tracking-widest mt-8">3. Vetores de Ataque
             </div>
-            <a href="#ui-radar" class="nav-link block px-3 py-2 text-textMain">Radar UI</a>
+            <a href="#ai" class="nav-link block px-3 py-2 text-textMain">Integrações de IA (Groq)</a>
+            <a href="#pdf" class="nav-link block px-3 py-2 text-textMain">Gerador de PDF VIP</a>
+            <a href="#bot" class="nav-link block px-3 py-2 text-textMain">Robô Autônomo WhatsApp</a>
+
+            <div class="text-[10px] uppercase text-textMuted font-bold mb-3 tracking-widest mt-8">4. Interface de
+                Usuário</div>
+            <a href="#ui-radar" class="nav-link block px-3 py-2 text-textMain">Interface do Radar</a>
             <a href="#ui-leads" class="nav-link block px-3 py-2 text-textMain">Leads (CRM)</a>
-            <a href="#ui-automation" class="nav-link block px-3 py-2 text-textMain">Automation Panel</a>
+            <a href="#ui-automation" class="nav-link block px-3 py-2 text-textMain">Painel de Automação</a>
         </nav>
 
         <div class="mt-auto pt-6 border-t border-border/50 text-xs font-mono text-textMuted">
             <a href="https://github.com/Helgonhc/Nichefinder-guru2" target="_blank"
                 class="flex items-center gap-2 hover:text-white transition-colors">
-                <i data-lucide="github" class="w-4 h-4"></i> Repository
+                <i data-lucide="github" class="w-4 h-4"></i> Repositório
             </a>
         </div>
     </aside>
 
-    <!-- Main Content -->
+    <!-- Conteúdo Principal -->
     <main class="flex-1 md:ml-72 bg-background p-8 md:p-16 lg:px-32 xl:px-48 relative">
 
-        <!-- Background Grid for Technical Feel -->
+        <!-- Fundo em Grid Tecnológico -->
         <div
             class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none -z-10">
         </div>
 
         <header class="mb-20">
-            <h1 class="text-4xl md:text-6xl font-black tracking-tight mb-6">Technical Architecture & Engineering
-                Documentation</h1>
+            <h1 class="text-4xl md:text-6xl font-black tracking-tight mb-6">Arquitetura Técnica & Documentação de
+                Engenharia</h1>
             <p class="text-xl text-textMuted max-w-3xl leading-relaxed">
                 Um mergulho profundo, vírgula por vírgula, na estrutura que compõe o ecossistema NicheFinder Guru.
-                De requisições API geoespaciais e Web Scraping à renderização de PDF on-the-fly e Automação de Sockets
-                do WhatsApp.
+                De requisições API geoespaciais e coleta de dados na web à renderização de PDF sob demanda e automação
+                de conexões do WhatsApp.
             </p>
         </header>
 
-        <!-- 1. OVERVIEW -->
+        <!-- 1. VISÃO GERAL -->
         <section id="arch" class="scroll-mt-20">
             <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
-                <i data-lucide="network" class="text-accent"></i> System Architecture
+                <i data-lucide="network" class="text-accent"></i> Arquitetura do Sistema
             </h2>
             <p class="text-textMuted mb-6 leading-relaxed">
-                O NicheFinder Guru não é um monolito. É um sistema distribuído projetado para contornar limitações de
-                rede, bloqueios do WhatsApp (Bans) e pesadas cargas de geração de arquivos. A arquitetura divide a
-                Inteligência e a Execução.
+                O NicheFinder Guru não é um sistema monolítico (tudo num lugar só). É um ecossistema distribuído
+                projetado para contornar limitações de rede, bloqueios do WhatsApp e pesadas cargas de geração de
+                arquivos. A arquitetura divide a Inteligência da Execução.
             </p>
 
             <div class="border border-border p-6 rounded-lg bg-surface/50 mb-8 font-mono text-sm">
                 <div class="text-accent mb-2">// O Fluxo Fundamental da Aplicação</div>
                 <div class="space-y-2 text-textMuted">
-                    <p>1. <span class="text-white">[Frontend React]</span> Dispara busca Google Places via <span
-                            class="text-white">Edge Functions</span>.</p>
-                    <p>2. <span class="text-white">[Web Scraper]</span> Audita o site (ou a ausência dele) e insere no
-                        <span class="text-white">PostgreSQL (Supabase)</span>.</p>
-                    <p>3. <span class="text-white">[Groq AI]</span> Analisa a dor (ex: "Sem site no mapa") e cria a Copy
-                        de dor.</p>
-                    <p>4. <span class="text-white">[PDF Service]</span> Frontend envia payload via HTTP para
-                        `localhost:3001` (Node/Puppeteer) que cospe um buffer de PDF.</p>
-                    <p>5. <span class="text-white">[WA Bot]</span> Processo desacoplado consome a fila do banco e
-                        dispara o PDF e o texto via protocolo Baileys (WP Web).</p>
+                    <p>1. <span class="text-white">[Frontend React]</span> Dispara busca de locais no Google via <span
+                            class="text-white">Funções Auxiliares</span>.</p>
+                    <p>2. <span class="text-white">[Coletor Web]</span> Audita o site (ou a ausência dele) e insere no
+                        Banco <span class="text-white">PostgreSQL (Supabase)</span>.</p>
+                    <p>3. <span class="text-white">[Inteligência Groq]</span> Analisa a falha (ex: "Sem site no mapa") e
+                        cria a argumentação de venda.</p>
+                    <p>4. <span class="text-white">[Serviço PDF]</span> Frontend envia dados via rede para a porta local
+                        `3001` que gera o PDF.</p>
+                    <p>5. <span class="text-white">[Robô WhatsApp]</span> Processo independente consome a fila do banco
+                        e dispara o PDF e o texto de forma nativa.</p>
                 </div>
             </div>
         </section>
 
         <section id="stack" class="scroll-mt-20 mt-16">
-            <h2 class="text-xl font-bold mb-4 font-mono text-white/80"># Tech Stack</h2>
+            <h2 class="text-xl font-bold mb-4 font-mono text-white/80"># Stack Tecnológica</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="p-4 border border-border bg-surface">
-                    <h3 class="font-bold text-accent mb-2">Frontend</h3>
+                    <h3 class="font-bold text-accent mb-2">Interface Ocular (Frontend)</h3>
                     <ul class="text-textMuted text-sm space-y-1 list-disc list-inside">
                         <li>React 18 + TypeScript</li>
-                        <li>Vite (Bundler)</li>
-                        <li>Tailwind CSS v3 (Utility Styling)</li>
-                        <li>Zustand / React Query (State Management)</li>
-                        <li>Lucide (Iconography)</li>
+                        <li>Vite (Empacotador Rápido)</li>
+                        <li>Tailwind CSS v3 (Estilização Útil e Bruta)</li>
+                        <li>Zustand / React Query (Gerenciamento de Estado)</li>
+                        <li>Lucide (Sistema de Ícones)</li>
                     </ul>
                 </div>
                 <div class="p-4 border border-border bg-surface">
-                    <h3 class="font-bold text-accent mb-2">Backend & Data</h3>
+                    <h3 class="font-bold text-accent mb-2">Estrutura de Dados (Backend)</h3>
                     <ul class="text-textMuted text-sm space-y-1 list-disc list-inside">
                         <li>Supabase (PostgreSQL 15)</li>
-                        <li>Supabase Auth (RLS Policies)</li>
-                        <li>Node.js (Workers Independentes)</li>
-                        <li>Puppeteer (Headless Chrome Generator)</li>
+                        <li>Supabase Auth (Políticas de Segurança e Acesso)</li>
+                        <li>Node.js (Focos e Trabalhadores Independentes)</li>
+                        <li>Puppeteer (Gerador Chrome Invisível)</li>
                     </ul>
                 </div>
             </div>
@@ -219,247 +220,258 @@
 
         <div class="section-separator"></div>
 
-        <!-- 2. CORE ENGINES -->
+        <!-- 2. MOTORES PRINCIPAIS -->
         <section id="radar" class="scroll-mt-20">
             <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
-                <i data-lucide="radar" class="text-accent"></i> Radar B2B Engine
+                <i data-lucide="radar" class="text-accent"></i> Motor Radar B2B (Mineração)
             </h2>
             <p class="text-textMuted mb-6 leading-relaxed">
                 A fonte primária de dados. Localizado em <code
                     class="text-accent bg-accent/10 px-1 rounded">/src/pages/Radar.tsx</code>, este motor é o
-                responsável pela captação cirúrgica de leads (empresas locais).
+                responsável pela captação cirúrgica de contatos de empresas locais no Brasil inteiro.
             </p>
 
-            <h3 class="font-bold text-white mb-3">Vírgula por vírgula: O Loop de Mapeamento</h3>
+            <h3 class="font-bold text-white mb-3">Vírgula por vírgula: O Ciclo de Mapeamento</h3>
             <ul class="space-y-4 text-textMuted text-sm">
                 <li>
                     <span class="text-white font-mono">1. Parâmetros de Entrada:</span> O usuário insere o nicho (ex:
-                    "Clínica Odontológica") e a localidade. O sistema permite múltiplas cidades separadas por vírgula.
+                    "Clínica de Estética") e a localidade. O sistema permite pesquisar múltiplas cidades separadas por
+                    vírgula de uma só vez.
                 </li>
                 <li>
-                    <span class="text-white font-mono">2. Request Proxy:</span> Para não vazar a chave do Google Maps no
-                    front-end, o disparo ocorre através de uma <span class="text-white">Edge Function </span> no
-                    Supabase ou endpoint Node próprio.
+                    <span class="text-white font-mono">2. Requisição Intermediária:</span> Para não vazar a sua chave do
+                    Google Maps direto no navegador, o disparo ocorre através de uma <span class="text-white">Função de
+                        Borda (Edge Function)</span> segura no Supabase.
                 </li>
                 <li>
-                    <span class="text-white font-mono">3. Coleta de Metadados:</span> A API retorna Nome, Nota, Número
-                    de Avaliações, Endereço e o mais crítico: <strong>Website</strong>.
+                    <span class="text-white font-mono">3. Coleta de Informações:</span> A API devolve o Nome, Avaliação,
+                    Quantidade de Estrelas, Endereço Completo e o mais crítico de todos: <strong>O Endereço do
+                        Site</strong>.
                 </li>
                 <li>
-                    <span class="text-white font-mono">4. A Lógica "Goldmine" (Sem Site):</span> O radar
-                    instantaneamente flagra leads cujo nó `website` retorne nulo. Este é o ativo mais valioso do
-                    sistema, pois indica uma empresa que fatura fisicamente, mas é invisível digitalmente.
+                    <span class="text-white font-mono">4. A Lógica "Mina de Ouro" (Sem Site):</span> O radar
+                    instantaneamente detecta e marca em vermelho as empresas que o sistema Google retornou campo de
+                    "site vazio". Essa é a empresa que fatura no espaço físico, mas é invisível aos clientes digitais.
                 </li>
                 <li>
-                    <span class="text-white font-mono">5. Blacklist Filter:</span> Antes de renderizar na DOM, os dados
-                    passam por um array de regex que exclui empresas como "Agências de Marketing", "Sebrae",
-                    "Prefeituras".
+                    <span class="text-white font-mono">5. Filtro de Lista Negra:</span> Antes de mostrar o resultado na
+                    tela, os dados passam por uma validação que exclui do sistema alvos indesejados como "Prefeituras",
+                    "Sebrae" ou outras "Agências de Marketing" locais.
                 </li>
             </ul>
         </section>
 
         <section id="audit" class="scroll-mt-20 mt-16">
             <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
-                <i data-lucide="scan" class="text-accent"></i> Technical Auditor
+                <i data-lucide="scan" class="text-accent"></i> Auditor Técnico
             </h2>
             <p class="text-textMuted mb-4 leading-relaxed">
-                Para leads que <strong>possuem um site</strong>, o sistema não desiste. Ele procura a falha. O <code
+                Mas e as empresas que <strong>já possuem um site</strong>? O sistema não as ignora. Ele procura as
+                falhas de implantação delas. O script <code
                     class="text-accent bg-accent/10 px-1 rounded">siteAuditor.ts</code> assume o controle.
             </p>
             <div class="code-block mb-6">
-                <div class="text-white/30 mb-2">// Lógica assíncrona do Auditor</div>
-                <span>const auditResult = await </span><span
-                    class="code-highlight">runDeepScan(</span><span>url</span><span class="code-highlight">);</span><br>
-                <span>if (auditResult.ssl === false) {</span><br>
-                <span>&nbsp;&nbsp;flagLeadAs(</span><span
-                    class="text-success">'VULNERABLE_NO_HTTPS'</span><span>);</span><br>
+                <div class="text-white/30 mb-2">// Lógica assíncrona do Auditor Técnico</div>
+                <span>const resultadoAuditoria = await </span><span
+                    class="code-highlight">executarEscaneamentoProfundo(</span><span>novo_site</span><span
+                    class="code-highlight">);</span><br>
+                <span>if (resultadoAuditoria.ssl_seguro === false) {</span><br>
+                <span>&nbsp;&nbsp;marcarAlvoComo(</span><span
+                    class="text-success">'VULNERAVEL_SEM_HTTPS'</span><span>);</span><br>
                 <span>}</span><br>
-                <span>if (auditResult.pageSpeed < 50) {</span><br>
-                        <span>&nbsp;&nbsp;flagLeadAs(</span><span
-                            class="text-success">'CRITICAL_SPEED'</span><span>);</span><br>
+                <span>if (resultadoAuditoria.velocidadeDaPagina < 50) {</span><br>
+                        <span>&nbsp;&nbsp;marcarAlvoComo(</span><span
+                            class="text-success">'LENTIDAO_CRITICA'</span><span>);</span><br>
                         <span>}</span>
             </div>
             <p class="text-textMuted text-sm">
-                O auditor faz requisições diretas ao protocolo da URL para checar Handshake SSL. Em seguida, dispara um
-                payload para a API do Google PageSpeed Insights pedindo a métrica mobile (a mais sensível), retornando o
-                Core Web Vital Score de FCP e LCP.
+                O auditor faz verificações profundas direto ao protocolo do site para checar certificados de segurança
+                válidos. Em seguida, dispara uma verificação conectada à tecnologia do Google PageSpeed, testando
+                exclusivamente a velocidade no Celular e coletando quanto tempo em segundos o site demora pra abrir.
             </p>
         </section>
 
         <section id="score" class="scroll-mt-20 mt-16">
             <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
-                <i data-lucide="flame" class="text-accent"></i> Thermal Sorting (O Score)
+                <i data-lucide="flame" class="text-accent"></i> Classificação Térmica (O Score)
             </h2>
             <p class="text-textMuted mb-4 leading-relaxed">
-                Se nós apenas listássemos os leads em ordem alfabética, seríamos uma lista telefônica. O NicheFinder usa
-                o algoritmo <strong>Thermal Sorting</strong> para empurrar pro topo da fila quem tem mais probabilidade
-                de fechar uma compra.
+                Se nós fôssemos apenas listar as empresas em ordem alfabética da cidade, seríamos as "Páginas Amarelas"
+                antigas. O NicheFinder usa o algoritmo <strong>Classificação Térmica</strong> inteligente para jogar
+                para o topo da sua tabela quem está sangrando dinheiro e implorando por uma venda.
             </p>
             <div class="p-6 bg-[#0a0a0A] border border-red-900/30 rounded-lg">
                 <h4 class="text-red-500 font-bold mb-2 uppercase tracking-widest text-xs">A Hierarquia de Dor (Quente =
-                    Mais Vermelho)</h4>
+                    Mais Vermelho na Interface)</h4>
                 <ol class="list-decimal list-inside text-sm text-textMuted space-y-2 font-mono">
-                    <li><strong class="text-white">STATUS: SEM_SITE</strong> (Peso: 100) - Alvo principal. Sem presença
-                        digital.</li>
-                    <li><strong class="text-white">STATUS: SEM_SSL</strong> (Peso: 80) - Site aponta como "Inseguro" no
-                        Chrome. Alvo de pânico.</li>
-                    <li><strong class="text-white">STATUS: SLOW_MOBILE</strong> (Peso: 60) - PageSpeed menor que 50.
-                        Perde conversão no Ads.</li>
-                    <li><strong class="text-white">STATUS: HEALTHY</strong> (Peso: 10) - O lead está bem servido. Fica
-                        no final da fila.</li>
+                    <li><strong class="text-white">STATUS: SEM_SITE</strong> (Força: 100) - O alvo absoluto de ataque.
+                        Lucro perdido que você resolve facilmente.</li>
+                    <li><strong class="text-white">STATUS: SEM_CADEADO (SSL)</strong> (Força: 80) - O site marca
+                        "Inseguro" no celular dos clientes.</li>
+                    <li><strong class="text-white">STATUS: LENTO_NO_CELULAR</strong> (Força: 60) - Uma nota de
+                        velocidade menor que 50 no sistema do Google.</li>
+                    <li><strong class="text-white">STATUS: SAUDÁVEL</strong> (Força: 10) - A empresa tem presença
+                        excelente. Fica invisível no fim da sua lista para não tomar seu tempo.</li>
                 </ol>
             </div>
         </section>
 
         <div class="section-separator"></div>
 
-        <!-- 3. ATTACK VECTORS -->
+        <!-- 3. VETORES DE ATAQUE -->
         <section id="ai" class="scroll-mt-20">
             <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
-                <i data-lucide="brain" class="text-accent"></i> Groq AI Integrations
+                <i data-lucide="brain" class="text-accent"></i> Integrações de Inteligência Artificial
             </h2>
             <p class="text-textMuted mb-4 leading-relaxed">
-                Integração direta com o modelo llama-3 da Groq (para velocidade absurda de processamento e latência
-                mínima). O script <code class="text-accent bg-accent/10 px-1 rounded">aiService.ts</code> utiliza
-                Template Literals rígidos num system prompt focado em persuasão fria.
+                Nós conectamos diretamente o motor brutal da Groq no script <code
+                    class="text-accent bg-accent/10 px-1 rounded">aiService.ts</code>. Trata-se do processamento mais
+                rápido mundial na atual geração textual, garantindo que o robô não engasgue sob demanda massiva
+                brasileira.
             </p>
             <div class="code-block mb-4">
-                <span class="text-white/50">Prompt de Conversão Injetado (Exemplo de "Sem Site")</span><br><br>
-                <span>"Você é um especialista em conversão B2B. O cliente ${lead.name} é do nicho ${lead.niche} em
-                    ${lead.city}. Ele FATURA fisicamente com ${lead.rating} estrelas, MAS NÃO POSSUI SITE. Monte uma
-                    mensagem de WhatsApp casual (máximo 3 linhas) alertando que os concorrentes da cidade estão roubando
-                    a demanda de quem busca no Google e não o encontra."</span>
+                <span class="text-white/50">Comando Interno (Exemplo para problema "Falha no
+                    Celular/Lento")</span><br><br>
+                <span>"Você é um engenheiro sênior persuasivo. A mecânica ${nomeDaEmpresa} da zona leste tem ótimas
+                    resenhas físicas do público local (${nota} estrelas). Mas eles possuem site com lentidão absurda,
+                    rodando sem cadeado no celular e ninguém entra no link que puseram lá no Maps. Crie uma mensagem
+                    curta de três frases para chamar o dono no WhatsApp de forma orgânica, dizendo que um vizinho deles
+                    notou que o painel online está falhando no Chrome."</span>
             </div>
             <p class="text-textMuted text-sm">
-                A resposta não é salva estática; caso a estratégia de venda mude, a IA gera um pitch novo no momento do
-                play. Para contornar alucinações de modelos generativos, usamos parâmetros de `temperature` abaixo de
-                0.4.
+                Esta resposta da IA nunca é padronizada ou salva em pedra. Como cada contato sofre uma análise ao vivo,
+                cada proprietário vai ler algo que parece ter sido digitado e observado exatamente e unicamente para ele
+                naquela manhã.
             </p>
         </section>
 
         <section id="pdf" class="scroll-mt-20 mt-16">
             <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
-                <i data-lucide="file-type-pdf" class="text-accent"></i> The PDF VIP Generator: O Motor Puppeteer
+                <i data-lucide="file-type-pdf" class="text-accent"></i> O Gerador de PDF VIP: Motor Puppeteer
             </h2>
             <p class="text-textMuted mb-6 leading-relaxed">
-                A maior inovação de engenharia do projeto. PDFs gerados client-side travam a aba no navegador e não
-                convertem CSS complexo bem. Nós resolvemos criando um micro-serviço Node.js isolado na porta
-                <code>3001</code>.
+                Talvez este seja o maior hack de arquitetura que aplicamos. O navegador padrão trava e chora pra criar
+                PDF customizado (ele exige clique manual do usuário para "Salvar Página Web"). Nossa solução: levantar
+                uma minúscula fábrica invisível separada usando NodeJS! Em vez do Google Chrome fazer força, nosso
+                servidor miniatura faz sozinho.
             </p>
-            <h3 class="font-bold text-white mb-3 text-sm uppercase">O Ciclo da Geração:</h3>
+            <h3 class="font-bold text-white mb-3 text-sm uppercase">Como Nasce uma Proposta VIP de R$5.000:</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono">
                 <div class="p-4 border border-border bg-surface rounded">
-                    <span class="text-accent">1. Render to String</span><br>
-                    <span class="text-textMuted mt-2 block">O Frontend pega um componente React complexo
-                        (<code>SitePDF.tsx</code>), converte para HTML String usando <code>renderToStaticMarkup</code>,
-                        embute o CSS Tailwind bruto, e envia um POST payload pro servidor 3001.</span>
+                    <span class="text-accent">1. Empacotar Envio</span><br>
+                    <span class="text-textMuted mt-2 block">O Frontend agrupa cores perfeitas, textos e um layout
+                        incrivelmente rico projetado em Tailwind React. Ele transforma isso tudo numa grande string de
+                        texto nativa e joga pelo caminho de rede via POST.</span>
                 </div>
                 <div class="p-4 border border-border bg-surface rounded">
-                    <span class="text-accent">2. Headless Chrome</span><br>
-                    <span class="text-textMuted mt-2 block">O <code>pdf-engine.js</code> usa o Puppeteer rodando de
-                        forma invisível. Ele abre uma aba em branco (`page.goto(data:text/html)`), carrega a DOM
-                        enviada, injeta fontes do Google e aguarda o <code>networkidle0</code>.</span>
+                    <span class="text-accent">2. Manipular Pelo Fantasma</span><br>
+                    <span class="text-textMuted mt-2 block">O <code>pdf-engine.js</code> usa nossa ferramenta Puppeteer.
+                        Ele abre de fundo um Chrome Fantasma (que você nem vê), injeta ali todo aquele amontoado de
+                        texto visual recebido e aguarda todas as imagens e fontes externas instalarem.</span>
                 </div>
                 <div class="p-4 border border-border bg-surface rounded">
-                    <span class="text-accent">3. Buffer to Base64</span><br>
-                    <span class="text-textMuted mt-2 block">O Puppeteer imprime a DOM no formato de impressão (A4 sem
-                        margens). O buffer PDF é gerado na RAM, formatado em <code>base64</code> e retornado no body da
-                        resposta HTTP. Sem gravar arquivos no disco.</span>
+                    <span class="text-accent">3. Imprimir Memória e Retornar</span><br>
+                    <span class="text-textMuted mt-2 block">Sem salvar nenhum PDF na sua máquina, nosso fantasma formata
+                        o documento completo perfeitamente na proporção da folha A4 e manda via código a tradução em
+                        base de texto (`base64`). Sem lixo oculto no HD.</span>
                 </div>
             </div>
         </section>
 
         <section id="bot" class="scroll-mt-20 mt-16">
             <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
-                <i data-lucide="bot" class="text-accent"></i> The Standalone WhatsApp Bot
+                <i data-lucide="bot" class="text-accent"></i> O Robô Autônomo WhatsApp (Standalone)
             </h2>
             <p class="text-textMuted mb-4 leading-relaxed">
-                O frontend do NicheFinder Guru não envia mensagens para o WhatsApp. Fazer envios em massa via web
-                webhooks causa banimento imediato. A solução é o script isolado <code
-                    class="text-accent bg-accent/10 px-1 rounded">wa-bot.js</code> baseado no <a href="#"
-                    class="text-blue-400 hover:underline">Baileys (Node WhatsApp Web socket)</a>.
+                Tentar invadir as portas do navegador com disparos em massa geraria imediato bloqueio por robôs de
+                patrulha do Facebook Meta (O famoso BAN na conta WA). Fomos forçados a programar um soldado à parte, o
+                <code class="text-accent bg-accent/10 px-1 rounded">wa-bot.js</code> baseado no protocolo oficial direto
+                via soquetes de comunicação nativos da máquina!
             </p>
 
             <div class="border-l-2 border-accent pl-6 py-2 mb-6">
-                <h4 class="text-white font-bold mb-2">A Arquitetura de Fila (Queue)</h4>
+                <h4 class="text-white font-bold mb-2">Engenharia Anti-Ban e o Fio Condutor (Fila / Queue)</h4>
                 <p class="text-sm text-textMuted">
-                    O bot nunca olha pro frontend. Ele se conecta via <code>@supabase/supabase-js</code> na tabela
-                    `whatsapp_queue`. Ele escuta o banco com long polling ou Webhooks. Quando o humano no Painel de
-                    Automação aperta "Play" em uma lista de Leads Quentes, eles caem nessa fila com status "PENDING".
+                    Nossa automação nunca dá as mãos pra plataforma de clique principal. O Robô fica calado conectado
+                    nos trilhos do Servidor Banco de Dados `whatsapp_queue`. Você aciona "Começar" no painel gerencial,
+                    e os comandos viram pequenas bandeiras.
                 </p>
             </div>
 
-            <h4 class="text-white font-bold mb-3 font-mono text-sm">Flow de Execução Segura (Anti-Ban):</h4>
+            <h4 class="text-white font-bold mb-3 font-mono text-sm">Passo a Passo da Operação Segura Autônoma:</h4>
             <ul class="space-y-3 text-textMuted text-sm font-mono bg-surface p-6 rounded-lg border border-border">
-                <li><span class="text-success">&rarr;</span> Bot acorda e puxa Lead 1 da Fila.</li>
-                <li><span class="text-success">&rarr;</span> Checa se o número existe no WhatsApp
-                    (<code>onWhatsApp()</code> query).</li>
-                <li><span class="text-success">&rarr;</span> Simula "Typing..." por X segundos (onde X = len(mensagem) *
-                    0.1).</li>
-                <li><span class="text-success">&rarr;</span> Envia o PDF em Base64 como <code>document</code> mimeType.
-                </li>
-                <li><span class="text-success">&rarr;</span> Envia a Copy de Dor gereda pela Groq.</li>
-                <li><span class="text-success">&rarr;</span> <span class="text-accent">Gatilho de Segurança:</span>
-                    Applica um `setTimeout` randomizado entre 45s a 120s antes de olhar pro Lead 2, simulando
-                    comportamento estritamente humano padrão.</li>
-                <li><span class="text-success">&rarr;</span> Marca na `whatsapp_queue` como "SENT".</li>
+                <li><span class="text-success">&rarr;</span> Robô acorda na sombra, pede informações pela bandeira 1 na
+                    Fila.</li>
+                <li><span class="text-success">&rarr;</span> Pergunta secretamente ao WA Meta "Esse número existe lá?"
+                    usando protocolo seguro.</li>
+                <li><span class="text-success">&rarr;</span> Confirma e aciona o status digital "Digitando..." e
+                    paralisa na quantidade de tempo correta dependendo se a argumentação Groq foi curta ou longa
+                    (humanização técnica impecável).</li>
+                <li><span class="text-success">&rarr;</span> Evita imagens com baixa qualidade e aciona disparo oficial
+                    do PDF mágico. Segundos depois manda o texto persuasivo do Groq por baixo.</li>
+                <li><span class="text-success">&rarr;</span> <span class="text-accent">A Mágica Anti-Robôs Meta:</span>
+                    Força uma sesta técnica em um número de segundos sempre completamente modificado no intervalo entre
+                    45 e 120 antes de ousar enxergar as próximas opções.</li>
+                <li><span class="text-success">&rarr;</span> Notifica no servidor a tag "ENVIADO!". O seu sistema
+                    reflete alterando a cor ao vivo de vermelho pra ver.</li>
             </ul>
         </section>
 
         <div class="section-separator"></div>
 
-        <!-- 4. UI INTERFACES -->
+        <!-- 4. INTERFACE DE USUÁRIO -->
         <section id="ui-radar" class="scroll-mt-20">
             <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
-                <i data-lucide="layout-dashboard" class="text-accent"></i> User Interface & Flow
+                <i data-lucide="layout-dashboard" class="text-accent"></i> Interface de Usuário Local
             </h2>
             <p class="text-textMuted mb-6 leading-relaxed">
-                A interface foi construída seguindo o padrão Dark Mode Brutalist, visando menos distração estética e
-                máxima concentração em dados numéricos e indicadores de falha dos leads. Navegação puramente Sidebar
-                state-based.
+                Todo o ambiente da operação foi blindado sob um visual pesado Brutalista, tons negros profundos com
+                letreiros chamativos pontuais. Tiramos todas as distrações para forçar atenção máxima 100% onde o
+                trabalho impera. Sem perda de tempo, controle de interface sempre via menu flutuante fixado pela
+                vertical esquerda.
             </p>
 
             <div class="grid gap-8">
-                <!-- UI Block 1 -->
+                <!-- Bloco UI 1 -->
                 <div>
-                    <h3 class="text-white font-bold mb-2" id="ui-radar">A. A Tela do Radar</h3>
+                    <h3 class="text-white font-bold mb-2" id="ui-radar">A. Central Radar Diária</h3>
                     <p class="text-sm text-textMuted mb-3">
-                        O painel de inicialização. Possui as entradas para Nicho e Cidades (gerenciadas via Local State
-                        do React). Ao iniciar, abre um feed em overlay que simula a requisição TCP caindo (através de
-                        animações progressivas usando CSS <code>animate-in</code> e Tailwind <code>slide-in</code>),
-                        exibindo cartões modulares indicando as tags vermelhas "SEM SITE".
+                        Ponto oficial de inicialização territorial. Possui apenas as entradas diretas de Município e o
+                        Ramo Comercial que será tratorado. Assim que inicia via cliques visuais, simula esteticamente
+                        processos de caça nativa fluida de dados. Revela os blocos avermelhados pontuais alertando os
+                        valiosos perfis "Sem Conexão Online/Sem Site".
                     </p>
                 </div>
 
-                <!-- UI Block 2 -->
+                <!-- Bloco UI 2 -->
                 <div>
-                    <h3 class="text-white font-bold mb-2" id="ui-leads">B. Painel de Leads (CRM)</h3>
+                    <h3 class="text-white font-bold mb-2" id="ui-leads">B. Setor Comercial / Linha Viva (CRM)</h3>
                     <p class="text-sm text-textMuted mb-3">
-                        Tabela construída com suporte a paginação assíncrona. Aqui o Thermal Sorting entra em cena
-                        visualmente. Os leads sem site ganham selos de chamas (indicando urgência alta). Nesta aba, o
-                        cliente pode clicar no menu de contexto (cabeçalho de ação do Shadcn UI) e selecionar "Auditar
-                        Deep Scan" ou individualmente disparar a API de PDF.
+                        Tabela de grande capacidade desenhada pro processamento paginado com limite e scroll instantâneo
+                        infinito ao vivo. Os emblemas e notas ordenadas sob hierarquia técnica são espelhados
+                        imediatamente no visual das caixas, facilitando você clicar exatamente na maior carência e bater
+                        num clique veloz disparando uma Auditoria e um VIP PDF gerado antes de respirar.
                     </p>
                 </div>
 
-                <!-- UI Block 3 -->
+                <!-- Bloco UI 3 -->
                 <div>
-                    <h3 class="text-white font-bold mb-2" id="ui-automation">C. Painel de Automação (Missão de Controle)
-                    </h3>
+                    <h3 class="text-white font-bold mb-2" id="ui-automation">C. Base Operacional de Tiro (Status
+                        Realtime)</h3>
                     <p class="text-sm text-textMuted mb-3">
-                        Um espelho do banco de dados `whatsapp_queue`. Ele puxa dados em realtime do Supabase
-                        (utilizando subscriptions WebSocket fornecidos pela lib nativa). Não executa nenhuma rotina Node
-                        de disparo; ele apenas envia ordens (comandos UPDATE na base) ordenando o <code>wa-bot.js</code>
-                        sobre o que fazer e assistindo à contagem das mensagens "Pendentes" e "Enviadas" alterarem
-                        dinamicamente.
+                        Quadro vivo do seu robô independente de ataques no Whatsapp Node. Totalmente passivo, este menu
+                        atua puramente pela subscrição instantânea do WebSockets nativo via Supabase para alterar caixas
+                        textuais. O ato de pressionar os ícones geram chamadas no back-end alterando as engrenagens
+                        silenciosamente. Exibe estatísticas vitais visuais dos processos do cérebro "em andamento",
+                        "falhados" ou "vencidos na hora".
                     </p>
                 </div>
             </div>
         </section>
 
         <footer class="mt-24 pt-8 border-t border-border/50 text-center text-xs font-mono text-textMuted">
-            DOCUMENTATION ENGINEERED FOR NICHEFINDER GURU.<br>
-            UNAUTHORIZED DISTRIBUTION IS STRICTLY PROHIBITED. <span class="text-accent">END_OF_FILE.</span>
+            DOCUMENTAÇÃO MODELADA & BLINDADA PARA O NICHEFINDER GURU.<br>
+            CÓDIGOS E INTEGRAÇÕES RESERVADAS.<br> <span class="text-accent">FIM_DO_ARQUIVO.</span>
         </footer>
 
     </main>
@@ -467,7 +479,7 @@
     <script>
         lucide.createIcons();
 
-        // Active Link Highlighting (Pure JS)
+        // Destaque Ativo Em Navegação de Rolagem Horizontal Pura
         document.addEventListener('DOMContentLoaded', () => {
             const sections = document.querySelectorAll('section[id]');
             const navLinks = document.querySelectorAll('.nav-link');
@@ -478,7 +490,7 @@
                 sections.forEach(section => {
                     const sectionTop = section.offsetTop;
                     const sectionHeight = section.clientHeight;
-                    // Ajuste de offset para o header fixo/scroll
+                    // Limite agressivo de observação rolagem técnica fixa nativa sem framework
                     if (scrollY >= (sectionTop - 150)) {
                         currentPath = section.getAttribute('id');
                     }
