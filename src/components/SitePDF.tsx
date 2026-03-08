@@ -97,7 +97,7 @@ const SitePDFTemplate: React.FC<PdfTemplateProps> = ({ business, m, badHtml, goo
         {m.sellerName.toUpperCase()}
       </div>
       <div className="text-[#9696a0] font-medium text-[9px] tracking-wider">
-        Página {page} de 7
+        Página {page} de 8
       </div>
     </div>
   );
@@ -141,7 +141,8 @@ const SitePDFTemplate: React.FC<PdfTemplateProps> = ({ business, m, badHtml, goo
               {business.niche.includes('dentista') || business.niche.includes('odontologia') ? 'DOXOSIÊ ESTRATÉGICO DE SAÚDE BUCAL' :
                 business.niche.includes('advogado') || business.niche.includes('juridico') ? 'DOSSIÊ DE AUTORIDADE JURÍDICA' :
                   business.niche.includes('beach') || business.niche.includes('areia') ? 'PROJETO DE DOMINAÇÃO DA AREIA' :
-                    'DOSSIÊ ESTRATÉGICO B2B'}
+                    business.niche.toLowerCase().includes('sistema') || business.niche.toLowerCase().includes('software') || business.niche.toLowerCase().includes('tecnologia') ? 'DOSSIÊ DE ENGENHARIA E ESCALA SAAS' :
+                      'DOSSIÊ ESTRATÉGICO B2B'}
             </h3>
             <h1 className="text-[68px] font-black text-white leading-[1] tracking-tighter max-w-[750px] uppercase">
               PLANO DE <span className="text-[#D4AF37]">DOMINAÇÃO</span> {business.niche.toUpperCase()}
@@ -175,18 +176,21 @@ const SitePDFTemplate: React.FC<PdfTemplateProps> = ({ business, m, badHtml, goo
             {business.niche.includes('dentista') ? 'PACIENTES NÃO BUSCAM PREÇO, BUSCAM CONFIANÇA.' :
               business.niche.includes('advogado') ? 'CLIENTES NÃO BUSCAM LEIS, BUSCAM VITÓRIAS.' :
                 business.niche.includes('beach') ? 'JOGADORES NÃO BUSCAM AREIA, BUSCAM EXPERIÊNCIA.' :
-                  'O GOOGLE NÃO PERDOA AMADORES.'}
+                  business.niche.toLowerCase().includes('sistema') || business.niche.toLowerCase().includes('software') ? 'EMPRESAS NÃO BUSCAM CÓDIGO, BUSCAM RESULTADOS.' :
+                    'O GOOGLE NÃO PERDOA AMADORES.'}
           </h2>
 
           <p className="text-[17px] text-[#e6e6eb] font-medium leading-relaxed mb-6 max-w-[650px]">
             {business.niche.includes('dentista') ? `Atualmente, quando um paciente em ${business.city} procura por especialistas em ${business.niche}, qual é a imagem que a ${business.name} transmite?` :
               business.niche.includes('advogado') ? `Atualmente, quando um cliente precisa de auxílio jurídico em ${business.city}, como ele percebe a autoridade da ${business.name}?` :
-                `Atualmente, quando um cliente em ${business.city} procura pelos serviços da ${business.name}, qual é a primeira impressão que ele tem?`}
+                business.niche.toLowerCase().includes('sistema') || business.niche.toLowerCase().includes('software') ? `No mercado de tecnologia de ${business.city}, a ${business.name} é vista como uma solução de elite ou apenas mais um utilitário?` :
+                  `Atualmente, quando um cliente em ${business.city} procura pelos serviços da ${business.name}, qual é a primeira impressão que ele tem?`}
           </p>
           <p className="text-[15px] text-[#9696a0] font-medium leading-relaxed mb-12 max-w-[650px]">
             {business.niche.includes('dentista') ? 'Ter um site lento ou inexistente é como ter um consultório sem placa. O paciente premium desiste antes mesmo de agendar a primeira avaliação.' :
               business.niche.includes('advogado') ? 'A falta de um portal de autoridade faz com que sua banca pareça pequena diante dos concorrentes que já dominam o digital.' :
-                'Não ter um site de alta conversão é entregar dinheiro nas mãos da sua concorrência todos os dias. O seu cliente sente desconfiança e busca o próximo da lista.'}
+                business.niche.toLowerCase().includes('sistema') ? 'Para uma empresa de software, um site amador é um atestado de incompetência técnica. O seu cliente espera perfeição digital antes de assinar o contrato.' :
+                  'Não ter um site de alta conversão é entregar dinheiro nas mãos da sua concorrência todos os dias. O seu cliente sente desconfiança e busca o próximo da lista.'}
           </p>
 
           {/* Score Card */}
@@ -304,19 +308,85 @@ const SitePDFTemplate: React.FC<PdfTemplateProps> = ({ business, m, badHtml, goo
         <Footer page={3} />
       </div>
 
-      {/* ------------------------ PÁGINA 4: ENGENHARIA ------------------------ */}
+      {/* ------------------------ PÁGINA 4: A NOVA VISÃO (SITE PREVIEW) ------------------------ */}
+      <div className="pdf-page bg-[#0a0a0c] relative px-16 py-20 flex flex-col">
+        <Header title="" />
+        <div className="z-10 mt-12 flex-1 relative">
+          <p className="text-[#D4AF37] font-bold text-[13px] tracking-[0.3em] mb-4 uppercase">03 // COMO SEU SITE PODERIA FICAR</p>
+          <h2 className="text-[44px] font-black text-white tracking-tighter leading-[1] mb-8 max-w-[750px] uppercase">
+            Sua Nova <span className="text-[#D4AF37]">Identidade de Poder.</span>
+          </h2>
+
+          <div className="bg-[#141418] border border-amber-500/20 rounded-2xl p-8 mb-10 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-40 h-40 bg-amber-500/5 rounded-full blur-3xl" />
+
+            <div className="mb-8">
+              <span className="text-amber-500 font-black text-[10px] tracking-[0.2em] uppercase mb-2 block">HEADLINE SUGERIDA</span>
+              <h3 className="text-3xl font-black text-white leading-tight">
+                {business.site_preview?.headline || `Domine o Mercado de ${business.niche} em ${business.city}`}
+              </h3>
+            </div>
+
+            <div className="mb-10">
+              <span className="text-amber-500 font-black text-[10px] tracking-[0.2em] uppercase mb-2 block">SUB-HEADLINE ESTRATÉGICA</span>
+              <p className="text-xl text-slate-300 font-medium">
+                {business.site_preview?.subheadline || "Posicionamento premium focado em atrair e converter os melhores clientes da sua região."}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-8">
+              <div>
+                <span className="text-amber-500 font-black text-[10px] tracking-[0.2em] uppercase mb-4 block">BENEFÍCIOS DE ELITE</span>
+                <ul className="space-y-3">
+                  {(business.site_preview?.benefits || ["Autoridade Instantânea", "Design de Luxo", "Conversão 3x Maior"]).map((b, i) => (
+                    <li key={i} className="flex items-center gap-3 text-sm text-slate-400 font-bold">
+                      <div className="w-4 h-4 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-500 text-[10px]">✓</div>
+                      {b}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <span className="text-amber-500 font-black text-[10px] tracking-[0.2em] uppercase mb-4 block">SERVIÇOS EM DESTAQUE</span>
+                <ul className="space-y-3">
+                  {(business.site_preview?.services || ["Plano de Dominação", "Consultoria VIP"]).map((s, i) => (
+                    <li key={i} className="flex items-center gap-3 text-sm text-slate-400 font-bold">
+                      <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
+                      {s}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6">
+            <div className="bg-[#1a1a20] border border-slate-800 rounded-2xl p-6">
+              <span className="text-[#6366f1] font-black text-[10px] tracking-[0.2em] uppercase mb-3 block">RESUMO DA TRANSFORMAÇÃO</span>
+              <p className="text-slate-300 text-sm leading-relaxed italic">
+                "{business.site_preview_summary || "Esta nova estrutura remove todas as fricções que impedem seu cliente de tomar uma decisão hoje, elevando o valor percebido do seu serviço ao nível máximo de autoridade."}"
+              </p>
+            </div>
+          </div>
+        </div>
+        <Footer page={4} />
+      </div>
+
+      {/* ------------------------ PÁGINA 5: ENGENHARIA ------------------------ */}
       <div className="pdf-page bg-[#050507] relative px-16 py-20 flex flex-col border-[15px] border-[#0a0a0c]">
         <Header title="" />
         <div className="z-10 mt-12 flex-1 relative">
           <p className="text-[#D4AF37] font-bold text-[13px] tracking-[0.3em] mb-4 uppercase">
-            03 // {business.niche.includes('dentista') ? 'BIOSSEGURANÇA DIGITAL' :
+            {business.niche.includes('dentista') ? 'BIOSSEGURANÇA DIGITAL' :
               business.niche.includes('advogado') ? 'PROTOCOLOS DE AUTORIDADE' :
-                'ENGENHARIA DE ALTA PRECISÃO'}
+                business.niche.toLowerCase().includes('sistema') ? 'STACK DE PERFORMANCE SaaS' :
+                  '04 // ENGENHARIA DE ALTA PRECISÃO'}
           </p>
           <h2 className="text-[44px] font-black text-white tracking-tighter leading-[1] mb-12 max-w-[750px] uppercase">
             {business.niche.includes('dentista') ? 'SISTEMAS DESENHADOS PARA ATRAIR' :
               business.niche.includes('advogado') ? 'SISTEMAS PARA BLINDAR SUA' :
-                'SISTEMAS DESENHADOS PARA'} <span className="text-[#D4AF37]">{business.niche.includes('dentista') ? 'PACIENTES PREMIUM.' : business.niche.includes('advogado') ? 'REPUTAÇÃO.' : 'CONVERSÃO IMPLACÁVEL.'}</span>
+                business.niche.toLowerCase().includes('sistema') ? 'INFRAESTRUTURA PARA ESCALAR' :
+                  'SISTEMAS DESENHADOS PARA'} <span className="text-[#D4AF37]">{business.niche.includes('dentista') ? 'PACIENTES PREMIUM.' : business.niche.includes('advogado') ? 'REPUTAÇÃO.' : business.niche.toLowerCase().includes('sistema') ? 'SEU FATURAMENTO.' : 'CONVERSÃO IMPLACÁVEL.'}</span>
           </h2>
 
           <div className="grid grid-cols-2 gap-6">
@@ -350,38 +420,40 @@ const SitePDFTemplate: React.FC<PdfTemplateProps> = ({ business, m, badHtml, goo
             ))}
           </div>
         </div>
-        <Footer page={4} />
+        <Footer page={5} />
       </div>
 
-      {/* ------------------------ PÁGINA 5: PLANOS ------------------------ */}
+      {/* ------------------------ PÁGINA 6: PLANOS ------------------------ */}
       <div className="pdf-page bg-[#050507] relative px-12 py-20 flex flex-col border-[15px] border-[#0a0a0c]">
         <Header title="" />
         <div className="z-10 mt-8 flex-1">
           <p className="text-[#D4AF37] font-bold text-[12px] tracking-[0.3em] mb-3 ml-4 uppercase">
-            04 // {business.niche.includes('dentista') ? 'INVESTIMENTO EM SAÚDE DIGITAL' :
+            {business.niche.includes('dentista') ? 'INVESTIMENTO EM SAÚDE DIGITAL' :
               business.niche.includes('advogado') ? 'HONORÁRIOS DE EXPANSÃO' :
-                'ARSENAL DE COMBATE'}
+                business.niche.toLowerCase().includes('sistema') ? 'INVESTIMENTO EM CRESCIMENTO' :
+                  '05 // ARSENAL DE COMBATE'}
           </p>
           <h2 className="text-[32px] font-black text-white tracking-tight leading-[1] mb-12 ml-4 max-w-[700px] uppercase">
             {business.niche.includes('dentista') ? 'PLANOS PARA UM CONSULTÓRIO DE ALTA PERFORMANCE.' :
               business.niche.includes('advogado') ? 'PLANOS PARA UMA BANCA DE ADVOCACIA DOMINANTE.' :
-                'INVESTIMENTOS CALCULADOS PARA RETORNO MÁXIMO.'}
+                business.niche.toLowerCase().includes('sistema') ? 'MODELOS DE ESCALA PARA EMPRESAS DE TECNOLOGIA.' :
+                  'INVESTIMENTOS CALCULADOS PARA RETORNO MÁXIMO.'}
           </h2>
 
           <div className="flex gap-4 items-stretch h-[550px]">
             {[
               {
-                n: business.niche.includes('dentista') ? "CLINIC" : business.niche.includes('advogado') ? "LEGAL" : "ESSENTIAL",
+                n: business.niche.includes('dentista') ? "CLINIC" : business.niche.includes('advogado') ? "LEGAL" : business.niche.toLowerCase().includes('sistema') ? "START" : "ESSENTIAL",
                 pc: "Presença Vital", isPro: false, bgc: 'bg-[#0a0a0c]', brd: 'border-slate-800', tx: 'text-slate-400', tk: 'text-slate-600',
                 f: ["Single-Page Imersiva", "Design Responsivo Elite", "Segurança Blindada SSL", "Integração WhatsApp", "Fundação de SEO Local", "Hospedagem Gerenciada"]
               },
               {
-                n: business.niche.includes('dentista') ? "PREMIUM" : business.niche.includes('advogado') ? "AUTHORITY" : "DOMINANCE",
+                n: business.niche.includes('dentista') ? "PREMIUM" : business.niche.includes('advogado') ? "AUTHORITY" : business.niche.toLowerCase().includes('sistema') ? "GROWTH" : "DOMINANCE",
                 pc: "Máquina de Atração", isPro: true, bgc: 'bg-[#141418]', brd: 'border-amber-500/50', tx: 'text-white', tk: 'text-[#D4AF37]',
                 f: ["Multi-Page de Luxo", "Animações High-End", "Analytics Avançado", "Google Maps Expert", "Copywriting de Elite", "Selo de Autoridade"]
               },
               {
-                n: "IMPERIUM", pc: "Monopólio Digital", isPro: false, bgc: 'bg-[#0a0a0c]', brd: 'border-slate-800', tx: 'text-slate-300', tk: 'text-slate-500',
+                n: business.niche.toLowerCase().includes('sistema') ? "ENTERPRISE" : "IMPERIUM", pc: "Monopólio Digital", isPro: false, bgc: 'bg-[#0a0a0c]', brd: 'border-slate-800', tx: 'text-slate-300', tk: 'text-slate-500',
                 f: ["Ecossistema Full Stack", "Infra de Alta Escala", "Gestão de Conteúdo", "Ads Ready Architecture", "Support VIP 24/7", "Consultoria de Escala"]
               }
             ].map((t, i) => (
@@ -411,14 +483,14 @@ const SitePDFTemplate: React.FC<PdfTemplateProps> = ({ business, m, badHtml, goo
             ))}
           </div>
         </div>
-        <Footer page={5} />
+        <Footer page={6} />
       </div>
 
-      {/* ------------------------ PÁGINA 6: TABELA TÉCNICA ------------------------ */}
+      {/* ------------------------ PÁGINA 7: TABELA TÉCNICA ------------------------ */}
       <div className="pdf-page bg-[#050507] relative px-16 py-20 flex flex-col border-[15px] border-[#0a0a0c]">
         <Header title="" />
         <div className="z-10 mt-12 flex-1">
-          <p className="text-[#D4AF37] font-bold text-[13px] tracking-[0.3em] mb-4 uppercase">05 // ESPECIFICAÇÕES DE ENGENHARIA</p>
+          <p className="text-[#D4AF37] font-bold text-[13px] tracking-[0.3em] mb-4 uppercase">06 // ESPECIFICAÇÕES DE ENGENHARIA</p>
           <h2 className="text-[34px] font-black text-white tracking-tighter leading-[1.1] mb-12 max-w-[700px] uppercase">
             COMPARAÇÃO DE <span className="text-[#D4AF37]">CAPACIDADES TÉCNICAS.</span>
           </h2>
@@ -474,18 +546,18 @@ const SitePDFTemplate: React.FC<PdfTemplateProps> = ({ business, m, badHtml, goo
             </p>
           </div>
         </div>
-        <Footer page={6} />
+        <Footer page={7} />
       </div>
 
-      {/* ------------------------ PÁGINA 7: CTA ------------------------ */}
+      {/* ------------------------ PÁGINA 8: CTA ------------------------ */}
       <div className="pdf-page bg-[#0a0a0c] relative px-24 py-32 flex flex-col justify-center border-[15px] border-[#0a0a0c] overflow-hidden">
         <Header title="" />
 
         {/* Big Decorative Number BG */}
-        <div className="absolute -right-20 top-1/2 -translate-y-1/2 text-[500px] font-black text-slate-900 leading-none pointer-events-none opacity-20">06</div>
+        <div className="absolute -right-20 top-1/2 -translate-y-1/2 text-[500px] font-black text-slate-900 leading-none pointer-events-none opacity-20">07</div>
 
         <div className="z-10 w-full flex flex-col flex-1 mt-10">
-          <p className="text-[#D4AF37] font-bold text-[14px] tracking-[0.4em] mb-6 uppercase">06 // ASSUMA A LIDERANÇA</p>
+          <p className="text-[#D4AF37] font-bold text-[14px] tracking-[0.4em] mb-6 uppercase">07 // ASSUMA A LIDERANÇA</p>
           <h2 className="text-[52px] font-black text-white tracking-tighter leading-[1] mb-8 max-w-[700px] uppercase">
             {business.niche.includes('dentista') ? 'SEU PRÓXIMO PACIENTE ESTÁ' :
               business.niche.includes('advogado') ? 'SEU PRÓXIMO CLIENTE ESTÁ' :
@@ -521,7 +593,7 @@ const SitePDFTemplate: React.FC<PdfTemplateProps> = ({ business, m, badHtml, goo
             </div>
           </div>
         </div>
-        <Footer page={7} />
+        <Footer page={8} />
       </div>
 
     </div>

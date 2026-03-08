@@ -9,6 +9,14 @@ export interface DeepInfo {
     website?: string;
     rating?: number;
     totalRatings?: number;
+    types?: string[];
+    description?: string;
+    reviews?: Array<{
+        user?: string;
+        rating?: number;
+        text?: string;
+        date?: string;
+    }>;
 }
 
 const getHeaders = () => {
@@ -85,7 +93,16 @@ export const findDeepInfoViaSerper = async (businessName: string, city: string):
         if (place.website) info.website = place.website;
         if (place.rating) info.rating = place.rating;
         if (place.ratingCount) info.totalRatings = place.ratingCount;
-        console.log(`[Serper] Dados de Places capturados para ${businessName}`);
+        if (place.types) info.types = place.types;
+        if (place.reviews) {
+            info.reviews = place.reviews.map((r: any) => ({
+                user: r.author,
+                rating: r.rating,
+                text: r.text,
+                date: r.date
+            }));
+        }
+        console.log(`[Serper] Dados de Places + Reviews capturados para ${businessName}`);
     }
 
     // 2. Busca Geral para Redes Sociais e Fallback
@@ -121,6 +138,7 @@ export const findDeepInfoViaSerper = async (businessName: string, city: string):
                     const aggregators = ['tripadvisor', 'reclameaqui', 'guiamais', 'solutudo', 'mapa.com', 'listamais', 'yelp'];
                     if (!aggregators.some(a => link.includes(a))) {
                         info.website = result.link;
+                        if (!info.description) info.description = result.snippet; // Captura snippet como descrição
                     }
                 }
             }

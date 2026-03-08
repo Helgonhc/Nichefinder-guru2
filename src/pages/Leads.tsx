@@ -13,6 +13,7 @@ import { scoreLead } from "@/lib/conversionEngine";
 import { useAuth } from "@/contexts/AuthContext";
 import { exportLeadsToCSV } from "@/lib/exportCSV";
 import { PipelineAlerts } from "@/components/PipelineAlerts";
+import { calculateOpportunity } from "@/lib/opportunityEngine";
 
 const Leads = () => {
     const navigate = useNavigate();
@@ -71,7 +72,16 @@ const Leads = () => {
                         conversionResult: item.conversion_result || item.meta_data?.conversion_result || 'nulo',
                         cadenceStage: item.cadence_stage || item.meta_data?.cadenceStage || 'D0',
                         automationStatus: item.automation_status || item.meta_data?.automation_status || 'idle',
-                        motivoOferta: item.motivo_oferta || item.meta_data?.motivoPrincipalDaOferta
+                        motivoOferta: item.motivo_oferta || item.meta_data?.motivoPrincipalDaOferta,
+
+                        // Opportunity Engine Mapping
+                        opportunity_score: item.opportunity_score || item.meta_data?.opportunity_score,
+                        opportunity_level: item.opportunity_level || item.meta_data?.opportunity_level,
+                        primary_reason: item.primary_reason || item.meta_data?.primary_reason,
+                        secondary_reason: item.secondary_reason || item.meta_data?.secondary_reason,
+                        recommended_offer: item.recommended_offer || item.meta_data?.recommended_offer,
+                        opportunity_summary: item.opportunity_summary || item.meta_data?.opportunity_summary,
+                        opportunity_flags: item.opportunity_flags || item.meta_data?.opportunity_flags
                     };
 
                     const { score, temperature, reason } = scoreLead(leadBase);
@@ -127,7 +137,9 @@ const Leads = () => {
                     foundItems: lead.foundItems,
                     performanceScore: lead.performanceScore,
                     seoScore: lead.seoScore,
-                    mobileFriendly: lead.mobileFriendly
+                    mobileFriendly: lead.mobileFriendly,
+                    // --- OPPORTUNITY ENGINE INTEGRATION ---
+                    ...calculateOpportunity(lead)
                 }
             }));
 

@@ -1,9 +1,11 @@
-
 import { createClient } from '@supabase/supabase-js';
 import puppeteer from 'puppeteer';
 import * as dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { calculateOpportunity } from './opportunityEngine.js';
+import { generateRemakePreview } from './remakePreviewEngine.js';
+import { auditWebsite } from './siteAuditor.js';
 
 dotenv.config();
 
@@ -19,6 +21,11 @@ const groqApiKey = process.env.VITE_GROQ_API_KEY;
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 const botOwnerId = process.env.BOT_OWNER_ID;
+
+// Configuração Evolution API v2
+const evolutionInstanceId = process.env.EVOLUTION_INSTANCE_ID || 'default';
+const evolutionApiKey = process.env.EVOLUTION_API_KEY;
+const evolutionBaseUrl = process.env.EVOLUTION_BASE_URL || 'http://localhost:8080';
 
 // Log de Diagnóstico Inicial
 const ROBOT_VERSION = "2.6.0-AUTONOMOUS";
@@ -276,9 +283,10 @@ function scoreLead(lead, audit = null) {
     return { score, temperature };
 }
 
-async function auditWebsite(url, businessName) {
-    if (!browser) return { error: 'Browser not active' };
-    const page = await browser.newPage();
+async function auditWebsite(url, businessName, browserInstance = null) {
+    const targetBrowser = browserInstance || browser;
+    if (!targetBrowser) return { error: 'Browser not active' };
+    const page = await targetBrowser.newPage();
     const normalizedUrl = url.startsWith('http') ? url : `https://${url}`;
 
     let auditData = {
@@ -356,6 +364,7 @@ async function auditWebsite(url, businessName) {
     let pageSpeedSuccess = false;
 
     try {
+        const googleApiKey = process.env.VITE_GOOGLE_PLACES_API_KEY;
         const psUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(normalizedUrl)}&category=PERFORMANCE&category=SEO&category=ACCESSIBILITY&category=BEST_PRACTICES&key=${googleApiKey}`;
         const psResp = await fetch(psUrl);
         if (psResp.ok) {
@@ -820,7 +829,19 @@ async function runBot() {
             const isAutomatedScanDue = scheduler.active && scheduler.autoAnalyze && isWithinWindowGeneral && (now - lastScanTime > (24 * 60 * 60 * 1000) / scheduler.scansPerDay);
             const pendingActions = scheduler.forceCapture || scheduler.forceSend || isAutomatedScanDue;
 
-            if (!browser) {
+            if (browser && page) {
+                try {
+                    // Verificação proativa de integridade do frame
+                    await page.mainFrame();
+                } catch (e) {
+                    await logToSupabase('⚠️ Conexão com a página perdida ou instável. Reiniciando navegador...');
+                    try { if (browser) await browser.close(); } catch (ce) { }
+                    browser = null;
+                    page = null;
+                }
+            }
+
+            if (!browser || !browser.isConnected()) {
                 await logToSupabase('🌐 Abrindo Navegador e acessando WhatsApp...');
                 browser = await puppeteer.launch({
                     headless: false,
@@ -830,6 +851,37 @@ async function runBot() {
                 page = await browser.newPage();
                 await page.goto('https://web.whatsapp.com', { waitUntil: 'domcontentloaded', timeout: 60000 });
                 await logToSupabase('✅ Navegador pronto. Aguardando conexão...');
+            }
+
+            // --- DETECÇÃO DE CONEXÃO ---
+            let isConnectedNow = false;
+            try {
+                if (page) {
+                    // Pequeno fôlego para estabilização de frames
+                    await new Promise(r => setTimeout(r, 1000));
+                    isConnectedNow = await page.evaluate(() => {
+                        return !!document.querySelector('[data-testid="chat-list"]') ||
+                            !!document.querySelector('[data-testid="side-panel"]') ||
+                            !!document.querySelector('#side');
+                    });
+                }
+            } catch (evalErr) {
+                if (evalErr.message.includes('main frame') || evalErr.message.includes('early')) {
+                    throw evalErr; // Repassa para o catch principal reiniciar o navegador
+                }
+                console.error('Erro silencioso na detecção de conexão:', evalErr.message);
+            }
+
+            if (isConnectedNow && !config.connected) {
+                await logToSupabase('🔗 WhatsApp Conectado com Sucesso!');
+                const newMeta = { ...config, connected: true };
+                await supabase.from('leads').update({ meta_data: newMeta }).eq('id', statusLead.id);
+                config.connected = true; // Atualiza ref local para não esperar o próximo loop
+            } else if (!isConnectedNow && config.connected) {
+                await logToSupabase('⚠️ WhatsApp parece desconectado. Aguardando login...');
+                const newMeta = { ...config, connected: false };
+                await supabase.from('leads').update({ meta_data: newMeta }).eq('id', statusLead.id);
+                config.connected = false;
             }
 
             // --- 0. VARREDURA (SCAN) ---
@@ -843,10 +895,10 @@ async function runBot() {
                 const shouldScan = scheduler.forceCapture || isAutomatedScanDue;
 
                 if (scheduler.forceCapture) {
-                    await logToSupabase(`⚡ Gatilho Manual Detectado! Iniciando mineração imediata...`);
-                    // Reseta o gatilho no Supabase para não repetir eternamente
+                    await logToSupabase(`⚡ Gatilho Manual de Mineração!`);
+                    // Reseta o gatilho no Supabase
                     const newMeta = { ...config, scheduler: { ...scheduler, forceCapture: false } };
-                    await supabase.from('leads').update({ meta_data: newMeta }).eq('name', 'ROBOT_STATUS');
+                    await supabase.from('leads').update({ meta_data: newMeta }).eq('name', 'ROBOT_STATUS').eq('user_id', botOwnerId);
                 }
 
                 if (!shouldScan) {
@@ -896,7 +948,7 @@ async function runBot() {
                                 ];
                                 const shouldBlock = saveBlockTerms.some(t => leadNameLower.includes(t.toLowerCase()));
                                 if (shouldBlock) {
-                                    await logToSupabase(`� Ignorado (nicho errado): ${lead.name}`);
+                                    await logToSupabase(` Ignorado (nicho errado): ${lead.name}`);
                                     continue;
                                 }
 
@@ -938,10 +990,13 @@ async function runBot() {
                                     continue;
                                 }
 
-                                // Calcular Score Inicial
-                                const initialScore = scoreLead({ ...lead, total_ratings: lead.totalRatings });
+                                // Calcular Score e Preview Inicial
+                                const initialScore = scoreLead(lead);
 
-                                // Let Supabase generate a proper UUID for the 'id' field
+                                // --- OPPORTUNITY & PREVIEW ENGINES ---
+                                const opp = calculateOpportunity(lead);
+                                const preview = await generateRemakePreview(lead);
+
                                 const { data: savedLead, error: insertError } = await supabase.from('leads').insert([{
                                     name: lead.name,
                                     niche: lead.niche,
@@ -956,13 +1011,24 @@ async function runBot() {
                                     status: 'new',
                                     automation_status: scheduler.autoSend ? 'queued' : 'idle',
                                     last_scan_at: new Date().toISOString(),
+                                    // --- NEW TOP-LEVEL COLUMNS ---
+                                    opportunity_score: opp.opportunity_score,
+                                    opportunity_level: opp.opportunity_level,
+                                    primary_reason: opp.primary_reason,
+                                    secondary_reason: opp.secondary_reason,
+                                    recommended_offer: opp.recommended_offer,
+                                    opportunity_summary: opp.opportunity_summary,
+                                    opportunity_flags: opp.opportunity_flags,
+                                    site_preview: preview.preview_data,
+                                    site_preview_summary: preview.summary,
                                     meta_data: {
                                         ...lead.meta_data,
                                         google_place_id: lead.place_id,
                                         totalRatings: lead.totalRatings,
                                         lead_score: initialScore.score,
                                         temperature: initialScore.temperature,
-                                        has_website: !!lead.website
+                                        has_website: !!lead.website,
+                                        ...opp
                                     }
                                 }]).select().single();
 
@@ -977,7 +1043,7 @@ async function runBot() {
                                 // DEEP AUDIT: If lead has website, audit it!
                                 if (lead.website) {
                                     await logToSupabase(`🌐 Iniciando Auditoria Profunda no site de: ${lead.name}...`);
-                                    const auditResult = await auditWebsite(lead.website, lead.name);
+                                    const auditResult = await auditWebsite(lead.website, lead.name, browser);
 
                                     if (!auditResult.error) {
                                         await logToSupabase(`✨ Site Analisado! Gerando pontos fracos com IA...`);
@@ -1000,9 +1066,24 @@ async function runBot() {
                                             await logToSupabase(`📞 Telefone extraído do site para: ${lead.name} -> ${updatedPhone}`);
                                         }
 
+                                        const oppDeep = calculateOpportunity({ ...lead, audit: auditResult });
+                                        // --- REMAKE PREVIEW ENGINE ---
+                                        const previewUpdate = await generateRemakePreview({ ...lead, website: auditResult.url });
+
                                         await supabase.from('leads').update({
                                             phone: updatedPhone,
                                             motivo_oferta: offerReason,
+                                            presence_score: auditResult.performanceScore,
+                                            // --- NEW TOP-LEVEL COLUMNS ---
+                                            opportunity_score: oppDeep.opportunity_score,
+                                            opportunity_level: oppDeep.opportunity_level,
+                                            primary_reason: oppDeep.primary_reason,
+                                            secondary_reason: oppDeep.secondary_reason,
+                                            recommended_offer: oppDeep.recommended_offer,
+                                            opportunity_summary: oppDeep.opportunity_summary,
+                                            opportunity_flags: oppDeep.opportunity_flags,
+                                            site_preview: previewUpdate.preview_data,
+                                            site_preview_summary: previewUpdate.summary,
                                             meta_data: {
                                                 ...lead.meta_data,
                                                 google_place_id: lead.place_id,
@@ -1019,7 +1100,8 @@ async function runBot() {
                                                 tiktok: auditResult.socialLinks?.tiktok,
                                                 whatsapp: auditResult.socialLinks?.whatsapp,
                                                 motivoPrincipalDaOferta: offerReason,
-                                                site_phones: auditResult.sitePhones
+                                                site_phones: auditResult.sitePhones,
+                                                ...oppDeep
                                             }
                                         }).eq('id', savedLead.id);
                                     } else {
@@ -1184,17 +1266,25 @@ async function runBot() {
                 if (scheduler.forceSend) {
                     await logToSupabase(`⚡ Gatilho Manual de Abordagem! Iniciando disparos imediatos...`);
                     const newMeta = { ...config, scheduler: { ...scheduler, forceSend: false } };
-                    await supabase.from('leads').update({ meta_data: newMeta }).eq('name', 'ROBOT_STATUS');
+                    await supabase.from('leads').update({ meta_data: newMeta }).eq('name', 'ROBOT_STATUS').eq('user_id', botOwnerId);
                 }
+            } else if (scheduler.forceSend && !config.connected) {
+                await logToSupabase(`⚠️ Disparo manual solicitado, mas o WhatsApp não está conectado.`);
+                const newMeta = { ...config, scheduler: { ...scheduler, forceSend: false } };
+                await supabase.from('leads').update({ meta_data: newMeta }).eq('name', 'ROBOT_STATUS').eq('user_id', botOwnerId);
+            }
+
+            if (shouldSend) {
 
                 // Cascata: Transforma 'ready_for_dispatch' em 'queued' (Somente se autoSend estiver ligado ou forçado)
                 if (scheduler.autoSend || scheduler.forceSend) {
                     const { data: readyLeads } = await supabase.from('leads')
-                        .select('id, meta_data')
+                        .select('id, meta_data, opportunity_score')
                         .or(`automation_status.eq.ready_for_dispatch,meta_data->>automation_status.eq.ready_for_dispatch`)
                         .eq('user_id', botOwnerId)
-                        .order('created_at', { ascending: true })
-                        .limit(10);
+                        .gte('opportunity_score', 40) // Ignorar leads < 40
+                        .order('opportunity_score', { ascending: false }) // Priorizar score alto
+                        .limit(20); // Janela de despacho
 
                     if (readyLeads && readyLeads.length > 0) {
                         for (const rl of readyLeads) {
@@ -1211,7 +1301,9 @@ async function runBot() {
                         .eq('user_id', botOwnerId)
                         .eq('status', 'contacted')
                         .or(`automation_status.eq.idle,automation_status.is.null`)
-                        .lte('meta_data->>scheduled_at', new Date().toISOString());
+                        .gte('opportunity_score', 40) // Priorizar retorno em leads qualificados
+                        .lte('meta_data->>scheduled_at', new Date().toISOString())
+                        .order('opportunity_score', { ascending: false });
 
                     if (followups && followups.length > 0) {
                         for (const f of followups) {
@@ -1222,11 +1314,15 @@ async function runBot() {
                         }
                     }
 
+                    const sendLimit = config.send_limit || 15; // Limite por execução
                     const { data: leads } = await supabase.from('leads')
                         .select('*')
                         .or(`automation_status.eq.queued,meta_data->>automation_status.eq.queued`)
                         .eq('user_id', botOwnerId)
-                        .lte('meta_data->>scheduled_at', new Date().toISOString());
+                        .gte('opportunity_score', 40) // Ignorar leads < 40
+                        .lte('meta_data->>scheduled_at', new Date().toISOString())
+                        .order('opportunity_score', { ascending: false }) // Priorizar leads QUENTES (>= 65)
+                        .limit(sendLimit);
 
                     if (leads && leads.length > 0 && page) {
                         for (const lead of leads) {
@@ -1271,94 +1367,84 @@ async function runBot() {
                                 await logToSupabase(`📧 [Cadence ${cadenceStage}] Preparando envio para: ${lead.name}`);
                                 await supabase.from('leads').update({ automation_status: 'sending' }).eq('id', lead.id);
 
-                                try {
-                                    await page.goto(`https://web.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`, { waitUntil: 'networkidle2' });
-                                    await new Promise(r => setTimeout(r, 6000));
+                                let sent = false;
 
-                                    // --- VALIDAÇÃO DE TELEFONE (FIXO/INVÁLIDO) ---
-                                    const invalidPhoneDetected = await page.evaluate(() => {
-                                        const modal = document.querySelector('[data-animate-modal-popup="true"]') ||
-                                            document.querySelector('[data-testid="popup-contents"]');
-                                        if (modal) {
-                                            const txt = modal.innerText.toLowerCase();
-                                            // Checa as mensagens padrões do WhatsApp Web para número inválido
-                                            if (txt.includes('inválid') || txt.includes('invalid') || txt.includes('não existe')) {
-                                                const okBtn = modal.querySelector('button');
-                                                if (okBtn) okBtn.click(); // Clica em OK para sumir o modal
-                                                return true;
-                                            }
+                                // --- MOTOR 1: EVOLUTION API (PRIORIDADE) ---
+                                if (evolutionApiKey) {
+                                    try {
+                                        sent = await sendViaEvolution('text', phone, message);
+                                        if (sent) {
+                                            await logToSupabase(`✅ [EVOLUTION] Mensagem enviada via API para ${lead.name}`);
+                                            await markAsSent(lead, cadenceStage, message);
                                         }
-                                        return false;
-                                    });
+                                    } catch (evoErr) {
+                                        await logToSupabase(`⚠️ [EVOLUTION] Erro na API: ${evoErr.message}. Tentando Puppeteer...`);
+                                    }
+                                }
 
-                                    if (invalidPhoneDetected) {
-                                        await supabase.from('leads').update({
-                                            status: 'refused',
-                                            automation_status: 'stopped_by_user',
-                                            meta_data: {
-                                                ...lead.meta_data,
+                                // --- MOTOR 2: PUPPETEER (FALLBACK) ---
+                                if (!sent && page) {
+                                    try {
+                                        await page.goto(`https://web.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`, { waitUntil: 'networkidle2' });
+                                        await new Promise(r => setTimeout(r, 6000));
+
+                                        // --- VALIDAÇÃO DE TELEFONE (FIXO/INVÁLIDO) ---
+                                        const invalidPhoneDetected = await page.evaluate(() => {
+                                            const modal = document.querySelector('[data-animate-modal-popup="true"]') ||
+                                                document.querySelector('[data-testid="popup-contents"]');
+                                            if (modal) {
+                                                const txt = modal.innerText.toLowerCase();
+                                                if (txt.includes('inválid') || txt.includes('invalid') || txt.includes('não existe')) {
+                                                    const okBtn = modal.querySelector('button');
+                                                    if (okBtn) okBtn.click();
+                                                    return true;
+                                                }
+                                            }
+                                            return false;
+                                        });
+
+                                        if (invalidPhoneDetected) {
+                                            await supabase.from('leads').update({
+                                                status: 'refused',
                                                 automation_status: 'stopped_by_user',
-                                                refusal_reason: 'telefone_invalido',
-                                                automation_logs: [...(lead.meta_data.automation_logs || []), {
-                                                    date: new Date().toISOString(),
-                                                    stage: cadenceStage,
-                                                    message: '❌ Telefone inválido (Fixo/Sem WhatsApp). Automação interrompida.',
-                                                    result: 'failed'
-                                                }]
-                                            }
-                                        }).eq('id', lead.id);
-
-                                        throw new Error('NÚMERO INVÁLIDO (Telefone Fixo ou Sem WhatsApp)');
-                                    }
-                                    // --- FIM VALIDAÇÃO ---
-
-                                    const sendSelectors = ['span[data-icon="send"]', 'button[aria-label="Enviar"]', 'button[aria-label="Send"]', '[data-testid="send"]'];
-                                    let sent = false;
-                                    for (const selector of sendSelectors) {
-                                        try {
-                                            const btn = await page.waitForSelector(selector, { timeout: 3000 });
-                                            if (btn) {
-                                                await btn.click();
-                                                sent = true;
-                                                break;
-                                            }
-                                        } catch (e) { }
-                                    }
-
-                                    if (!sent) {
-                                        await page.keyboard.press('Enter');
-                                        sent = true;
-                                    }
-
-                                    const nextStage = cadenceStage === 'D0' ? 'D2' : cadenceStage === 'D2' ? 'D5' : cadenceStage === 'D5' ? 'D9' : 'FINISH';
-                                    const delayDays = cadenceStage === 'D0' ? 2 : cadenceStage === 'D2' ? 3 : cadenceStage === 'D5' ? 4 : 0;
-                                    const nextDate = new Date();
-                                    nextDate.setDate(nextDate.getDate() + delayDays);
-
-                                    const interactionLog = {
-                                        date: new Date().toISOString(),
-                                        stage: cadenceStage,
-                                        message: message.substring(0, 60) + '...',
-                                        result: 'sent'
-                                    };
-
-                                    await supabase.from('leads').update({
-                                        status: 'contacted',
-                                        cadence_stage: nextStage,
-                                        automation_status: nextStage === 'FINISH' ? 'completed' : 'idle',
-                                        meta_data: {
-                                            ...lead.meta_data,
-                                            automation_status: nextStage === 'FINISH' ? 'completed' : 'idle',
-                                            cadenceStage: nextStage,
-                                            lastInteractionDate: new Date().toISOString(),
-                                            scheduled_at: nextStage === 'FINISH' ? null : nextDate.toISOString(),
-                                            automation_logs: [...(lead.meta_data.automation_logs || []), interactionLog]
+                                                meta_data: {
+                                                    ...lead.meta_data,
+                                                    automation_status: 'stopped_by_user',
+                                                    refusal_reason: 'telefone_invalido',
+                                                    automation_logs: [...(lead.meta_data.automation_logs || []), {
+                                                        date: new Date().toISOString(),
+                                                        stage: cadenceStage,
+                                                        message: '❌ Telefone inválido (Fixo/Sem WhatsApp). Automação interrompida.',
+                                                        result: 'failed'
+                                                    }]
+                                                }
+                                            }).eq('id', lead.id);
+                                            throw new Error('NÚMERO INVÁLIDO (Telefone Fixo ou Sem WhatsApp)');
                                         }
-                                    }).eq('id', lead.id);
 
-                                    await logToSupabase(`✅ [${cadenceStage}] Sucesso: ${lead.name}. Próximo: ${nextStage === 'FINISH' ? 'Funil Finalizado' : nextDate.toLocaleDateString()}`);
-                                } catch (e) {
-                                    await logToSupabase(`❌ [${cadenceStage}] Falha: ${lead.name} - ${e.message}`);
+                                        const sendSelectors = ['span[data-icon="send"]', 'button[aria-label="Enviar"]', 'button[aria-label="Send"]', '[data-testid="send"]'];
+                                        for (const selector of sendSelectors) {
+                                            try {
+                                                const btn = await page.waitForSelector(selector, { timeout: 3000 });
+                                                if (btn) {
+                                                    await btn.click();
+                                                    sent = true;
+                                                    break;
+                                                }
+                                            } catch (e) { }
+                                        }
+
+                                        if (!sent) {
+                                            await page.keyboard.press('Enter');
+                                            sent = true;
+                                        }
+
+                                        if (sent) {
+                                            await markAsSent(lead, cadenceStage, message);
+                                        }
+                                    } catch (e) {
+                                        await logToSupabase(`❌ [Puppeteer] Falha: ${lead.name} - ${e.message}`);
+                                    }
                                 }
                                 await new Promise(r => setTimeout(r, 3000));
                             }
@@ -1370,6 +1456,15 @@ async function runBot() {
             }
         } catch (err) {
             await logToSupabase(`❌ Erro no loop: ${err.message}`);
+            // Auto-recovery: Reinicia o navegador em caso de erros fatais de frame ou conexão do Puppeteer
+            if (err.message.includes('main frame') || err.message.includes('Target closed') || err.message.includes('Session closed') || err.message.includes('early')) {
+                await logToSupabase('🔄 Falha de hardware/comunicação com navegador detectada. Reiniciando Puppeteer...');
+                try {
+                    if (browser) await browser.close();
+                } catch (e) { }
+                browser = null;
+                page = null;
+            }
         }
         await new Promise(r => setTimeout(r, 3000));
     }
@@ -1507,6 +1602,85 @@ async function sendWAFile(page, buffer, fileName) {
 runBot().catch(e => console.error(e));
 
 // Graceful Shutdown
+// ═══════════════════════════════════════════════════════════════════
+// MOTOR DE ENVIO VIA API PROFISSIONAL (PAPI)
+// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+// AUXILIARES DE ENVIO E STATUS
+// ═══════════════════════════════════════════════════════════════════
+async function markAsSent(lead, cadenceStage, message) {
+    const nextStage = cadenceStage === 'D0' ? 'D2' : cadenceStage === 'D2' ? 'D5' : cadenceStage === 'D5' ? 'D9' : 'FINISH';
+    const delayDays = cadenceStage === 'D0' ? 2 : cadenceStage === 'D2' ? 3 : cadenceStage === 'D5' ? 4 : 0;
+    const nextDate = new Date();
+    nextDate.setDate(nextDate.getDate() + delayDays);
+
+    const interactionLog = {
+        date: new Date().toISOString(),
+        stage: cadenceStage,
+        message: message.substring(0, 60) + '...',
+        result: 'sent'
+    };
+
+    await supabase.from('leads').update({
+        status: 'contacted',
+        cadence_stage: nextStage,
+        automation_status: nextStage === 'FINISH' ? 'completed' : 'idle',
+        meta_data: {
+            ...lead.meta_data,
+            automation_status: nextStage === 'FINISH' ? 'completed' : 'idle',
+            cadenceStage: nextStage,
+            lastInteractionDate: new Date().toISOString(),
+            scheduled_at: nextStage === 'FINISH' ? null : nextDate.toISOString(),
+            automation_logs: [...(lead.meta_data.automation_logs || []), interactionLog]
+        }
+    }).eq('id', lead.id);
+
+    await logToSupabase(`✅ [${cadenceStage}] Sucesso: ${lead.name}. Próximo: ${nextStage === 'FINISH' ? 'Funil Finalizado' : nextDate.toLocaleDateString()}`);
+}
+
+// --- MOTOR: EVOLUTION API (PRIORIDADE) ---
+async function sendViaEvolution(type, target, content, filename = null) {
+    if (!evolutionApiKey || !evolutionBaseUrl) return false;
+
+    // Formatação do Número (Evolution aceita número puro ou com @s.whatsapp.net)
+    const phone = target.replace(/\D/g, '');
+
+    // URL Evolution v2: /message/sendText/{instance} ou /message/sendMedia/{instance}
+    const endpoint = type === 'text' ? 'sendText' : 'sendMedia';
+    const url = `${evolutionBaseUrl}/message/${endpoint}/${evolutionInstanceId}`;
+
+    const body = type === 'text'
+        ? { number: phone, text: content }
+        : {
+            number: phone,
+            media: content, // URL ou Base64
+            mediatype: 'document',
+            fileName: filename || 'proposta.pdf',
+            caption: 'Aqui está sua proposta estratégica!'
+        };
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'apikey': evolutionApiKey,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        });
+
+        const data = await response.json();
+        // Evolution retorna status 201 (Created) ou objeto com success
+        const ok = response.status === 201 || data.status === 'SUCCESS' || data.key;
+        if (!ok) console.warn('[EVOLUTION] Resposta não OK:', JSON.stringify(data));
+        return ok;
+    } catch (e) {
+        console.error(`[EVOLUTION] Erro ao enviar ${type}:`, e.message);
+        return false;
+    }
+}
+
+
 async function shutdown() {
     console.log('\n🛑 Desconectando Robô...');
     try {

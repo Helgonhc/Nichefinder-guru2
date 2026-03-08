@@ -41,20 +41,15 @@ function rateLimiter(req, res, next) {
 // CORS restrito: aceita apenas localhost e domínio de produção
 const allowedOrigins = [
     'http://localhost:8080',
+    'http://localhost:8081',
     'http://localhost:5173',
     'https://leadradar.com.br',
     'https://www.leadradar.com.br',
 ];
 
 app.use(cors({
-    origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error(`CORS bloqueado para origem: ${origin}`));
-        }
-    },
-    methods: ['POST'],
+    origin: '*', // Permite todas as origens em desenvolvimento para evitar falhas de preflight
+    methods: ['POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type'],
 }));
 
@@ -184,3 +179,18 @@ app.listen(PORT, () => {
     console.log(`======================================================\n`);
     console.log(`Motor aguardando payloads HTML para Geração de Propostas...\n`);
 });
+
+process.on('exit', (code) => {
+    console.log(`🦅 [PDF Engine] Processo saindo com código: ${code}`);
+});
+
+process.on('uncaughtException', (err) => {
+    console.error('🦅 [PDF Engine] Erro não capturado:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('🦅 [PDF Engine] Rejeição não tratada em:', promise, 'razão:', reason);
+});
+
+// Força o event loop a permanecer ativo caso o Express não o faça (estranho)
+setInterval(() => { }, 1000 * 60 * 60); 

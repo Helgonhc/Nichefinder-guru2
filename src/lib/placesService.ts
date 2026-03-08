@@ -2,6 +2,7 @@ import { BusinessData } from "@/types/business";
 import { findDeepInfoViaSerper } from "./serperService";
 import { supabase } from "@/integrations/supabase/client";
 import { validateBusinessWebsite } from "./utils";
+import { calculateOpportunity } from "./opportunityEngine";
 
 const GOOGLE_PLACES_API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
 
@@ -235,7 +236,7 @@ export const mapPlaceDetails = async (rawPlaces: any[], niche: string, city: str
       // Deixa a capitalização agradável (Ex: Belo Horizonte)
       const formatCityName = (name: string) => name.toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
-      return {
+      const businessData: BusinessData = {
         id: place.place_id,
         name: place.name,
         niche,
@@ -252,7 +253,6 @@ export const mapPlaceDetails = async (rawPlaces: any[], niche: string, city: str
         performanceScore,
         seoScore,
         mobileFriendly,
-        // Salva apenas o handle limpo (ex: "dracamillagrisotto") — BusinessCard constrói a URL
         instagram: instagramHandle,
         instagramHandle: instagramHandle ? `@${instagramHandle}` : undefined,
         facebook: finalFacebook,
@@ -261,6 +261,23 @@ export const mapPlaceDetails = async (rawPlaces: any[], niche: string, city: str
         email,
         siteType,
         isSecure,
+        services: deepInfo.types || place.types || [],
+        description: deepInfo.description,
+        reviews: deepInfo.reviews || [],
+      };
+
+      // 🎯 CÁLCULO AUTOMÁTICO DE OPORTUNIDADE (RADAR)
+      const opportunity = calculateOpportunity(businessData);
+
+      return {
+        ...businessData,
+        opportunity_score: opportunity.opportunity_score,
+        opportunity_level: opportunity.opportunity_level,
+        primary_reason: opportunity.primary_reason,
+        secondary_reason: opportunity.secondary_reason,
+        recommended_offer: opportunity.recommended_offer,
+        opportunity_summary: opportunity.opportunity_summary,
+        opportunity_flags: opportunity.opportunity_flags
       } as BusinessData;
     })
   );

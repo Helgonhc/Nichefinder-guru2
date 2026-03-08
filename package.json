@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"vite\" \"node server/pdf-engine.js\"",
+    "dev": "concurrently \"vite\" \"node server/pdf-engine.js\" \"node ai-gateway/ai-server.js\"",
     "bot": "node standalone-bot/wa-bot.js",
     "pdf": "node server/pdf-engine.js",
     "build": "vite build",
@@ -60,6 +60,7 @@
     "dotenv": "^17.3.1",
     "embla-carousel-react": "^8.6.0",
     "express": "^5.2.1",
+    "framer-motion": "^12.35.1",
     "html2canvas": "^1.4.1",
     "input-otp": "^1.4.2",
     "jspdf": "^4.2.0",

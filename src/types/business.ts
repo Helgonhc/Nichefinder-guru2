@@ -11,6 +11,15 @@ export interface BusinessData {
   instagram?: string;
   facebook?: string;
   tiktok?: string;
+  thumbnail?: string;
+  description?: string;
+  services?: string[];
+  reviews?: Array<{
+    user?: string;
+    rating?: number;
+    text?: string;
+    date?: string;
+  }>;
   whatsapp?: string;
   googleMapsUrl?: string;
   placeId?: string;
@@ -76,6 +85,27 @@ export interface BusinessData {
   automationStatus?: 'idle' | 'queued' | 'sending' | 'paused' | 'stopped' | 'completed' | 'stopped_by_user' | 'ready_for_dispatch';
   lastScanAt?: string;
   motivoOferta?: string;
+
+  // Opportunity Engine Fields
+  opportunity_score?: number;
+  opportunity_level?: "low" | "medium" | "high" | "very_high";
+  primary_reason?: string;
+  secondary_reason?: string;
+  recommended_offer?: string;
+  opportunity_summary?: string;
+  opportunity_flags?: string[];
+
+  // Remake Preview Engine Fields
+  site_preview?: {
+    headline: string;
+    subheadline: string;
+    benefits: string[];
+    services: string[];
+    testimonials: string[];
+    cta_text: string;
+    cta_action: string;
+  };
+  site_preview_summary?: string;
 }
 
 export interface SearchParams {
