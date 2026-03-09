@@ -97,6 +97,7 @@ export const BusinessCard = memo(function BusinessCard({
   const [analysisStatus, setAnalysisStatus] = useState("");
   const [analysis, setAnalysis] = useState<any>(null);
   const [loadingAnalysis, setLoadingAnalysis] = useState(false);
+  const [isAnalyzingSiteLocal, setIsAnalyzingSiteLocal] = useState(false); // Evita loop
 
   // Constants
   const date = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
@@ -201,7 +202,9 @@ export const BusinessCard = memo(function BusinessCard({
   }, []);
 
   const handleAnalyzeSite = async () => {
+    if (isAnalyzingSite || isAnalyzingSiteLocal) return;
     setIsAnalyzingSite(true);
+    setIsAnalyzingSiteLocal(true);
     setAnalysisStatus("Iniciando...");
     const toastId = toast.loading(business.website ? "Conectando ao Google PageSpeed..." : "Gerando Diagnóstico Estratégico...");
 
@@ -227,7 +230,9 @@ export const BusinessCard = memo(function BusinessCard({
           cls: "N/A",
           hasViewport: false,
           analyzedAt: new Date().toISOString(),
-          isDown: false
+          isDown: false,
+          site_preview: business.site_preview, // Preserva se já existir
+          site_preview_summary: business.site_preview_summary
         };
       }
 
@@ -310,7 +315,9 @@ export const BusinessCard = memo(function BusinessCard({
         opportunity_summary: opp.opportunity_summary,
         opportunity_flags: opp.opportunity_flags,
         site_preview: preview.preview_data,
-        site_preview_summary: preview.summary
+        site_preview_summary: preview.summary,
+        html_preview: (preview as any).html_preview,
+        score: (newMetaData as any).score
       };
 
       if (isUUID(leadId)) {
@@ -326,11 +333,14 @@ export const BusinessCard = memo(function BusinessCard({
             recommended_offer: opp.recommended_offer,
             opportunity_summary: opp.opportunity_summary,
             opportunity_flags: opp.opportunity_flags,
-            site_preview: preview.preview_data,
-            site_preview_summary: preview.summary,
-            html_preview: preview.html_preview || null
+            site_preview: finalMetaData.site_preview,
+            site_preview_summary: finalMetaData.site_preview_summary,
+            html_preview: finalMetaData.html_preview || null,
+            presence_score: finalMetaData.score
           })
           .eq('id', leadId);
+
+        console.log("✅ [BusinessCard] Lead atualizado no banco:", leadId);
       }
 
       // Notifica o pai para atualizar a UI instantaneamente (funciona para busca e listagem)
@@ -379,13 +389,20 @@ export const BusinessCard = memo(function BusinessCard({
       toast.error("Erro na conexão com o Google. Verifique a API.", { id: toastId });
     } finally {
       setIsAnalyzingSite(false);
+      setIsAnalyzingSiteLocal(false);
       setAnalysisStatus("");
     }
   };
 
   const handleAnalyzeLead = async () => {
+    // Se já estiver analisando, não faz nada
+    if (isAnalyzingSite) return;
+
+    // Dispara a análise profunda (que já limpa o toast e salva no banco)
+    await handleAnalyzeSite();
+
+    // Abre o preview logo após (ou durante) a análise para feedback visual
     setShowRemakePreview(true);
-    // A análise continuará em background se necessário, ou será disparada pelo próprio modal
   };
 
   const [ticketValue, setTicketValue] = useState(business.ticketMedio || 0);
