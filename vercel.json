@@ -5,6 +5,10 @@
             "destination": "https://maps.googleapis.com/:path*"
         },
         {
+            "source": "/api/:path*",
+            "destination": "/api/:path*"
+        },
+        {
             "source": "/(.*)",
             "destination": "/index.html"
         }

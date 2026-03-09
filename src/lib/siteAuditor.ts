@@ -31,24 +31,15 @@ async function fetchSiteStatus(url: string): Promise<{ copyrightYear?: number; i
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 4000);
 
-        // Tentativa 1: AllOrigins
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+        // Tentativa via Proxy Interno (Vercel API) - Resolve CORS
+        const proxyUrl = `/api/scrap-site?url=${encodeURIComponent(url)}`;
 
         try {
             const response = await fetch(proxyUrl, { signal: controller.signal });
             if (response.ok) {
-                const data = await response.json();
-                html = data.contents;
+                html = await response.text();
             }
         } catch (e) { }
-
-        // Tentativa 2: Fallback
-        if (!html) {
-            try {
-                const fallbackResp = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`, { signal: AbortSignal.timeout(4000) as any });
-                if (fallbackResp.ok) html = await fallbackResp.text();
-            } catch (e) { }
-        }
         clearTimeout(timeoutId);
 
         if (!html || html.length < 50) {
@@ -97,9 +88,9 @@ export async function analyzeSite(url: string, onUpdate?: (msg: string) => void)
     try {
         onUpdate?.("Iniciando varredura oficial do Google...");
 
-        // Disparamos as duas buscas em paralelo para ganhar tempo
+        // Disparamos as duas buscas em paralelo via Vercel API
         const [pageSpeedPromise, siteStatusPromise] = [
-            fetch(`https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(normalizedUrl)}&category=PERFORMANCE&category=SEO&category=ACCESSIBILITY&category=BEST_PRACTICES&key=${GOOGLE_API_KEY}`),
+            fetch(`/api/analyze-site?url=${encodeURIComponent(normalizedUrl)}`),
             fetchSiteStatus(normalizedUrl)
         ];
 

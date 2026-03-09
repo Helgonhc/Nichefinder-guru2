@@ -421,11 +421,51 @@ Comece imediatamente com <!DOCTYPE html>.
 
 app.get("/health", (_, res) => res.json({ status: "online", motor: "Piramyd Elite Only" }));
 
+// ── Rota Scrap Site (Resolvendo CORS local) ─────────────────────────────────
+app.get("/scrap-site", async (req, res) => {
+    const { url } = req.query;
+    if (!url) return res.status(400).json({ error: "URL é obrigatória." });
+
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        const response = await fetch(url, {
+            signal: controller.signal,
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            }
+        });
+        clearTimeout(timeoutId);
+        const html = await response.text();
+        res.send(html);
+    } catch (error) {
+        res.status(500).json({ error: "Falha no scrap local", message: error.message });
+    }
+});
+
+// ── Rota Análise Técnica (PageSpeed local) ──────────────────────────────────
+app.get("/analyze-site", async (req, res) => {
+    const { url } = req.query;
+    if (!url) return res.status(400).json({ error: "URL é obrigatória." });
+
+    const GOOGLE_KEY = process.env.VITE_GOOGLE_PLACES_API_KEY || process.env.GOOGLE_API_KEY;
+
+    try {
+        const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&category=PERFORMANCE&category=SEO&category=ACCESSIBILITY&category=BEST_PRACTICES&key=${GOOGLE_KEY}`;
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        res.json(data);
+    } catch (error) {
+        res.status(500).json({ error: "Falha na análise local", message: error.message });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`\n======================================================`);
     console.log(`🤖 AI GATEWAY ONLINE (PIRAMYD ONLY) | PORT: ${PORT}`);
     console.log(`======================================================\n`);
     console.log(`Motor Primário: Piramyd (${PIRAMYD_MODELS.length} modelos disponíveis)`);
+    console.log(`Rotas de API emuladas: /generate-preview, /generate-html, /scrap-site, /analyze-site`);
 });
 
 process.on("uncaughtException", err => console.error("[CRITICAL] Uncaught:", err));

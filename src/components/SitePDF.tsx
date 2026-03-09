@@ -734,10 +734,7 @@ export async function generateSitePDF(business: BusinessData, customGoodHtml?: s
         `;
 
     // 3. Dispara POST na API (Híbrido Local/Vercel)
-    const isLocal = window.location.hostname === 'localhost';
-    const apiUrl = isLocal
-      ? "http://localhost:3001/generate-pdf"
-      : "/api/generate-pdf";
+    const apiUrl = "/api/generate-pdf";
 
     const response = await fetch(apiUrl, {
       method: "POST",

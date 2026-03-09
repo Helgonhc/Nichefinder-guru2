@@ -81,7 +81,7 @@ Estatísticas Adicionais: ${lead.audit ? JSON.stringify(lead.audit) : 'Nenhuma'}
 `;
 
     try {
-        const response = await fetch(`http://localhost:3002/generate-preview`, {
+        const response = await fetch(`/api/generate-preview`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ systemMessage, userPrompt, model: 'gpt-5.3' })
@@ -373,7 +373,7 @@ ${reviewsSource}
         // Gera HTML preview em paralelo (não bloqueia o resultado do JSON)
         let html_preview: string | undefined;
         try {
-            const htmlRes = await fetch('http://localhost:3002/generate-html', {
+            const htmlRes = await fetch('/api/generate-html', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

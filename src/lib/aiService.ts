@@ -25,7 +25,7 @@ export const generateContent = async (
 
     try {
         // Chamada via AI Gateway local para evitar bloqueios de CSP e centralizar gestão de modelos
-        const response = await fetch('http://localhost:3002/generate-preview', {
+        const response = await fetch('/api/generate-preview', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
