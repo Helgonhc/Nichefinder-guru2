@@ -81,26 +81,26 @@ export default async function handler(req, res) {
     const layout = leadData.layout_type || "modern-business";
     let designDirection = "";
 
-    if (layout === "healthcare-clean") {
-        designDirection = `Estilo visual: limpo, higiênico e acolhedor\nPaleta recomendada: branco puro, azuis suaves, verdes calmos\nTipografia: sans-serif humanista altamente legível\nAtmosfera: confiança, cuidado, tecnologia e saúde\nLayout: hero claro, espaços em branco abundantes, seções organizadas em blocos suaves`;
+    if (layout === "bento-medical-clean") {
+        designDirection = `Estilo visual: Bento Grid Moderno (Apple Style)\nFoco: Higiene visual, organização modular e calma\nPaleta: Pure White (#FFFFFF), Soft Blue (#F0F7FF), Accent Blue (#2563EB)\nTipografia: Inter (Geométrica e Limpa)\nLayout: Services em grade irregular (Bento), Hero com muito respiro, transições suaves de fade-in`;
     }
-    else if (layout === "authority-premium") {
-        designDirection = `Estilo visual: institucional premium, luxuoso e sóbrio\nPaleta recomendada: navy (azul marinho profundo), charcoal (carvão), dourado ou cobre sutil\nTipografia: serifas elegantes em títulos combinadas com sans-serif modernas\nAtmosfera: alta autoridade, prestígio, confiança, exclusividade\nLayout: hero forte e imponente, seções simétricas luxuosas, grid de serviços estruturado`;
+    else if (layout === "glass-tech-dark") {
+        designDirection = `Estilo visual: Glassmorphism / Dark Mode Futurista\nFoco: Tecnologia, inovação e autoridade digital\nPaleta: Deep Space (#020617), Glass White (white/10), Electric Blue (#3B82F6)\nTipografia: Space Grotesk ou Inter (Bold)\nLayout: Cards com bordas brilhantes, gradients de fundo pulsantes, seções em camadas com blur`;
     }
-    else if (layout === "food-visual") {
-        designDirection = `Estilo visual: apetitoso, vibrante e fotográfico\nPaleta recomendada: tons quentes (vermelhos, laranjas, amarelos quentes), fundo escuro premium ou branco limpo\nTipografia: fontes display ousadas ou rústicas para títulos\nAtmosfera: desejo, sabor, energia, experiência gastronômica\nLayout: focado fortemente em imagens grandes (fotografia e texturas), seções dinâmicas de menu/produtos`;
+    else if (layout === "luxury-author-classic") {
+        designDirection = `Estilo visual: Clássico Moderno / Exclusividade\nFoco: Autoridade absoluta, prestígio e confiança\nPaleta: Charcoal (#1F2937), Ivory (#F9FAFB), Gold Accent (#D4AF37)\nTipografia: Playfair Display (Serifada Luxo) para títulos, Inter para corpo\nLayout: Simetria perfeita, Hero imponente, tipografia grande, espaços de respiro generosos`;
     }
-    else if (layout === "fitness-energy") {
-        designDirection = `Estilo visual: alta energia, intenso e dinâmico\nPaleta recomendada: preto absoluto, cinzas escuros, cores de destaque neon (amarelo, verde, vermelho)\nTipografia: sans-serif grossas, itálicas ou geométricas de alto impacto\nAtmosfera: superação, força, movimento, agressivo (no bom sentido)\nLayout: fotografias em preto e branco com overlays, blocos em diagonal ou assimétricos, forte uso de contraste`;
+    else if (layout === "kinetic-energy-bold") {
+        designDirection = `Estilo visual: Cinético / Brutalismo Leve\nFoco: Energia, movimento e resultados rápidos\nPaleta: Black (#000000), Slate Gray (#1E293B), Neon Green (#22C55E)\nTipografia: Archivo Black ou Sans-Serif Itálica de impacto\nLayout: Seções em diagonal, cards com sombras duras, tipografia "loud", animações de scroll aceleradas`;
     }
-    else if (layout === "high-ticket") {
-        designDirection = `Estilo visual: tecnológico, de alto valor agregado e grandioso\nPaleta recomendada: azuis profundos, preto, prateado, branco e detalhes em cores tecnológicas\nTipografia: sans-serif geométrica minimalista, tracking espaçado\nAtmosfera: progresso, investimento, alto valor, inteligência\nLayout: linhas precisas, gráficos ou imagens conceituais, storytelling visual focado em resultados de longo prazo`;
+    else if (layout === "immersive-food-visual") {
+        designDirection = `Estilo visual: Imersivo Gastronômico\nFoco: Desejo, sabor e experiência sensorial\nPaleta: Warm Orange (#F97316), Deep Black (#000000), Cream (#FFFBEB)\nTipografia: Serifas Rústicas ou Cursivas Elegantes em títulos\nLayout: Full-width imagens, seções de menu com hover detalhado, grids visuais de alta definição`;
     }
-    else if (layout === "service-local") {
-        designDirection = `Estilo visual: prático, direto e confiável\nPaleta recomendada: cores trabalhadoras (azul royal, laranja industrial, amarelo, preto)\nTipografia: robusta e ultra legível, focada em leitura rápida\nAtmosfera: agilidade, trabalho duro, proximidade, resolução de problemas\nLayout: chamadas para ação (telefone/whatsapp) imediatas e em destaque, prova social forte, listagem clara de serviços`;
+    else if (layout === "trusted-local-vibe") {
+        designDirection = `Estilo visual: Confiabilidade Local / Hands-on\nFoco: Resolução imediata, agilidade e proximidade\nPaleta: Royal Blue (#1D4ED8), Industrial Safety (#EA580C), White\nTipografia: Roboto ou Sans-Serif robusta\nLayout: CTAs redundantes e visíveis, seções de "Como Funciona" em steps, prova social do Google em destaque`;
     }
     else {
-        designDirection = `Estilo visual: moderno premium corporativo\nPaleta recomendada: dark blue (azul escuro elegante), charcoal (grafite) e branco\nTipografia: sans-serif limpa e contemporânea\nAtmosfera: profissionalismo corporativo, confiabilidade clara, eficiência\nLayout: hero impactante com bordas sutis, seções com bastante respiro (padding amplo), design elegante focado em conversão B2B/B2C direta`;
+        designDirection = `Estilo visual: Modern B2B Bento\nFoco: Profissionalismo corporativo contemporâneo\nPaleta: Slate Blue (#475569), Cool Gray (#F1F5F9), Royal Blue (#2563EB)\nTipografia: Plus Jakarta Sans\nLayout: Bento Grid modular, Hero-split, animações de entrada elegantes`;
     }
 
     const systemMsg = `Você é um COPYWRITER E ESTRATEGISTA DE MARKETING DE ELITE.

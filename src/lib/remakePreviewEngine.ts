@@ -106,28 +106,38 @@ function parseDiagnosticResponse(content: string): { score: number; problems: st
     return { score, problems, suggestions };
 }
 
+/**
+ * Retorna o arquétipo de layout e estilo baseado no nicho.
+ * Evoluído para diversidade "Elite".
+ */
 export function getLayoutByNiche(niche: string = "") {
     const n = niche.toLowerCase();
 
-    if (n.includes("dent") || n.includes("clinica") || n.includes("medico") || n.includes("farmacia"))
-        return "healthcare-clean";
+    // Healthcare & Wellness
+    if (n.includes("dent") || n.includes("clinica") || n.includes("medico") || n.includes("psico") || n.includes("terapia"))
+        return "bento-medical-clean";
 
-    if (n.includes("advoc") || n.includes("contab") || n.includes("arquitetura"))
-        return "authority-premium";
+    // High Tech & Solar
+    if (n.includes("solar") || n.includes("energia") || n.includes("tech") || n.includes("software") || n.includes("automação"))
+        return "glass-tech-dark";
 
-    if (n.includes("restaurante") || n.includes("pizza") || n.includes("hamburg") || n.includes("sushi"))
-        return "food-visual";
+    // Luxury & Professional Services
+    if (n.includes("advoc") || n.includes("jurid") || n.includes("contab") || n.includes("arquitetura") || n.includes("imobiliaria"))
+        return "luxury-author-classic";
 
-    if (n.includes("academia") || n.includes("crossfit") || n.includes("fitness") || n.includes("beach tennis"))
-        return "fitness-energy";
+    // Lifestyle & Fitness
+    if (n.includes("academia") || n.includes("crossfit") || n.includes("fitness") || n.includes("beach tennis") || n.includes("arena"))
+        return "kinetic-energy-bold";
 
-    if (n.includes("solar") || n.includes("imobiliaria") || n.includes("construtora"))
-        return "high-ticket";
+    // Food & Experience
+    if (n.includes("restaurante") || n.includes("pizza") || n.includes("hamburg") || n.includes("sushi") || n.includes("buffet"))
+        return "immersive-food-visual";
 
+    // Local Services
     if (n.includes("oficina") || n.includes("mecanica") || n.includes("pet shop") || n.includes("barbearia") || n.includes("salao"))
-        return "service-local";
+        return "trusted-local-vibe";
 
-    return "modern-business";
+    return "modern-bento-business";
 }
 
 /**
@@ -201,67 +211,41 @@ AUDITORIA TÉCNICA REAL (Google PageSpeed):
 - HTTPS: ${lead.audit.isSecure ? 'Sim' : 'Não'}
 ` : '';
 
-        const systemMessage = `Você é um especialista em auditoria de presença digital e design de websites.
+        const systemMessage = `Você é um DIRETOR DE CRIAÇÃO E ESTRATEGISTA DE BRANDING DE ELITE.
+        
+Sua missão é criar o "BluePrint" de um site de altíssima fidelidade que vai deixar o cliente "uau".
+Fuja do óbvio. Gere uma copy provocativa, elegante e extremamente nichada.
 
-Sua tarefa é:
-1. Analisar a presença digital da empresa.
-2. Avaliar a qualidade do site atual (se existir).
-3. Criar um conceito de redesign profissional para essa empresa.
+ESTRATÉGIA DE DESIGN OBRIGATÓRIA:
+- Use seções de Bento Grid para serviços se o layout for "bento".
+- Use tipografia Serifada elegante para nichos de luxo.
+- Use Neobrutalismo ou Glassmorphism para nichos de tecnologia.
 
-Critérios de avaliação:
-- design visual
-- clareza da proposta de valor
-- estrutura de navegação
-- presença de CTA
-- prova social
-- autoridade da marca
+REGRAS DO RETORNO:
+- Retorne EXCLUSIVAMENTE um JSON válido.
+- O campo "builder_prompt" deve ser um roteiro técnico para um Vibecoder (Next.js, Tailwind, Framer Motion), detalhando micro-interações, pesos de fonte e hierarquia visual.
+- Seja criativo no tom de voz: Se for um advogado, use tom de "Autoridade Inquestionável". Se for uma pizzaria, use "Experiência Sensorial".`;
 
-Retorne um objeto JSON com:
-- headline
-- subheadline
-- benefits
-- services
-- testimonials
-- design_style
-- color_palette
-- layout_type
-- site_diagnostics
-- builder_prompt
-
-O builder_prompt deve conter diretrizes de copywriting e tom de voz (MÁXIMO 100 PALAVRAS).
-O retorno DEVE ser EXCLUSIVAMENTE o JSON válido.`;
-
-        const userPrompt = `DADOS DO LEAD:
+        const userPrompt = `DADOS REAIS DO LEAD:
 - Empresa: ${lead.name}
 - Nicho: ${lead.niche} (${lead.categoria})
-- Localização: ${lead.address}, ${lead.city}
-- Website Atual: ${lead.website || 'Nenhum'}
+- Cidade: ${lead.city}
+- Website Atual: ${lead.website || 'Nenhum (Oportunidade de Ouro)'}
 ${auditInfo}
 
-DEPOIMENTOS REAIS:
+PROVA SOCIAL REAL (MANDATÓRIO USAR):
 ${reviewsInstruction}
 ${reviewsSource}
 
-ESTRUTURA ESPERADA DO JSON (Respeite os tipos e nomes das chaves):
-{
-  "headline": "Título de Elite",
-  "subheadline": "Copy persuasivo",
-  "benefits": ["Benefit 1", "Benefit 2", "Benefit 3"],
-  "services": ["Service 1", "Service 2", "Service 3"],
-  "site_diagnostics": {
-    "score": 0,
-    "problems": ["Problema 1", "Problema 2"],
-    "suggestions": ["Melhoria 1", "Melhoria 2"]
-  },
-  "service_details": [ { "title": "...", "description": "..." } ],
-  "testimonials": [ "Depoimentos" ],
-  "cta_text": "Texto CTA",
-  "design_style": "${style}",
-  "color_palette": ["HEX1", "HEX2", "HEX3"],
-  "layout_type": "${getLayoutByNiche(lead.niche)}",
-  "summary": "Resumo estratégico",
-  "builder_prompt": "Máximo de 200 palavras explicando o layout..."
-}`;
+ESTILO VISUAL SOLICITADO: ${style} (Arquétipo: ${getLayoutByNiche(lead.niche)})
+
+INSTRUÇÃO PARA O BLUEPRINT (builder_prompt):
+Descreva em detalhes para o desenvolvedor como ele deve usar Next.js + Tailwind + Framer Motion para criar este site. Mencione:
+1. Esquema de cores e onde usar cada cor.
+2. Pareamento de fontes (Títulos vs Corpo).
+3. Tipos de animações (Entrance, Section reveals, Hover effects).
+4. Estrutura de seções (Hero, Bento Grid de Serviços, Mural de Testemunhos, CTA Final).
+5. Como integrar a cidade (${lead.city}) no SEO e copy.`;
 
         // Chamada via Serverless Vercel Edge / API
         const response = await fetch(`/api/generate-preview`, {

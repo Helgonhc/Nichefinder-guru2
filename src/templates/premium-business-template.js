@@ -11,34 +11,66 @@ export default function generatePremiumTemplate(aiContent, leadData) {
         solution = "Nós temos a metodologia exata para impulsionar o seu negócio hoje."
     } = aiContent || {};
 
+    const layout = leadData.layout_type || "modern-bento-business";
     const primaryColorHex = (leadData.colorPalette && leadData.colorPalette[0]) ? leadData.colorPalette[0] : '#2563EB';
-    const fontName = leadData.font || 'Inter';
+    const fontName = leadData.font || (layout.includes('luxury') ? 'Playfair Display' : 'Inter');
     const fontUrl = fontName.replace(' ', '+');
 
-    // Parse logic for array of strings vs array of objects
-    const renderServices = (Array.isArray(services) ? services : []).map(s => `
-        <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-            <h3 class="text-xl font-bold mb-3 text-gray-900">${typeof s === 'object' ? (s.title || s.name || '') : s}</h3>
-            ${typeof s === 'object' && s.description ? `<p class="text-gray-600">${s.description}</p>` : ''}
-        </div>
-    `).join('');
+    // Estilos por arquétipo
+    const isDark = layout.includes('dark') || layout.includes('kinetic');
+    const isBento = layout.includes('bento');
+    const isGlass = layout.includes('glass');
+    const isSerif = layout.includes('luxury');
+
+    const renderServices = (Array.isArray(services) ? services : []).map((s, idx) => {
+        const title = typeof s === 'object' ? (s.title || s.name || '') : s;
+        const desc = typeof s === 'object' && s.description ? s.description : '';
+
+        if (isBento) {
+            const spans = ['md:col-span-2', 'md:col-span-1', 'md:col-span-1', 'md:col-span-2'];
+            const spanClass = spans[idx % spans.length];
+            return `
+                <div class="${spanClass} ${isDark ? 'bg-white/5 border-white/10' : 'bg-white border-gray-100'} p-8 rounded-3xl shadow-sm border hover:shadow-xl transition-all group overflow-hidden relative">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-150"></div>
+                    <h3 class="text-2xl font-bold mb-4 ${isDark ? 'text-white' : 'text-gray-900'} relative z-10">${title}</h3>
+                    <p class="${isDark ? 'text-gray-400' : 'text-gray-600'} leading-relaxed relative z-10">${desc}</p>
+                </div>
+            `;
+        }
+
+        return `
+            <div class="${isDark ? 'bg-white/5 border-white/10' : 'bg-white border-gray-100'} p-8 rounded-2xl shadow-sm border hover:-translate-y-1 transition-all">
+                <h3 class="text-xl font-bold mb-3 ${isDark ? 'text-white' : 'text-gray-900'}">${title}</h3>
+                <p class="${isDark ? 'text-gray-400' : 'text-gray-600'}">${desc}</p>
+            </div>
+        `;
+    }).join('');
 
     const renderBenefits = (Array.isArray(benefits) ? benefits : []).map(b => `
         <li class="flex items-start">
-            <svg class="w-6 h-6 text-green-500 mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-            <span class="text-gray-700 text-lg">${typeof b === 'object' ? (b.title || b.description || '') : b}</span>
+            <div class="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center mr-4 mt-1 flex-shrink-0">
+                <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <span class="${isDark ? 'text-gray-300' : 'text-gray-700'} text-lg">${typeof b === 'object' ? (b.title || b.description || '') : b}</span>
         </li>
     `).join('');
 
-    const renderTestimonials = (Array.isArray(testimonials) ? testimonials : []).map(t => `
-        <div class="bg-gray-50 p-8 rounded-xl shadow-sm">
-            <div class="flex text-yellow-400 mb-4 text-xl">
-                ★★★★★
+    const renderTestimonials = (Array.isArray(testimonials) ? testimonials : []).map(t => {
+        const text = typeof t === 'object' ? (t.text || t.quote || '') : t;
+        const author = typeof t === 'object' ? (t.author || t.name || 'Cliente Satisfeito') : 'Cliente';
+        return `
+            <div class="${isDark ? 'bg-white/5 border-white/10' : 'bg-gray-50 border-transparent'} p-8 rounded-3xl border">
+                <div class="flex text-yellow-500 mb-6 text-xl">★★★★★</div>
+                <p class="${isDark ? 'text-gray-300' : 'text-gray-700'} italic mb-8 leading-relaxed text-lg">"${text}"</p>
+                <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-full bg-primary/20 mr-4 flex items-center justify-center font-bold text-primary">
+                        ${author.charAt(0)}
+                    </div>
+                    <p class="font-bold ${isDark ? 'text-white' : 'text-gray-900'}">${author}</p>
+                </div>
             </div>
-            <p class="text-gray-700 italic mb-6 leading-relaxed">"${typeof t === 'object' ? (t.text || t.quote || '') : t}"</p>
-            <p class="font-bold text-gray-900">- ${typeof t === 'object' ? (t.author || t.name || 'Cliente Satisfeito') : 'Cliente'}</p>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 
     return `
 <!DOCTYPE html>
@@ -48,182 +80,167 @@ export default function generatePremiumTemplate(aiContent, leadData) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${leadData.name || 'Website Premium'} - ${leadData.niche || ''}</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=${fontUrl}:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=${fontUrl}:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['${fontName}', 'sans-serif'],
+                        sans: ['${isSerif ? 'Inter' : (isDark ? 'Plus Jakarta Sans' : fontName)}', 'sans-serif'],
+                        serif: ['${isSerif ? fontName : 'Georgia'}', 'serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
                     },
                     colors: {
                         primary: '${primaryColorHex}',
+                        dark: '#020617',
                     }
                 }
             }
         }
     </script>
+    <style>
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .text-gradient { background: linear-gradient(to right, ${primaryColorHex}, #8B5CF6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-20px); } 100% { transform: translateY(0px); } }
+        .float-anim { animation: float 6s ease-in-out infinite; }
+    </style>
 </head>
-<body class="font-sans text-gray-800 antialiased selection:bg-primary selection:text-white">
+<body class="font-sans ${isDark ? 'bg-dark text-white' : 'bg-white text-gray-800'} antialiased selection:bg-primary selection:text-white">
     
-    <!-- Header / Nav -->
-    <nav class="absolute top-0 left-0 w-full z-50 px-4 sm:px-6 lg:px-8 py-6 flex justify-between items-center">
-        <div class="max-w-7xl mx-auto w-full flex justify-between items-center">
-            <div class="text-2xl font-black text-white tracking-tighter">
+    <!-- Header -->
+    <nav class="fixed top-0 left-0 w-full z-50 px-6 py-6 font-display">
+        <div class="max-w-7xl mx-auto flex justify-between items-center ${isGlass ? 'glass px-8 py-4 rounded-2xl' : ''}">
+            <div class="text-2xl font-bold tracking-tighter ${isDark ? 'text-white' : 'text-gray-900'}">
                 ${leadData.name || 'Logo'}
             </div>
-            <a href="#contato" class="hidden md:inline-flex items-center justify-center px-6 py-2.5 text-sm font-bold rounded-full text-gray-900 bg-white hover:bg-gray-50 transition-colors shadow-sm">
-                Falar com consultor
+            <a href="#contato" class="px-6 py-2.5 text-sm font-bold rounded-full ${isDark ? 'bg-white text-dark hover:bg-gray-200' : 'bg-primary text-white hover:bg-opacity-90'} transition-all shadow-lg">
+                Falar com Especialista
             </a>
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <header class="relative overflow-hidden bg-gray-900 text-white min-h-[90vh] flex items-center">
-        <div class="absolute inset-0 z-0">
-            <div class="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-primary/40 opacity-95"></div>
-        </div>
+    <!-- Hero -->
+    <header class="relative min-h-screen flex items-center pt-24 overflow-hidden">
+        ${isDark ? '<div class="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] -mr-64 -mt-64"></div>' : ''}
         
-        <div class="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 flex flex-col lg:flex-row items-center">
-            <div class="w-full lg:w-1/2 pr-0 lg:pr-12 text-center lg:text-left pt-12 lg:pt-0">
-                <span class="inline-block py-1.5 px-4 rounded-full bg-white/10 text-white/90 text-sm font-semibold tracking-wider mb-8 border border-white/20 uppercase">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div class="relative z-10 text-center lg:text-left">
+                <span class="inline-block py-2 px-4 rounded-full ${isDark ? 'bg-primary/20 text-primary' : 'bg-gray-100 text-gray-600'} text-xs font-bold uppercase tracking-widest mb-8">
                     ${leadData.niche || 'Soluções Premium'}
                 </span>
-                <h1 class="text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 leading-tight">
-                    ${headline}
+                <h1 class="text-5xl lg:text-7xl font-bold ${isSerif ? 'font-serif' : 'font-display'} tracking-tight mb-8 leading-[1.1]">
+                    <span class="${isDark ? 'text-white' : 'text-gray-900'}">${headline}</span>
                 </h1>
-                <p class="text-xl text-gray-300 mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-light">
+                <p class="text-xl ${isDark ? 'text-gray-400' : 'text-gray-600'} mb-12 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-light">
                     ${subheadline}
                 </p>
-                <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                    <a href="#contato" class="inline-flex items-center justify-center px-8 py-4 text-base font-bold rounded-xl text-white bg-primary hover:bg-opacity-90 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                <div class="flex flex-col sm:flex-row gap-5 justify-center lg:justify-start">
+                    <a href="#contato" class="px-10 py-5 text-lg font-bold rounded-2xl text-white bg-primary hover:scale-105 transition-all shadow-[0_20px_50px_rgba(37,99,235,0.3)]">
                         ${cta}
-                        <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                     </a>
                 </div>
-                
-                ${leadData.phone ? `
-                <div class="mt-8 flex items-center justify-center lg:justify-start text-gray-400 text-sm">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
-                    Atendimento imediato: ${leadData.phone}
-                </div>
-                ` : ''}
             </div>
             
-            <div class="w-full lg:w-1/2 mt-16 lg:mt-0 hidden md:block">
-                <div class="relative rounded-[2rem] overflow-hidden shadow-2xl transform lg:rotate-2 hover:rotate-0 transition-transform duration-500 border border-white/10">
-                    <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=2070&auto=format&fit=crop" alt="Hero Image" class="w-full h-[600px] object-cover opacity-90 transition-opacity hover:opacity-100">
-                    <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent opacity-60"></div>
+            <div class="relative hidden lg:block">
+                <div class="absolute inset-0 bg-primary/10 rounded-[3rem] blur-3xl transform rotate-6 scale-90"></div>
+                <div class="relative rounded-[3rem] overflow-hidden shadow-2xl border-4 ${isDark ? 'border-white/10' : 'border-white'} float-anim">
+                    <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&q=80&w=1200" class="w-full h-[650px] object-cover">
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Problema & Solução -->
-    <section class="py-28 bg-white relative">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col md:flex-row gap-16 items-center">
-                <div class="w-full md:w-1/2">
-                    <h2 class="text-primary font-bold tracking-wide uppercase text-sm mb-4">O Seu Desafio</h2>
-                    <h3 class="text-3xl md:text-4xl font-bold text-gray-900 mb-6 leading-tight">
-                        ${problem}
-                    </h3>
-                </div>
-                <div class="w-full md:w-1/2 bg-gray-50 border-l-4 border-primary p-10 rounded-xl shadow-sm">
-                    <h2 class="text-primary font-bold tracking-wide uppercase text-sm mb-4">A Nossa Solução</h2>
-                    <p class="text-xl text-gray-700 leading-relaxed font-light">
-                        ${solution}
-                    </p>
-                </div>
+    <!-- Audit / Problem -->
+    <section class="py-32 ${isDark ? 'bg-white/5' : 'bg-gray-50'}">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="max-w-3xl mb-20 text-center lg:text-left px-4">
+                <h2 class="text-primary font-bold uppercase tracking-widest text-sm mb-6">Redefinindo Padrões</h2>
+                <h3 class="text-4xl lg:text-5xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} mb-10 leading-tight">
+                    ${problem}
+                </h3>
+                <p class="text-xl ${isDark ? 'text-gray-400' : 'text-gray-600'} leading-relaxed">
+                    ${solution}
+                </p>
             </div>
         </div>
     </section>
 
-    <!-- Serviços -->
-    <section class="py-28 bg-gray-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-3xl mx-auto mb-20">
-                <h2 class="text-primary font-bold tracking-wide uppercase text-sm mb-4">Nossos Serviços</h2>
-                <h3 class="text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight">Especialidades</h3>
+    <!-- Services -->
+    <section class="py-32">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-24 max-w-2xl mx-auto">
+                <h2 class="text-primary font-bold uppercase tracking-widest text-sm mb-6">Expertise em ${leadData.niche}</h2>
+                <h3 class="text-4xl lg:text-5xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}">Nossos Pilares</h3>
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 ${isBento ? 'md:grid-cols-3' : ''}">
                 ${renderServices}
             </div>
         </div>
     </section>
 
-    <!-- Benefícios & Autoridade -->
-    <section class="py-28 bg-white overflow-hidden">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row gap-20 items-center">
-            <div class="w-full lg:w-1/2">
-                <h2 class="text-primary font-bold tracking-wide uppercase text-sm mb-4">Por que nos escolher?</h2>
-                <h3 class="text-4xl lg:text-5xl font-extrabold text-gray-900 mb-8 tracking-tight">
+    <!-- Benefits -->
+    <section class="py-32 ${isDark ? 'bg-dark' : 'bg-white'}">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
+            <div class="order-2 lg:order-1 relative">
+                <div class="absolute -inset-4 bg-primary/20 rounded-[2.5rem] rotate-2"></div>
+                <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=1200" class="relative rounded-[2.5rem] shadow-2xl h-[600px] w-full object-cover">
+            </div>
+            <div class="order-1 lg:order-2">
+                <h2 class="text-primary font-bold uppercase tracking-widest text-sm mb-6">A Diferença é a Excelência</h2>
+                <h3 class="text-4xl lg:text-5xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} mb-10 leading-tight">
                     ${authority}
                 </h3>
-                
-                <ul class="space-y-6 mt-8">
+                <ul class="space-y-8">
                     ${renderBenefits}
                 </ul>
-            </div>
-            <div class="w-full lg:w-1/2 relative hidden md:block">
-                <div class="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent rounded-[2.5rem] transform translate-x-6 translate-y-6"></div>
-                <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop" alt="Equipe" class="relative rounded-[2.5rem] shadow-2xl z-10 w-full object-cover h-[550px]">
             </div>
         </div>
     </section>
 
-    <!-- Prova Social -->
-    <section class="py-28 bg-gray-900 text-white relative">
-        <div class="absolute inset-0 bg-primary/5"></div>
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div class="text-center max-w-3xl mx-auto mb-20">
-                <h2 class="text-primary font-bold tracking-wide uppercase text-sm mb-4">Depoimentos</h2>
-                <h3 class="text-4xl lg:text-5xl font-extrabold text-white tracking-tight">O que dizem sobre nós</h3>
+    <!-- Testimonials -->
+    <section class="py-32 ${isDark ? 'bg-white/5' : 'bg-gray-50'} overflow-hidden relative">
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <div class="text-center mb-24">
+                <h2 class="text-primary font-bold uppercase tracking-widest text-sm mb-6">Voz dos Clientes</h2>
+                <h3 class="text-4xl lg:text-5xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}">Resultados que Falam</h3>
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 ${renderTestimonials}
             </div>
         </div>
     </section>
 
-    <!-- CTA Final -->
-    <section id="contato" class="py-32 bg-primary relative overflow-hidden">
-        <div class="absolute inset-0 bg-black/10"></div>
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center text-white">
-            <h2 class="text-5xl md:text-6xl font-extrabold mb-8 leading-tight tracking-tight">Pronto para dar o próximo passo?</h2>
-            <p class="text-xl md:text-2xl mb-12 opacity-90 max-w-3xl mx-auto font-light">Entre em contato agora mesmo e descubra como podemos ajudar <strong>${leadData.name || 'sua empresa'}</strong> a alcançar resultados extraordinários no mercado.</p>
-            
-            <form class="max-w-md mx-auto space-y-5 bg-white p-10 rounded-3xl shadow-2xl text-left border border-white/20 relative transform hover:-translate-y-1 transition-transform">
-                <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">Fale Conosco Agora</h3>
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Nome Completo</label>
-                    <input type="text" placeholder="Seu nome" class="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-4 focus:ring-primary/20 focus:border-primary outline-none text-gray-900 transition-all bg-gray-50 focus:bg-white">
+    <!-- Final CTA -->
+    <section id="contato" class="py-32 px-6">
+        <div class="max-w-6xl mx-auto rounded-[3rem] ${isDark ? 'bg-primary' : 'bg-gray-900'} p-12 lg:p-24 text-center relative overflow-hidden">
+            <div class="absolute inset-0 bg-white/5 opacity-50"></div>
+            <div class="relative z-10">
+                <h2 class="text-5xl lg:text-7xl font-bold text-white mb-10 leading-tight">Sua nova era digital começa hoje.</h2>
+                <p class="text-xl text-white/80 mb-16 max-w-3xl mx-auto leading-relaxed">
+                    Estamos prontos para levar <strong>${leadData.name || 'sua empresa'}</strong> ao topo em ${leadData.city}. Vamos conversar?
+                </p>
+                <div class="flex flex-col md:flex-row gap-6 justify-center">
+                    <a href="https://wa.me/${leadData.whatsapp || leadData.phone}" class="px-12 py-6 bg-white text-dark font-bold text-xl rounded-2xl hover:scale-105 transition-all shadow-2xl">
+                        Acessar Consultoria Gratuita
+                    </a>
                 </div>
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Telefone / WhatsApp</label>
-                    <input type="tel" placeholder="(00) 00000-0000" class="w-full px-5 py-4 rounded-xl border border-gray-200 focus:ring-4 focus:ring-primary/20 focus:border-primary outline-none text-gray-900 transition-all bg-gray-50 focus:bg-white">
-                </div>
-                <button type="button" class="w-full bg-primary text-white font-bold text-lg py-4 rounded-xl hover:bg-opacity-90 transition-all shadow-lg hover:shadow-xl mt-4 flex justify-center items-center">
-                    ${cta}
-                    <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                </button>
-            </form>
+            </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="bg-gray-50 border-t border-gray-200 py-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center text-center md:text-left">
-            <div class="mb-6 md:mb-0">
-                <span class="text-3xl font-black text-gray-900 tracking-tighter">${leadData.name || 'Empresa'}</span>
-                <p class="text-gray-500 mt-2 text-lg">${leadData.city || 'Sua Cidade'} - ${leadData.niche || 'Seu Nicho'}</p>
-                ${leadData.phone ? `<p class="text-gray-500 mt-1">${leadData.phone}</p>` : ''}
+    <footer class="py-20 px-6 border-t ${isDark ? 'border-white/10' : 'border-gray-100'}">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-10">
+            <div class="text-center md:text-left">
+                <div class="text-2xl font-bold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}">${leadData.name}</div>
+                <p class="${isDark ? 'text-gray-500' : 'text-gray-400'}">${leadData.city} | ${leadData.niche}</p>
             </div>
-            <div class="text-gray-400 text-sm">
-                &copy; ${new Date().getFullYear()} ${leadData.name || 'Empresa'}. Todos os direitos reservados.
-                <div class="mt-2 text-primary font-medium cursor-pointer hover:underline">Política de Privacidade</div>
+            <div class="text-center md:text-right">
+                <p class="${isDark ? 'text-gray-500' : 'text-gray-400'} text-sm">&copy; ${new Date().getFullYear()} ${leadData.name}. Direitos de Elite Reservados.</p>
+                <div class="mt-4 flex gap-6 justify-center md:justify-end text-primary font-bold text-sm">
+                    <a href="#" class="hover:underline">Políticas</a>
+                    <a href="#" class="hover:underline">Termos</a>
+                </div>
             </div>
         </div>
     </footer>
