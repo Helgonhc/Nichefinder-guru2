@@ -177,73 +177,48 @@ AUDITORIA TÉCNICA REAL (Google PageSpeed):
 - HTTPS: ${lead.audit.isSecure ? 'Sim' : 'Não'}
 ` : '';
 
-        const systemMessage = `
-# PROMPT DE AUDITORIA DIGITAL & REDESIGN — ELITE PREVIEW
+        const systemMessage = `Você é um especialista em auditoria de presença digital e design de websites.
 
-Você é um AUDITOR PROFISSIONAL DE PRESENÇA DIGITAL e CONSULTOR DE MARKETING DIGITAL. Sua função é analisar o site atual (se houver) e projetar um novo conceito visual disruptivo.
+Sua tarefa é:
+1. Analisar a presença digital da empresa.
+2. Avaliar a qualidade do site atual (se existir).
+3. Criar um conceito de redesign profissional para essa empresa.
 
-A análise e o redesign serão utilizados dentro da ferramenta Elite Preview para demonstrar ao empresário como sua presença digital pode melhorar drasticamente.
+Critérios de avaliação:
+- design visual
+- clareza da proposta de valor
+- estrutura de navegação
+- presença de CTA
+- prova social
+- autoridade da marca
 
----
+Retorne um objeto JSON com:
+- headline
+- subheadline
+- benefits
+- services
+- testimonials
+- design_style
+- color_palette
+- layout_type
+- site_diagnostics
+- builder_prompt
 
-## 🚀 PARTE 1: AUDITORIA DIGITAL (MODO AUDITOR)
+O builder_prompt deve explicar como recriar um site moderno para esse negócio. (MÁXIMO 200 PALAVRAS).
+O retorno DEVE ser EXCLUSIVAMENTE o JSON válido.`;
 
-Sua missão é produzir um diagnóstico claro, objetivo e profissional sobre a qualidade da presença digital atual da empresa.
-
-CRITÉRIOS DE AVALIAÇÃO:
-• Design visual e Modernidade do layout
-• Clareza da proposta de valor e Copywriting
-• Facilidade de navegação e Estrutura das seções
-• Presença de CTA (Chamada para ação) claro
-• Presença de prova social (depoimentos, cases)
-• Autoridade da marca e Experiência geral
-
-PONTUAÇÃO (0 a 100):
-• 90–100 = site excelente
-• 70–89 = site bom
-• 50–69 = site mediano
-• 30–49 = site fraco
-• 0–29 = site muito ruim
-
-Se o lead NÃO tiver site, o Score deve ser de 0 a 15, indicando a urgência de uma presença online.
-
----
-
-## 🎨 PARTE 2: DIRETOR CRIATIVO & UI DESIGNER (MODO REDESIGN)
-
-Com base na análise, você projetará o NOVO SITE da empresa no formato JSON Blueprint.
-
-Deveres do Redesign:
-• Atuar como Diretor Criativo de Agência Premium.
-• O resultado NÃO pode parecer template genérico de IA.
-• Design inspirado em: Webflow, Framer, Awwwards.
-• Incluir no "builder_prompt" um prompt massivo em Markdown detalhando a estrutura de 10 seções: HERO, PROBLEMA, SOLUÇÃO, SERVIÇOS, BENEFÍCIOS, PROVA SOCIAL, AUTORIDADE, CTA, CONTATO, FOOTER.
-
----
-
-## 🎯 REQUISITOS TÉCNICOS & FORMATO
-
-1. Retorne EXCLUSIVAMENTE o objeto JSON solicitado.
-2. Seja claro, profissional e direto nas descrições de diagnóstico.
-3. Não escreva textos longos ou explicações excessivas.
-`;
-
-        const userPrompt = `
-### DADOS DO LEAD PARA ANÁLISE E REDESIGN:
+        const userPrompt = `DADOS DO LEAD:
 - Empresa: ${lead.name}
 - Nicho: ${lead.niche} (${lead.categoria})
 - Localização: ${lead.address}, ${lead.city}
 - Website Atual: ${lead.website || 'Nenhum'}
 ${auditInfo}
 
-### DEPOIMENTOS REAIS:
+DEPOIMENTOS REAIS:
 ${reviewsInstruction}
 ${reviewsSource}
 
-### REGRAS PARA O JSON:
-1. "site_diagnostics": Produza o Score (0-100) e as listas de problemas/melhorias seguindo os critérios de Auditoria Digital. Seja direto e profissional.
-2. "builder_prompt": Escreva o SUPER PROMPT MARKDOWN (mínimo 600 palavras) instruindo a criação do site moderno com as 10 seções obrigatórias.
-
+ESTRUTURA ESPERADA DO JSON (Respeite os tipos e nomes das chaves):
 {
   "headline": "Título de Elite",
   "subheadline": "Copy persuasivo",
@@ -261,9 +236,8 @@ ${reviewsSource}
   "color_palette": ["HEX1", "HEX2", "HEX3"],
   "layout_type": "modern-split | experimental-asymmetry",
   "summary": "Resumo estratégico",
-  "builder_prompt": "SUPER PROMPT MARKDOWN AQUI..."
-}
-`;
+  "builder_prompt": "Máximo de 200 palavras explicando o layout..."
+}`;
 
         // Chamada via AI Gateway (porta 3002) — server-to-server, sem bloqueio de quota do browser
         const response = await fetch(`http://localhost:3002/generate-preview`, {
