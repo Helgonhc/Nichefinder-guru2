@@ -2,11 +2,10 @@
 const PIRAMYD_API_KEY = process.env.PIRAMYD_API_KEY;
 
 const PIRAMYD_MODELS = [
-    "Llama-4-scout",
+    "Llama-4-maverick",
     "gpt-5.3-codex",
     "claude-sonnet-4.5",
     "gpt-5.3",
-    "Llama-4-maverick",
     "Kimi-k2-thinking",
     "Glm-5",
     "Gpt-oss-120b",
@@ -89,7 +88,7 @@ export default async function handler(req, res) {
     }
 
     const modelsToTry = [...PIRAMYD_MODELS];
-    if (requestedModel && requestedModel !== "Llama-4-scout") {
+    if (requestedModel && requestedModel !== "Llama-4-maverick") {
         const index = modelsToTry.indexOf(requestedModel);
         if (index > -1) modelsToTry.splice(index, 1);
         modelsToTry.unshift(requestedModel);

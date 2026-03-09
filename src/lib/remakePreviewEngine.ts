@@ -52,7 +52,7 @@ Seja extremamente direto.`;
             body: JSON.stringify({
                 systemMessage,
                 userPrompt,
-                model: 'Llama-4-scout',
+                model: 'Llama-4-maverick',
                 maxTokens: 800
             })
         });
@@ -113,7 +113,7 @@ function parseDiagnosticResponse(content: string): { score: number; problems: st
 export async function generateRemakePreview(
     lead: BusinessData,
     style: string = 'Premium Modern',
-    model: string = 'Llama-4-scout'
+    model: string = 'Llama-4-maverick'
 ): Promise<RemakePreviewResult> {
     // Chamada via AI Gateway (porta 3002) — agora usando exclusivamente Piramyd Elite
     try {

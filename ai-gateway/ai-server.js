@@ -18,11 +18,10 @@ if (!PIRAMYD_API_KEY) {
 }
 
 const PIRAMYD_MODELS = [
-    "Llama-4-scout",
+    "Llama-4-maverick",
     "gpt-5.3-codex",
     "claude-sonnet-4.5",
     "gpt-5.3",
-    "Llama-4-maverick",
     "Kimi-k2-thinking",
     "Glm-5",
     "Gpt-oss-120b",
@@ -100,7 +99,7 @@ app.post("/generate-preview", async (req, res) => {
     });
 
     const modelsToTry = [...PIRAMYD_MODELS];
-    if (requestedModel && requestedModel !== "Llama-4-scout") {
+    if (requestedModel && requestedModel !== "Llama-4-maverick") {
         const index = modelsToTry.indexOf(requestedModel);
         if (index > -1) modelsToTry.splice(index, 1);
         modelsToTry.unshift(requestedModel);
@@ -390,7 +389,7 @@ Comece imediatamente com <!DOCTYPE html>.
 
     console.log(`\n[AI GATEWAY] Request HTML → ${leadData.name}`);
 
-    const modelsToTry = ["Llama-4-scout", ...PIRAMYD_MODELS];
+    const modelsToTry = ["Llama-4-maverick", ...PIRAMYD_MODELS];
 
     if (requestedModel && PIRAMYD_MODELS.includes(requestedModel)) {
         const index = modelsToTry.indexOf(requestedModel);

@@ -43,7 +43,7 @@ interface SiteRemakePreviewProps {
 export function SiteRemakePreview({ business, open, onClose, onRegenerate }: SiteRemakePreviewProps) {
     const [isRegenerating, setIsRegenerating] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
-    const [selectedModel, setSelectedModel] = useState<'Llama-4-scout' | 'Llama-4-maverick'>('Llama-4-scout');
+    const [selectedModel, setSelectedModel] = useState<'Llama-4-maverick' | 'Llama-4-scout'>('Llama-4-maverick');
 
     const preview = business.site_preview;
     const htmlPreview = business.generated_site_code || business.meta_data?.generated_site_code || business.html_preview || business.meta_data?.html_preview;
@@ -665,7 +665,7 @@ export function SiteRemakePreview({ business, open, onClose, onRegenerate }: Sit
                                                 font: result.preview_data.font_family,
                                                 builder_prompt: result.preview_data.builder_prompt
                                             },
-                                            model: 'Llama-4-scout'
+                                            model: 'Llama-4-maverick'
                                         })
                                     });
 
@@ -712,15 +712,6 @@ export function SiteRemakePreview({ business, open, onClose, onRegenerate }: Sit
 
                         <div className="flex bg-slate-900/50 p-1 rounded-2xl border border-white/5 order-last md:order-none">
                             <button
-                                onClick={() => setSelectedModel('Llama-4-scout')}
-                                className={cn(
-                                    "flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
-                                    selectedModel === 'Llama-4-scout' ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "text-slate-500 hover:text-slate-300"
-                                )}
-                            >
-                                <Brain className="w-3 h-3" /> Llama-Sct
-                            </button>
-                            <button
                                 onClick={() => setSelectedModel('Llama-4-maverick')}
                                 className={cn(
                                     "flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
@@ -728,6 +719,15 @@ export function SiteRemakePreview({ business, open, onClose, onRegenerate }: Sit
                                 )}
                             >
                                 <Cpu className="w-3 h-3" /> Llama-Mav
+                            </button>
+                            <button
+                                onClick={() => setSelectedModel('Llama-4-scout')}
+                                className={cn(
+                                    "flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                                    selectedModel === 'Llama-4-scout' ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" : "text-slate-500 hover:text-slate-300"
+                                )}
+                            >
+                                <Brain className="w-3 h-3" /> Llama-Sct
                             </button>
                         </div>
 
