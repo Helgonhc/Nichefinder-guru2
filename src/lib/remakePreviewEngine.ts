@@ -113,7 +113,7 @@ function parseDiagnosticResponse(content: string): { score: number; problems: st
 export async function generateRemakePreview(
     lead: BusinessData,
     style: string = 'Premium Modern',
-    model: string = 'gpt-5.3'
+    model: string = 'Llama-4-scout'
 ): Promise<RemakePreviewResult> {
     // Chamada via AI Gateway (porta 3002) — agora usando exclusivamente Piramyd Elite
     try {
