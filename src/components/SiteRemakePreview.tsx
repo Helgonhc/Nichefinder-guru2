@@ -112,7 +112,7 @@ export function SiteRemakePreview({ business, open, onClose, onRegenerate }: Sit
                                     font: updatedBusiness.site_preview.font_family,
                                     builder_prompt: updatedBusiness.site_preview.builder_prompt
                                 },
-                                model: 'gpt-5.3-codex'
+                                model: 'Llama-4-maverick'
                             })
                         });
 
