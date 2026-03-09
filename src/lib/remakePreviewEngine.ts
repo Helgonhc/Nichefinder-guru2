@@ -19,22 +19,133 @@ export interface RemakePreviewResult {
         layout_type: string;
         builder_prompt: string;
         real_social_media?: Record<string, string>;
+        site_diagnostics?: {
+            score: number;
+            problems: string[];
+            suggestions: string[];
+        };
     };
     summary: string;
     html_preview?: string; // HTML completo gerado pela IA para visualização
 }
 
 /**
+ * Função dedicada para analisar a presença digital do lead.
+ */
+export async function analyzeWebsite(lead: BusinessData): Promise<{ score: number; problems: string[]; suggestions: string[] }> {
+    console.log(`[Remake] Iniciando analyzeWebsite para: ${lead.website || lead.name}`);
+
+    const systemMessage = `
+Você é um AUDITOR PROFISSIONAL DE PRESENÇA DIGITAL.
+Analise o site de uma empresa e produza um diagnóstico profissional.
+
+Critérios de avaliação:
+* design visual
+* modernidade do layout
+* clareza da proposta de valor
+* facilidade de navegação
+* presença de chamada para ação
+* presença de prova social
+* organização do conteúdo
+* autoridade da marca
+* experiência geral do visitante
+
+Dê uma nota de 0 a 100 para a qualidade do site.
+Classificação:
+90–100 = excelente
+70–89 = bom
+50–69 = mediano
+30–49 = fraco
+0–29 = muito fraco
+
+Retorne exatamente neste formato:
+Site Score: XX / 100
+
+Problemas identificados:
+• problema 1
+• problema 2
+
+Sugestões de melhoria:
+• melhoria 1
+• melhoria 2
+
+A resposta deve ser clara e direta.
+`;
+
+    const userPrompt = `
+Empresa: ${lead.name}
+Nicho: ${lead.niche}
+Website: ${lead.website || 'Não possui'}
+Localização: ${lead.city}
+Estatísticas Adicionais: ${lead.audit ? JSON.stringify(lead.audit) : 'Nenhuma'}
+`;
+
+    try {
+        const response = await fetch(`http://localhost:3002/generate-preview`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ systemMessage, userPrompt, model: 'gpt-5.3' })
+        });
+
+        const result = await response.json();
+        const content = result.content;
+
+        return parseDiagnosticResponse(content);
+    } catch (err) {
+        console.error("[Remake] Erro em analyzeWebsite:", err);
+        return {
+            score: lead.website ? 45 : 0,
+            problems: ["Erro ao conectar com o motor de análise."],
+            suggestions: ["Tente novamente em instantes."]
+        };
+    }
+}
+
+/**
+ * Parser para o formato específico de resposta da Auditoria Digital.
+ */
+function parseDiagnosticResponse(content: string): { score: number; problems: string[]; suggestions: string[] } {
+    const scoreMatch = content.match(/Site Score:\s*(\d+)/i);
+    const score = scoreMatch ? parseInt(scoreMatch[1]) : 0;
+
+    const problems: string[] = [];
+    const suggestions: string[] = [];
+
+    const lines = content.split('\n');
+    let currentSection: 'problems' | 'suggestions' | null = null;
+
+    for (const line of lines) {
+        const text = line.trim();
+        if (text.toLowerCase().includes('problemas identificados')) {
+            currentSection = 'problems';
+            continue;
+        } else if (text.toLowerCase().includes('sugestões de melhoria')) {
+            currentSection = 'suggestions';
+            continue;
+        }
+
+        if (text.startsWith('•') || text.startsWith('-') || text.startsWith('*')) {
+            const cleanText = text.replace(/^[•\-\*]\s*/, '').trim();
+            if (cleanText) {
+                if (currentSection === 'problems') problems.push(cleanText);
+                else if (currentSection === 'suggestions') suggestions.push(cleanText);
+            }
+        }
+    }
+
+    return { score, problems, suggestions };
+}
+
+/**
  * Geração automática de uma proposta de redesign (Preview) usando IA.
  * NÍVEL: ULTRA GOD MODE GALAXY EDITION (3000+ PALAVRAS / BLUEPRINT DE ENGENHARIA RADICAL)
  */
-export async function generateRemakePreview(lead: BusinessData, style: string = 'Premium Modern'): Promise<RemakePreviewResult> {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyCf8wHRi1Yp-7bqy0zWexgHZYcCbYOROtU";
-    if (!apiKey) {
-        console.warn("API Key not found. Falling back to niche template.");
-        return generateFallbackPreview(lead);
-    }
-
+export async function generateRemakePreview(
+    lead: BusinessData,
+    style: string = 'Premium Modern',
+    model: string = 'gpt-5.3'
+): Promise<RemakePreviewResult> {
+    // Chamada via AI Gateway (porta 3002) — agora usando exclusivamente Piramyd Elite
     try {
         // ── Busca reviews via Places API se place_id estiver disponível ──────────
         let fetchedReviews: Array<{ user: string; rating: number; text: string }> = [];
@@ -87,67 +198,100 @@ export async function generateRemakePreview(lead: BusinessData, style: string = 
             reviewsInstruction = `NÃO HÁ REVIEWS REAIS DISPONÍVEIS. Você DEVE gerar 5 depoimentos extremamente realistas e específicos para o segmento de ${lead.niche} em ${lead.city}. Use nomes brasileiros reais, mencione serviços específicos do nicho. Insira no campo "testimonials" do JSON.`;
         }
 
-        const systemMessage = `VOCÊ É O ARQUITETO MAESTRO SUPREMO DE FRONTEND E ENGENHARIA DE PROMPT.
-        Sua missão é gerar um BLUEPRINT TÉCNICO COMPLETO EM JSON, ESTRITAMENTE JSON.
-        ESCREVA EM PORTUGUÊS brasileiro.
-        
-        PROTOCOLO ANTI-PREGUIÇA E FRONTEND:
-        - Detalhe pixels, animações do Framer Motion e classes do Tailwind v4.
-        - Não use placeholders. Use dados reais do lead.
-        
-        REGRAS DE PROVA SOCIAL E MÍDIAS:
-        - Injetar INTEGRALMENTE todos os depoimentos fornecidos.
-        - INJETAR os links e informações de redes sociais REAIS fornecidos no Payload nos campos correspondentes do JSON. Se não houver, ignore a rede.
-        
-        CAMPO BUILDER_PROMPT:
-        - ESSE É O MAIS IMPORTANTE: no campo "builder_prompt" você deve escrever um SUPREMO E IMENSO PROMPT Markdown técnico, focado em frontend Next.js, pronto para eu copiar e passar meu time de 'vibecoders' desenvolver e clonar a sua ideia de site 100%. Mínimo 500 palavras nesse campo!`;
+        const hasWebsite = !!lead.website;
+        const auditInfo = lead.audit ? `
+AUDITORIA TÉCNICA REAL (Google PageSpeed):
+- Performance: ${lead.audit.performanceScore}/100
+- SEO: ${lead.audit.seoScore}/100
+- Responsivo: ${lead.audit.isResponsive ? 'Sim' : 'Não'}
+- HTTPS: ${lead.audit.isSecure ? 'Sim' : 'Não'}
+` : '';
+
+        const systemMessage = `
+# PROMPT DE AUDITORIA DIGITAL & REDESIGN — ELITE PREVIEW
+
+Você é um AUDITOR PROFISSIONAL DE PRESENÇA DIGITAL e CONSULTOR DE MARKETING DIGITAL. Sua função é analisar o site atual (se houver) e projetar um novo conceito visual disruptivo.
+
+A análise e o redesign serão utilizados dentro da ferramenta Elite Preview para demonstrar ao empresário como sua presença digital pode melhorar drasticamente.
+
+---
+
+## 🚀 PARTE 1: AUDITORIA DIGITAL (MODO AUDITOR)
+
+Sua missão é produzir um diagnóstico claro, objetivo e profissional sobre a qualidade da presença digital atual da empresa.
+
+CRITÉRIOS DE AVALIAÇÃO:
+• Design visual e Modernidade do layout
+• Clareza da proposta de valor e Copywriting
+• Facilidade de navegação e Estrutura das seções
+• Presença de CTA (Chamada para ação) claro
+• Presença de prova social (depoimentos, cases)
+• Autoridade da marca e Experiência geral
+
+PONTUAÇÃO (0 a 100):
+• 90–100 = site excelente
+• 70–89 = site bom
+• 50–69 = site mediano
+• 30–49 = site fraco
+• 0–29 = site muito ruim
+
+Se o lead NÃO tiver site, o Score deve ser de 0 a 15, indicando a urgência de uma presença online.
+
+---
+
+## 🎨 PARTE 2: DIRETOR CRIATIVO & UI DESIGNER (MODO REDESIGN)
+
+Com base na análise, você projetará o NOVO SITE da empresa no formato JSON Blueprint.
+
+Deveres do Redesign:
+• Atuar como Diretor Criativo de Agência Premium.
+• O resultado NÃO pode parecer template genérico de IA.
+• Design inspirado em: Webflow, Framer, Awwwards.
+• Incluir no "builder_prompt" um prompt massivo em Markdown detalhando a estrutura de 10 seções: HERO, PROBLEMA, SOLUÇÃO, SERVIÇOS, BENEFÍCIOS, PROVA SOCIAL, AUTORIDADE, CTA, CONTATO, FOOTER.
+
+---
+
+## 🎯 REQUISITOS TÉCNICOS & FORMATO
+
+1. Retorne EXCLUSIVAMENTE o objeto JSON solicitado.
+2. Seja claro, profissional e direto nas descrições de diagnóstico.
+3. Não escreva textos longos ou explicações excessivas.
+`;
 
         const userPrompt = `
-### DATA DUMP - INJETAR TUDO NO BLUEPRINT E NO BUILDER_PROMPT:
+### DADOS DO LEAD PARA ANÁLISE E REDESIGN:
 - Empresa: ${lead.name}
 - Nicho: ${lead.niche} (${lead.categoria})
 - Localização: ${lead.address}, ${lead.city}
-- Contato: ${lead.whatsapp || lead.phone || 'Nenhum'}
-- Site Original/Atual: ${lead.website || 'Nenhum'}
-- Redes Sociais REAIS do lead: 
-    * Instagram: ${lead.instagram || 'Nao Encontrado'}
-    * Facebook: ${lead.facebook || 'Nao Encontrado'}
-    * Google Maps URL: ${lead.googleMapsUrl || 'Nao Encontrado'}
+- Website Atual: ${lead.website || 'Nenhum'}
+${auditInfo}
 
-### DEPOIMENTOS REAIS (Injetar no JSON e no Site):
+### DEPOIMENTOS REAIS:
 ${reviewsInstruction}
 ${reviewsSource}
 
-### REQUISITOS DO JSON:
-Retorne APENAS um objeto JSON ESTRITO contendo a estrutura abaixo.
-Preencha TODOS os campos com dados REAIS do lead acima. NUNCA use placeholders.
+### REGRAS PARA O JSON:
+1. "site_diagnostics": Produza o Score (0-100) e as listas de problemas/melhorias seguindo os critérios de Auditoria Digital. Seja direto e profissional.
+2. "builder_prompt": Escreva o SUPER PROMPT MARKDOWN (mínimo 600 palavras) instruindo a criação do site moderno com as 10 seções obrigatórias.
 
 {
-  "headline": "Headline Master-Tier para ${lead.name}",
-  "subheadline": "Copy de autoridade máxima para ${lead.niche}",
-  "benefits": ["Benefit 1", "Benefit 2", "Benefit 3", "Benefit 4", "Benefit 5"],
-  "services": ["Service 1", "Service 2", "Service 3", "Service 4", "Service 5"],
-  "service_details": [
-     { "title": "Service Name", "description": "30-50 words technical copy" }
-  ],
-  "testimonials": [ "INSERIR AQUI OS DEPOIMENTOS REAIS BRUTOS OU GERADOS PARA O NICHO ${lead.niche}" ],
-  "real_social_media": {
-      "instagram": "${lead.instagram || ''}",
-      "facebook": "${lead.facebook || ''}",
-      "google_maps": "${lead.googleMapsUrl || ''}",
-      "whatsapp": "${lead.whatsapp || lead.phone || ''}"
+  "headline": "Título de Elite",
+  "subheadline": "Copy persuasivo",
+  "benefits": ["Benefit 1", "Benefit 2", "Benefit 3"],
+  "services": ["Service 1", "Service 2", "Service 3"],
+  "site_diagnostics": {
+    "score": 0,
+    "problems": ["Problema 1", "Problema 2"],
+    "suggestions": ["Melhoria 1", "Melhoria 2"]
   },
-  "real_address": "${lead.address}, ${lead.city}",
-  "cta_text": "Texto de conversão",
-  "cta_action": "WhatsApp",
+  "service_details": [ { "title": "...", "description": "..." } ],
+  "testimonials": [ "Depoimentos" ],
+  "cta_text": "Texto CTA",
   "design_style": "${style}",
   "color_palette": ["HEX1", "HEX2", "HEX3"],
-  "font_family": "Space Grotesk",
-  "hero_typography": "tech | brutalist | elegant",
-  "hero_image_keyword": "Ultra specific Unsplash keyword para ${lead.niche}",
-  "layout_type": "experimental-asymmetry | typographic-brutalism | modern-split",
-  "summary": "Resumo estratégico da proposta para ${lead.name}.",
-  "builder_prompt": "ESCREVA AQUI O SUPER PROMPT MASSIVO DOS VIBECODERS EM MARKDOWN. Mencionar: nome da empresa ${lead.name}, nicho ${lead.niche}, redes sociais reais, endereço ${lead.address}. Detalhe seções TSX, cores, Framer Motion. Mínimo 500 palavras."
+  "layout_type": "modern-split | experimental-asymmetry",
+  "summary": "Resumo estratégico",
+  "builder_prompt": "SUPER PROMPT MARKDOWN AQUI..."
 }
 `;
 
@@ -155,7 +299,7 @@ Preencha TODOS os campos com dados REAIS do lead acima. NUNCA use placeholders.
         const response = await fetch(`http://localhost:3002/generate-preview`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ systemMessage, userPrompt, apiKey })
+            body: JSON.stringify({ systemMessage, userPrompt, model })
         });
 
         const result = await response.json();
@@ -175,21 +319,23 @@ Preencha TODOS os campos com dados REAIS do lead acima. NUNCA use placeholders.
         let content;
 
         try {
-            content = JSON.parse(rawContent);
+            content = JSON.parse(cleanJsonPayload(rawContent));
         } catch (parseError) {
             console.error("JSON Parse Error, attempting recovery...", parseError);
 
-            // Tenta forçar a leitura do RAW se puder usar REGEX ou limpeza
+            // Tenta isolar apenas o bloco JSON caso haja texto ao redor
             const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
                 try {
-                    content = JSON.parse(jsonMatch[0]);
+                    content = JSON.parse(cleanJsonPayload(jsonMatch[0]));
                 } catch (e) {
-                    // Tentativa de fechamento simples
-                    if (rawContent.includes('"builder_prompt": "') && !rawContent.trim().endsWith('"}')) {
-                        const recovered = rawContent.trim() + '"}';
+                    console.error("Failed to parse matched JSON block:", e);
+                    // Tentativa desesperada de fechamento se o builder_prompt for o culpado (truncamento)
+                    if (rawContent.includes('"builder_prompt": "')) {
                         try {
-                            content = JSON.parse(recovered);
+                            // Tenta fechar a string e o objeto se parecer truncado
+                            const simplified = rawContent.trim().replace(/[^\}]*$/, '') + '"}';
+                            content = JSON.parse(cleanJsonPayload(simplified));
                         } catch (e2) {
                             throw new Error("Failed to recover JSON payload completely.");
                         }
@@ -237,7 +383,9 @@ ${reviewsSource}
                         testimonials: content.testimonials || [],
                         colorPalette: content.color_palette,
                         font: content.font_family,
-                    }
+                        builder_prompt: content.builder_prompt // Injetando o blueprint massivo para consistência total
+                    },
+                    model: 'gpt-5.3-codex' // Usando versão especializada para código se disponível
                 })
             });
             if (htmlRes.ok) {
@@ -268,6 +416,11 @@ ${reviewsSource}
                 layout_type: layout_type,
                 builder_prompt: (base_prompt || "N/A") + forcedDump,
                 real_social_media: content.real_social_media || {},
+                site_diagnostics: content.site_diagnostics || {
+                    score: lead.website ? 45 : 0,
+                    problems: lead.website ? ["Design datado", "Baixa conversão"] : [],
+                    suggestions: lead.website ? ["Modernizar UI/UX", "Adicionar CTAs claros"] : []
+                },
             },
             summary: content.summary,
             html_preview,
@@ -334,4 +487,33 @@ ${(lead.services || ['Implantes de Elite', 'Estética Avançada', 'Checkup Digit
         },
         summary: "Blueprint de Contingência Ativado para garantir a entrega de alta fidelidade."
     };
+}
+
+/**
+ * Limpa o payload retornado pela IA para garantir que seja um JSON válido.
+ * Trata blocos de código markdown, caracteres de controle e quebras de linha ilegais.
+ */
+function cleanJsonPayload(str: string): string {
+    if (!str) return "";
+
+    let cleaned = str.trim();
+
+    // 1. Remover blocos de código Markdown (```json ... ```)
+    cleaned = cleaned.replace(/```(?:json)?\s*([\s\S]*?)```/g, '$1');
+
+    // 2. Tratar caracteres de controle ilegais dentro de strings JSON
+    // Esta regex identifica conteúdo entre aspas duplas e escapa quebras de linha reais
+    cleaned = cleaned.replace(/"([^"\\]*(?:\\.[^"\\]*)*)"/gs, (match, p1) => {
+        // Substitui quebras de linha reais por \n literal para o JSON.parse aceitar
+        const escaped = p1
+            .replace(/\n/g, "\\n")
+            .replace(/\r/g, "\\r")
+            .replace(/\t/g, "\\t");
+        return `"${escaped}"`;
+    });
+
+    // 3. Remover vírgulas trapalheiras (trailing commas) antes de fechar chaves/colchetes
+    cleaned = cleaned.replace(/,\s*([\]\}])/g, '$1');
+
+    return cleaned.trim();
 }

@@ -24,6 +24,7 @@ import { scoreLead } from "@/lib/conversionEngine";
 import { calculateOpportunity } from "@/lib/opportunityEngine";
 import { generateRemakePreview } from "@/lib/remakePreviewEngine";
 import { SiteAuditResult } from "@/lib/siteAuditor";
+import { analyzeLead } from "@/lib/leadAnalysisPipeline";
 
 const totalWidth = 1024;
 
@@ -94,6 +95,8 @@ export const BusinessCard = memo(function BusinessCard({
   const [siteModalOpen, setSiteModalOpen] = useState(false);
   const [isAnalyzingSite, setIsAnalyzingSite] = useState(false);
   const [analysisStatus, setAnalysisStatus] = useState("");
+  const [analysis, setAnalysis] = useState<any>(null);
+  const [loadingAnalysis, setLoadingAnalysis] = useState(false);
 
   // Constants
   const date = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
@@ -380,6 +383,33 @@ export const BusinessCard = memo(function BusinessCard({
     }
   };
 
+  const handleAnalyzeLead = async () => {
+    setLoadingAnalysis(true);
+    const toastId = toast.loading("Analisando presença digital...");
+    try {
+      const result = await analyzeLead(business);
+      setAnalysis(result);
+
+      if (onUpdateBusiness && result.audit) {
+        onUpdateBusiness({
+          ...business,
+          audit: result.audit,
+          site_preview: result.preview?.preview_data,
+          site_preview_summary: result.preview?.summary,
+          opportunity_score: result.opportunity?.opportunity_score
+        });
+      }
+
+      toast.success("Análise completa!", { id: toastId });
+      setShowRemakePreview(true);
+    } catch (error) {
+      console.error("Lead analysis failed", error);
+      toast.error("Falha na análise do lead.", { id: toastId });
+    } finally {
+      setLoadingAnalysis(false);
+    }
+  };
+
   const [ticketValue, setTicketValue] = useState(business.ticketMedio || 0);
 
   const handleToggleAutomation = async () => {
@@ -527,7 +557,17 @@ export const BusinessCard = memo(function BusinessCard({
   };
 
   const handleGeneratePDFSite = () => {
-    setSiteModalOpen(true);
+    // Priority: local analysis result -> persisted business data
+    const htmlToUse = analysis?.preview?.html_preview || (business as any).html_preview || business.html_preview;
+
+    if (htmlToUse) {
+      toast.info("Gerando proposta com design personalizado de elite...");
+      generateSitePDF(business, htmlToUse);
+    } else {
+      // Se não houver preview, abrimos o modal como fallback para o usuário descrever,
+      // ou avisamos que a análise pode ser feita para gerar automaticamente.
+      setSiteModalOpen(true);
+    }
   };
 
 
@@ -569,7 +609,7 @@ export const BusinessCard = memo(function BusinessCard({
                 </span>
               )}
             </div>
-            <h3 className="text-lg font-bold text-slate-900 leading-tight truncate group-hover:text-blue-600 transition-colors" title={business.name}>
+            <h3 className="text-lg font-bold text-slate-900 leading-tight line-clamp-2 group-hover:text-blue-600 transition-colors" title={business.name}>
               {business.name}
             </h3>
             <div className="flex items-center gap-2 mt-1 text-slate-500 text-xs">
@@ -790,16 +830,16 @@ export const BusinessCard = memo(function BusinessCard({
               </button>
             )}
             <button
-              onClick={(e) => { e.stopPropagation(); handleAnalyzeSite(); }}
-              disabled={isAnalyzingSite}
+              onClick={(e) => { e.stopPropagation(); handleAnalyzeLead(); }}
+              disabled={loadingAnalysis}
               className="text-[9px] font-bold text-blue-600 hover:text-blue-700 disabled:opacity-50 flex items-center gap-1 transition-all"
             >
-              {isAnalyzingSite ? (
+              {loadingAnalysis ? (
                 <RefreshCw className="w-2.5 h-2.5 animate-spin" />
               ) : (
                 <Zap className="w-2.5 h-2.5" />
               )}
-              {isAnalyzingSite ? "Analisando..." : business.website ? "Analisar Agora" : "Gerar Estratégia Digital"}
+              {loadingAnalysis ? "Analisando..." : business.website ? "Analisar Agora" : "Gerar Estratégia Digital"}
             </button>
           </div>
         </div>
@@ -865,6 +905,66 @@ export const BusinessCard = memo(function BusinessCard({
           </div>
         )}
 
+        {/* Pipeline Analysis Results */}
+        {analysis && (
+          <div className="mb-5 space-y-3 animate-in fade-in slide-in-from-top-2 duration-500">
+            {/* Oportunidade de Venda */}
+            {analysis.opportunity && (
+              <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingUp className="w-4 h-4 text-indigo-600" />
+                  <span className="text-[10px] font-black uppercase text-indigo-700 tracking-wider">Oportunidade de Venda</span>
+                </div>
+                <p className="text-[11px] text-indigo-900 font-bold mb-2 leading-tight">
+                  {analysis.opportunity.sales_pitch}
+                </p>
+                <div className="space-y-1">
+                  <span className="block text-[8px] font-bold uppercase text-indigo-500 tracking-widest">Impacto de Negócio</span>
+                  <p className="text-[10px] text-indigo-700 leading-snug">
+                    {analysis.opportunity.business_impact}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Diagnóstico do Site */}
+            {analysis.opportunity?.diagnosis && analysis.opportunity.diagnosis.length > 0 && (
+              <div className="p-3 bg-red-50 rounded-xl border border-red-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <ShieldAlert className="w-4 h-4 text-red-600" />
+                  <span className="text-[10px] font-black uppercase text-red-700 tracking-wider">Diagnóstico do Site</span>
+                </div>
+                <ul className="space-y-1">
+                  {analysis.opportunity.diagnosis.map((item: string, i: number) => (
+                    <li key={i} className="text-[10px] text-red-700 flex items-start gap-1.5 font-medium">
+                      <span className="text-red-400 mt-0.5">•</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Preview de Melhorias */}
+            {analysis.opportunity?.improvements && analysis.opportunity.improvements.length > 0 && (
+              <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles className="w-4 h-4 text-emerald-600" />
+                  <span className="text-[10px] font-black uppercase text-emerald-700 tracking-wider">Melhorias Recomendadas</span>
+                </div>
+                <ul className="space-y-1">
+                  {analysis.opportunity.improvements.map((item: string, i: number) => (
+                    <li key={i} className="text-[10px] text-emerald-700 flex items-start gap-1.5 font-medium">
+                      <CheckCircle className="w-3 h-3 text-emerald-400 mt-0.5 shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Insight Box */}
         {business.offerReason && (
           <div className="p-3 bg-blue-50/20 rounded-2xl border border-blue-100/50 mb-6 flex gap-3 group/reason hover:bg-blue-50/40 transition-colors">
@@ -882,28 +982,21 @@ export const BusinessCard = memo(function BusinessCard({
 
         {/* Actions Section */}
         <div className="space-y-3">
-          {!isSavedView ? (
-            <div className="flex flex-col gap-2">
-              <Button
-                className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-bold uppercase tracking-wider text-[11px] shadow-lg shadow-blue-200/50 rounded-xl gap-2"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onGenerateScript(business, 'script');
-                }}
-              >
-                <Zap className="w-4 h-4 fill-white" />
-                Script de Abordagem IA
-              </Button>
-              <div className="grid grid-cols-2 gap-2">
+          <div className="flex flex-col gap-3">
+            {/* Linha Principal de Ações — Sincronizada Radar/Leads */}
+            <div className="flex gap-2">
+              {!isSavedView && (
                 <Button
-                  variant="outline"
-                  className="h-9 text-[10px] font-bold uppercase tracking-wider border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl"
+                  className="flex-1 h-9 bg-slate-900 hover:bg-slate-800 text-white font-bold uppercase tracking-wider text-[10px] rounded-xl gap-2 shadow-lg"
                   onClick={async (e) => {
                     e.stopPropagation();
                     try {
                       const { data: { user: currentUser } } = await supabase.auth.getUser();
-                      if (!currentUser) throw new Error("Não logado");
-                      // --- OPPORTUNITY ENGINE INTEGRATION ---
+                      if (!currentUser) {
+                        toast.error("Faça login para salvar.");
+                        return;
+                      }
+
                       const opp = calculateOpportunity(business);
 
                       const { error } = await (supabase as any).from('leads').insert({
@@ -919,12 +1012,6 @@ export const BusinessCard = memo(function BusinessCard({
                         presence_score: business.presenceScore,
                         status: 'new',
                         opportunity_score: opp.opportunity_score,
-                        opportunity_level: opp.opportunity_level,
-                        primary_reason: opp.primary_reason,
-                        secondary_reason: opp.secondary_reason,
-                        recommended_offer: opp.recommended_offer,
-                        opportunity_summary: opp.opportunity_summary,
-                        opportunity_flags: opp.opportunity_flags,
                         meta_data: {
                           googleMapsUrl: business.googleMapsUrl,
                           missingItems: business.missingItems,
@@ -936,97 +1023,87 @@ export const BusinessCard = memo(function BusinessCard({
                           facebook: business.facebook,
                           tiktok: business.tiktok,
                           whatsapp: business.whatsapp,
-                          // Persist deep metrics here
-                          opportunity_score: opp.opportunity_score,
-                          opportunity_level: opp.opportunity_level,
-                          primary_reason: opp.primary_reason,
-                          secondary_reason: opp.secondary_reason,
-                          recommended_offer: opp.recommended_offer,
-                          opportunity_summary: opp.opportunity_summary,
-                          opportunity_flags: opp.opportunity_flags
+                          ...opp
                         }
                       });
                       if (error) throw error;
-                      toast.success("Lead Salvo!");
+                      toast.success("Lead Salvo no Radar!");
                     } catch (err: any) {
                       toast.error("Erro ao salvar.");
                     }
                   }}
                 >
-                  <Users className="w-3.5 h-3.5 mr-1" />
-                  Salvar Radar
+                  <Users className="w-3.5 h-3.5" />
+                  Salvar
                 </Button>
-                <Button
-                  variant="outline"
-                  className="h-9 text-[10px] font-bold uppercase tracking-wider border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleGeneratePDF();
-                  }}
-                >
-                  <FileDown className="w-3.5 h-3.5 mr-1" />
-                  Gerar Proposta
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-9 text-[10px] font-bold uppercase tracking-wider border-[#D4AF37]/30 bg-[#D4AF37]/5 hover:bg-[#D4AF37]/10 text-[#B8860B] rounded-xl shadow-sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleGeneratePDFSite();
-                  }}
-                >
-                  <Zap className="w-3.5 h-3.5 mr-1" />
-                  Alta Conversão
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <>
-              <Button
-                className="w-full h-11 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold uppercase tracking-wider text-[11px] shadow-lg shadow-blue-200/50 rounded-xl gap-2 h-11"
-                onClick={(e) => { e.stopPropagation(); onGenerateScript(business, 'battle_plan'); }}
-              >
-                <Target className="w-4 h-4" />
-                Plano de Batalha IA
-              </Button>
+              )}
+
               <Button
                 variant="outline"
-                className="w-full h-11 border-[#D4AF37]/30 bg-[#D4AF37]/5 hover:bg-[#D4AF37]/10 text-[#B8860B] font-bold uppercase tracking-wider text-[10px] rounded-xl gap-2 shadow-sm"
-                onClick={(e) => { e.stopPropagation(); handleGeneratePDFSite(); }}
+                className="flex-1 h-9 text-[10px] font-bold uppercase tracking-wider border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl gap-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleGeneratePDF();
+                }}
               >
-                <Sparkles className="w-4 h-4" />
-                Proposta de Alta Conversão
+                <FileDown className="w-3.5 h-3.5" />
+                Dossiê
               </Button>
-              <div className="flex gap-2">
-                <select
-                  className="flex-1 h-9 rounded-xl border border-slate-200 bg-slate-50 text-[10px] font-bold px-2 outline-none focus:ring-1 focus:ring-blue-400"
-                  value={business.status || "new"}
-                  onChange={(e) => onStatusChange?.(business.id!, e.target.value as any)}
+
+              <Button
+                variant="outline"
+                className="flex-1 h-9 text-[10px] font-bold uppercase tracking-wider border-[#D4AF37]/30 bg-[#D4AF37]/5 hover:bg-[#D4AF37]/10 text-[#B8860B] rounded-xl shadow-sm gap-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleGeneratePDFSite();
+                }}
+              >
+                <Zap className="w-3.5 h-3.5 text-[#D4AF37]" />
+                VIP
+              </Button>
+            </div>
+
+            {/* Ações Especiais de Leads Salvos */}
+            {isSavedView && (
+              <>
+                <Button
+                  className="w-full h-10 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold uppercase tracking-wider text-[10px] shadow-lg shadow-blue-200/50 rounded-xl gap-2"
+                  onClick={(e) => { e.stopPropagation(); onGenerateScript?.(business, 'battle_plan'); }}
                 >
-                  <option value="new">🆕 Novo</option>
-                  <option value="contacted">💬 Contatado</option>
-                  <option value="interested">⭐ Interessado</option>
-                  <option value="closed">✅ Fechado</option>
-                </select>
-                <input
-                  type="number"
-                  className="w-20 h-9 rounded-xl border border-slate-200 bg-slate-50 text-[10px] font-bold px-3 outline-none focus:ring-1 focus:ring-blue-400"
-                  placeholder="Ticket"
-                  value={ticketValue || ""}
-                  onChange={(e) => setTicketValue(Number(e.target.value))}
-                  onBlur={async () => {
-                    try {
-                      await (supabase as any).from('leads').update({ ticket_medio: ticketValue }).eq('id', business.id);
-                      toast.success("Ticket Atualizado!");
-                    } catch (err) {
-                      console.error('[BusinessCard] Falha ao atualizar ticket médio:', err);
-                      toast.error("Erro ao salvar ticket.");
-                    }
-                  }}
-                />
-              </div>
-            </>
-          )}
+                  <Target className="w-3.5 h-3.5" />
+                  Plano de Batalha Elite
+                </Button>
+
+                <div className="flex gap-2">
+                  <select
+                    className="flex-1 h-8 rounded-lg border border-slate-200 bg-slate-50 text-[10px] font-bold px-2 outline-none focus:ring-1 focus:ring-blue-400"
+                    value={business.status || "new"}
+                    onChange={(e) => onStatusChange?.(business.id!, e.target.value as any)}
+                  >
+                    <option value="new">🆕 Novo</option>
+                    <option value="contacted">💬 Contatado</option>
+                    <option value="interested">⭐ Interessado</option>
+                    <option value="closed">✅ Fechado</option>
+                  </select>
+                  <input
+                    type="number"
+                    className="w-16 h-8 rounded-lg border border-slate-200 bg-slate-50 text-[10px] font-bold px-2 outline-none focus:ring-1 focus:ring-blue-400"
+                    placeholder="Ticket"
+                    value={ticketValue || ""}
+                    onChange={(e) => setTicketValue(Number(e.target.value))}
+                    onBlur={async () => {
+                      try {
+                        await (supabase as any).from('leads').update({ ticket_medio: ticketValue }).eq('id', business.id);
+                        toast.success("Ticket Atualizado!");
+                      } catch (err) {
+                        console.error('[BusinessCard] Falha ao atualizar ticket médio:', err);
+                      }
+                    }}
+                  />
+                </div>
+              </>
+            )}
+          </div>
 
           <div className="flex gap-2 pt-2 border-t border-slate-50">
             <Button
@@ -1134,13 +1211,28 @@ export const BusinessCard = memo(function BusinessCard({
       />
 
       <SiteRemakePreview
-        business={business}
+        business={{
+          ...business,
+          site_preview: analysis?.preview?.preview_data || business.site_preview,
+          site_preview_summary: analysis?.preview?.summary || business.site_preview_summary,
+          html_preview: analysis?.preview?.html_preview || (business as any).html_preview,
+          audit: analysis?.audit || business.audit,
+        }}
         open={showRemakePreview}
         onClose={() => setShowRemakePreview(false)}
         onRegenerate={(updated) => {
           if (onUpdateBusiness) {
             onUpdateBusiness(updated);
           }
+          setAnalysis((prev: any) => ({
+            ...prev,
+            preview: {
+              ...prev?.preview,
+              preview_data: updated.site_preview,
+              summary: updated.site_preview_summary,
+              html_preview: updated.html_preview
+            }
+          }));
         }}
       />
     </div>

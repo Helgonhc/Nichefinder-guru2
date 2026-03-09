@@ -3,56 +3,47 @@ import express from "express";
 import cors from "cors";
 
 /**
- * 🤖 AI GATEWAY SERVER
- * Provedor primário: Piramyd (api.piramyd.cloud) — OpenAI-compatible
- * Fallback: Gemini (se disponível)
+ * 🤖 AI GATEWAY SERVER - PIRAMYD ELITE EDITION
+ * Provedor Único: Piramyd (api.piramyd.cloud)
  * Porta: 3002
  */
 
 const app = express();
 const PORT = process.env.AI_GATEWAY_PORT || 3002;
 
-// ── Configuração ─────────────────────────────────────────────────────────────
+const PIRAMYD_API_KEY = process.env.PIRAMYD_API_KEY;
 
-const PIRAMYD_API_KEY = process.env.PIRAMYD_API_KEY || "sk-3af8a2ee98a046ea960e69556ae96dcb";
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || "AIzaSyBbAp_VX1u6eyYCbTeR2MKSH_jOKV_N_SQ";
+if (!PIRAMYD_API_KEY) {
+    throw new Error("PIRAMYD_API_KEY não configurada.");
+}
 
-// Modelos de texto da Piramyd em ordem de qualidade/capacidade
-// (excluídos modelos de imagem: qwen-image, flux2-klein-4b, lucid-origin, dreamshaper, sdxl-lite, z-image-turbo, nano-banana*)
 const PIRAMYD_MODELS = [
-    "Llama-4-maverick",          // Meta — 500k ctx
-    "Llama-4-scout",             // Meta AI — 500k ctx
-    "Kimi-k2-thinking",          // Moonshot AI — 256k ctx
-    "Glm-5",                     // Z-AI — 256k ctx
-    "Gpt-oss-120b",              // OpenAI — 128k ctx
-    "claude-sonnet-4.5",         // Anthropic — 128k ctx
-    "gpt-5.3",                   // Anthropic — 128k ctx
-    "gpt-5.3-codex",             // Anthropic — 128k ctx
-    "Minimax-m2.1",              // Minimax AI — 128k ctx
-    "Glm-4.7",                   // Z-AI — 128k ctx
-    "Phi-4-mini-flash-reasoning",// Microsoft — 128k ctx
-    "Sonar-Pro",                 // Perplexity — 80k ctx
-    "Nemotron-3-nano",           // Nvidia — 500k ctx
+    "gpt-5.3-codex",
+    "claude-sonnet-4.5",
+    "gpt-5.3",
+    "Llama-4-maverick",
+    "Llama-4-scout",
+    "Kimi-k2-thinking",
+    "Glm-5",
+    "Gpt-oss-120b",
+    "Minimax-m2.1",
+    "Glm-4.7",
+    "Phi-4-mini-flash-reasoning",
+    "Sonar-Pro",
+    "Nemotron-3-nano",
 ];
 
-// Fallback Gemini
-const GEMINI_MODELS = ["gemini-2.0-flash"];
-
 const MAX_RETRIES = 2;
-
-// ── Utilitários ──────────────────────────────────────────────────────────────
 
 function sleep(ms) {
     return new Promise(r => setTimeout(r, ms));
 }
 
 function extractJsonFromContent(text = "") {
-    // Remove blocos markdown ```json ... ```
-    const match = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-    return match ? match[1].trim() : text.trim();
+    if (!text) return "";
+    let cleaned = text.replace(/```(?:json)?\s*([\s\S]*?)```/g, '$1');
+    return cleaned.trim();
 }
-
-// ── Provedores ────────────────────────────────────────────────────────────────
 
 async function callPiramyd(model, apiKey, systemMessage, userPrompt) {
     const messages = [];
@@ -65,175 +56,377 @@ async function callPiramyd(model, apiKey, systemMessage, userPrompt) {
             "Authorization": `Bearer ${apiKey}`,
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ model, messages, temperature: 0.6 }),
+        body: JSON.stringify({
+            model,
+            messages,
+            temperature: 0.9,
+            top_p: 0.95,
+            max_tokens: 6000
+        }),
     });
 
-    return { status: res.status, data: await res.json() };
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error?.message || "Erro na API da Piramyd");
+    }
+
+    return await res.json();
 }
-
-async function callGemini(model, apiKey, systemMessage, userPrompt) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-    const body = {
-        contents: [{ role: "user", parts: [{ text: userPrompt }] }],
-        generationConfig: { temperature: 0.6, maxOutputTokens: 8192, responseMimeType: "application/json" },
-    };
-    if (systemMessage) body.system_instruction = { parts: [{ text: systemMessage }] };
-
-    const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-    });
-    return { status: res.status, data: await res.json() };
-}
-
-// ── Middleware ────────────────────────────────────────────────────────────────
 
 app.use(cors({ origin: "*", methods: ["POST", "OPTIONS"], allowedHeaders: ["Content-Type"] }));
-app.use(express.json({ limit: "10mb" }));
+app.use(express.json({ limit: "20mb" }));
 
-// ── Rota principal ────────────────────────────────────────────────────────────
-
+// ── Rota Blueprints (JSON) ──────────────────────────────────────────────────
 app.post("/generate-preview", async (req, res) => {
-    const { systemMessage, userPrompt } = req.body;
-
+    const { systemMessage, userPrompt, model: requestedModel } = req.body;
     if (!userPrompt) return res.status(400).json({ error: "userPrompt é obrigatório." });
 
-    console.log(`\n[AI GATEWAY] Request received | ${new Date().toISOString()}`);
+    console.log({
+        event: "generate_preview",
+        timestamp: new Date().toISOString()
+    });
 
-    // ── 1. Piramyd (provedor primário) ────────────────────────────────────────
-    for (const model of PIRAMYD_MODELS) {
-        console.log(`[AI GATEWAY] Trying Piramyd: ${model}`);
+    const modelsToTry = [...PIRAMYD_MODELS];
+    if (requestedModel && PIRAMYD_MODELS.includes(requestedModel)) {
+        // Coloca o modelo solicitado no topo
+        const index = modelsToTry.indexOf(requestedModel);
+        if (index > -1) modelsToTry.splice(index, 1);
+        modelsToTry.unshift(requestedModel);
+    } else if (requestedModel) {
+        // Modelo customizado não na lista padrão (tenta mesmo assim)
+        modelsToTry.unshift(requestedModel);
+    }
+
+    for (const model of modelsToTry) {
+        console.log(`[AI GATEWAY] Tentando Piramyd: ${model}`);
         let attempts = 0;
-
         while (attempts < MAX_RETRIES) {
             attempts++;
             try {
-                const { status, data } = await callPiramyd(model, PIRAMYD_API_KEY, systemMessage, userPrompt);
-
-                if (status === 200 && data.choices?.[0]?.message?.content) {
-                    const raw = data.choices[0].message.content;
-                    const content = extractJsonFromContent(raw);
-                    console.log(`[AI GATEWAY] ✅ Piramyd success: ${model}`);
+                const data = await callPiramyd(model, PIRAMYD_API_KEY, systemMessage, userPrompt);
+                if (data.choices?.[0]?.message?.content) {
+                    const content = extractJsonFromContent(data.choices[0].message.content);
+                    console.log({
+                        event: "generate_preview_success",
+                        model,
+                        provider: "piramyd"
+                    });
                     return res.json({ content, model, provider: "piramyd" });
                 }
-
-                const errMsg = data.error?.message || data.detail || `HTTP ${status}`;
-                const isRate = status === 429;
-
-                if (isRate && attempts < MAX_RETRIES) {
-                    console.warn(`[AI GATEWAY] Rate limit on ${model}, retrying...`);
-                    await sleep(3000);
-                    continue;
-                }
-
-                console.warn(`[AI GATEWAY] Piramyd error on ${model}: ${errMsg}`);
-                break;
-
             } catch (err) {
-                console.error(`[AI GATEWAY] Network error: ${err.message}`);
-                if (attempts < MAX_RETRIES) await sleep(1500);
-                else break;
+                console.error(`[AI GATEWAY] Erro em ${model}: ${err.message}`);
+                if (attempts < MAX_RETRIES) await sleep(2000);
             }
         }
     }
-
-    // ── 2. Gemini (fallback) ───────────────────────────────────────────────────
-    for (const model of GEMINI_MODELS) {
-        console.log(`[AI GATEWAY] 🔄 Fallback to Gemini: ${model}`);
-        try {
-            const { status, data } = await callGemini(model, GEMINI_API_KEY, systemMessage, userPrompt);
-
-            if (status === 200 && !data.error) {
-                const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (text) {
-                    console.log(`[AI GATEWAY] ✅ Gemini success: ${model}`);
-                    return res.json({ content: text, model, provider: "gemini" });
-                }
-            }
-            const errMsg = data.error?.message || `HTTP ${status}`;
-            console.warn(`[AI GATEWAY] Gemini error: ${errMsg}`);
-        } catch (err) {
-            console.error(`[AI GATEWAY] Gemini network error: ${err.message}`);
-        }
-    }
-
-    console.error("[AI GATEWAY] ❌ All providers exhausted.");
-    return res.status(503).json({ error: "Todos os provedores de IA falharam. Tente novamente." });
+    res.status(503).json({ error: "Todos os modelos Piramyd falharam." });
 });
 
-// ── Rota HTML Preview ─────────────────────────────────────────────────────────
-
+// ── Rota Site Real (HTML) ──────────────────────────────────────────────────
 app.post("/generate-html", async (req, res) => {
-    const { leadData } = req.body;
+    const { leadData, model: requestedModel } = req.body;
     if (!leadData) return res.status(400).json({ error: "leadData é obrigatório." });
 
-    const systemMsg = `Você é um designer/dev frontend EXPERT. Gere um site HTML COMPLETO, BONITO e RESPONSIVO.
-REGRAS ABSOLUTAS:
-1. Retorne APENAS o HTML puro — sem markdown, sem \`\`\`, sem explicações.
-2. Use Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"></script>
-3. Use Google Fonts via link tag para a fonte especificada.
-4. HTML standalone (funcional sem dependência além de CDN).
-5. Seções obrigatórias: Hero com imagem de fundo, Serviços em cards, Depoimentos, Contato com WhatsApp.
-6. Use dados REAIS — NUNCA placeholder ou Lorem Ipsum.
-7. Design premium: gradientes, sombras, hover effects, animações CSS (não JS).
-8. Botão WhatsApp flutuante no canto inferior direito.`;
+    const niche = String(leadData.niche || "").toLowerCase();
+    let designDirection = "";
 
-    const userMsg = `Gere o HTML completo do site para:
+    if (niche.includes("advocacia") || niche.includes("advogado") || niche.includes("law")) {
+        designDirection = `Estilo visual: institucional premium
+Paleta recomendada: navy, charcoal e dourado
+Tipografia: serif elegante combinada com sans-serif moderna
+Atmosfera: autoridade, confiança e sofisticação
+Layout: hero forte, seções elegantes, grid de serviços refinado`;
+    }
+    else if (niche.includes("clinica") || niche.includes("odontologia") || niche.includes("medico")) {
+        designDirection = `Estilo visual: limpo e profissional
+Paleta recomendada: branco, azul suave e verde claro
+Tipografia: sans-serif moderna
+Atmosfera: confiança, cuidado e tecnologia
+Layout: hero claro, seções organizadas, blocos informativos`;
+    }
+    else if (niche.includes("tecnologia") || niche.includes("software") || niche.includes("ti")) {
+        designDirection = `Estilo visual: futurista moderno
+Paleta recomendada: gradientes azul e roxo
+Tipografia: sans-serif geométrica
+Atmosfera: inovação e tecnologia
+Layout: hero visual com gradientes, seções dinâmicas e cards modernos`;
+    }
+    else {
+        designDirection = `Estilo visual: moderno premium
+Paleta recomendada: dark blue, charcoal e branco
+Tipografia: sans-serif moderna
+Atmosfera: profissional e confiável
+Layout: hero impactante, seções amplas e design elegante`;
+    }
+
+    const siteStructure = `
+Arquitetura obrigatória da página:
+
+1. HERO
+   * headline forte
+   * subheadline clara
+   * botão CTA principal
+   * background visual moderno
+
+2. SEÇÃO PROBLEMA
+   * explicar o problema do cliente
+   * conectar emocionalmente
+
+3. SEÇÃO SOLUÇÃO
+   * mostrar como a empresa resolve o problema
+
+4. SEÇÃO SERVIÇOS
+   * grid moderno com cards
+
+5. SEÇÃO BENEFÍCIOS
+   * diferenciais da empresa
+
+6. PROVA SOCIAL
+   * depoimentos ou indicadores de confiança
+
+7. AUTORIDADE
+   * experiência ou especialização
+
+8. CTA FINAL
+   * chamada forte para ação
+
+9. CONTATO
+   * formulário simples
+
+10. FOOTER
+`;
+
+    const systemMsg = `
+Você é um DIRETOR CRIATIVO DE AGÊNCIA DIGITAL PREMIUM, DESIGNER UI/UX SÊNIOR e FRONT-END DEVELOPER ESPECIALISTA EM LANDING PAGES DE ALTO IMPACTO.
+
+Sua missão é gerar um HTML COMPLETO, visualmente impressionante e altamente profissional para ser exibido no módulo Elite Preview.
+
+Este site será mostrado ao empresário como uma prévia de como o site dele poderia ser muito melhor.
+
+PORTANTO:
+- o resultado NÃO pode parecer template genérico
+- o resultado NÃO pode parecer site simples de IA
+- o resultado DEVE parecer projeto feito por uma agência premium
+
+==================================================
+DIREÇÃO VISUAL OBRIGATÓRIA
+==================================================
+
+Inspirar-se em referências visuais de alto nível como:
+
+- Webflow
+- Framer
+- Awwwards
+- Dribbble
+
+Aplicar obrigatoriamente no design:
+
+- hero section visualmente forte
+- gradientes modernos
+- profundidade visual
+- containers bem espaçados
+- tipografia moderna e marcante
+- contraste forte e elegante
+- cards com aparência premium
+- sombras suaves
+- seções bem separadas
+- layout sofisticado
+- micro interações visuais leves
+- aparência de site caro
+
+==================================================
+HERO OBRIGATÓRIO
+==================================================
+
+A primeira seção precisa causar impacto imediato.
+
+Ela deve conter:
+
+- headline forte e persuasiva
+- subheadline clara
+- CTA principal destacado
+- fundo visual elegante
+- sensação premium logo na primeira dobra
+
+Ao olhar o hero, o visitante deve entender rapidamente:
+
+- o que a empresa faz
+- por que ela é confiável
+- por que o site parece superior ao atual
+
+==================================================
+PERSONALIZAÇÃO POR NICHO
+==================================================
+
+Adapte o estilo ao nicho do negócio.
+
+Exemplos:
+
+ADVOCACIA:
+- visual elegante
+- cores escuras
+- detalhes dourados
+- tipografia séria
+- sensação de autoridade
+
+CLÍNICA:
+- visual limpo
+- cores suaves
+- sensação de confiança e cuidado
+
+TECNOLOGIA:
+- gradientes modernos
+- visual mais ousado
+- sensação de inovação
+
+==================================================
+DIREÇÃO CRIATIVA
+================
+
+${designDirection}
+
+==================================================
+ARQUITETURA DA PÁGINA
+=====================
+
+${siteStructure}
+
+==================================================
+ESTRUTURA OBRIGATÓRIA
+==================================================
+
+O site deve conter:
+
+1. Hero
+2. Problema do cliente
+3. Solução oferecida
+4. Serviços
+5. Benefícios
+6. Prova social
+7. Autoridade
+8. CTA final
+9. Contato
+10. Rodapé
+
+==================================================
+COPYWRITING
+==================================================
+
+Os textos devem parecer escritos por um copywriter profissional.
+
+Evitar frases genéricas como:
+
+- Bem-vindo ao nosso site
+- Somos uma empresa de qualidade
+- Trabalhamos com excelência
+
+Os textos devem parecer específicos para a empresa.
+
+==================================================
+REQUISITOS TÉCNICOS
+==================================================
+
+- Retornar APENAS HTML completo
+- Iniciar com <!DOCTYPE html>
+- Usar Tailwind CSS via CDN
+- Usar Google Fonts
+- Layout totalmente responsivo
+- Use container max-width 1200px ou 1280px para evitar layout esticado.
+- Hero com tipografia robusta (acima de 56px no desktop).
+- Adicionar pelo menos uma seção com background gradient moderno.
+- Use pelo menos uma seção com layout alternado (imagem esquerda, texto direita).
+- Código pronto para renderizar em iframe usando srcDoc
+
+==================================================
+IMPORTANTE
+==================================================
+
+Retornar SOMENTE o HTML.
+Não escrever explicações.
+Não usar markdown.
+Iniciar diretamente com <!DOCTYPE html>.
+`;
+
+    const userMsg = `
+Crie um site premium para o Elite Preview com base nos dados abaixo.
+
 Empresa: ${leadData.name}
-Nicho: ${leadData.niche} - ${leadData.categoria}
-Endereço: ${leadData.address}, ${leadData.city}
-WhatsApp: ${leadData.whatsapp || leadData.phone || ''}
-Instagram: @${leadData.instagram || ''}
-Google Maps: ${leadData.googleMapsUrl || ''}
-Serviços: ${(leadData.services || []).slice(0, 6).join(', ')}
-Depoimentos: ${(leadData.testimonials || []).slice(0, 3).join(' | ') || 'Gere 3 depoimentos realistas para ' + leadData.niche}
-Cores: ${(leadData.colorPalette || ['#2563eb', '#1e293b']).join(', ')}
-Fonte: ${leadData.font || 'Space Grotesk'}
+Cidade: ${leadData.city}
+Tipo de negócio: ${leadData.niche}
 
-Inicie IMEDIATAMENTE com <!DOCTYPE html> sem nenhum texto antes.`;
+Paleta sugerida:
+${leadData.colorPalette?.join(', ') || 'dark blue, charcoal e gold'}
 
-    console.log(`\n[AI GATEWAY] HTML Preview → ${leadData.name}`);
+Direção estratégica:
+${leadData.builder_prompt || 'criar um site premium, moderno, impactante e muito superior a um template genérico'}
 
-    for (const model of PIRAMYD_MODELS) {
+Direção visual obrigatória:
+
+${designDirection}
+
+Estrutura obrigatória do site:
+
+${siteStructure}
+
+O objetivo é gerar uma página que impressione imediatamente o empresário.
+
+O site precisa parecer desenvolvido por uma agência digital premium.
+
+Evite frases genéricas.
+Evite layout comum.
+Evite aparência de template simples.
+
+Comece imediatamente com <!DOCTYPE html>.
+`;
+
+    console.log(`\n[AI GATEWAY] Request HTML → ${leadData.name}`);
+
+    const modelsToTry = [...PIRAMYD_MODELS];
+    if (requestedModel && PIRAMYD_MODELS.includes(requestedModel)) {
+        const index = modelsToTry.indexOf(requestedModel);
+        if (index > -1) modelsToTry.splice(index, 1);
+        modelsToTry.unshift(requestedModel);
+    } else if (requestedModel) {
+        modelsToTry.unshift(requestedModel);
+    }
+
+    for (const model of modelsToTry) {
         try {
-            const apiRes = await fetch("https://api.piramyd.cloud/v1/chat/completions", {
-                method: "POST",
-                headers: { "Authorization": `Bearer ${PIRAMYD_API_KEY}`, "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    model,
-                    messages: [{ role: "system", content: systemMsg }, { role: "user", content: userMsg }],
-                    temperature: 0.7,
-                }),
-            });
-            const data = await apiRes.json();
-            if (apiRes.ok && data.choices?.[0]?.message?.content) {
+            const data = await callPiramyd(model, PIRAMYD_API_KEY, systemMsg, userMsg);
+            if (data.choices?.[0]?.message?.content) {
                 let html = data.choices[0].message.content.trim();
                 html = html.replace(/^```html?\n?/i, '').replace(/\n?```$/i, '').trim();
-                console.log(`[AI GATEWAY] ✅ HTML gerado com: ${model}`);
+
+                if (html.length > 150000) {
+                    html = html.slice(0, 150000);
+                }
+
+                if (!html.startsWith("<!DOCTYPE html>")) {
+                    console.warn("Resposta não iniciou com HTML válido.");
+                }
+
+                console.log({
+                    event: "generate_html_success",
+                    lead: leadData.name,
+                    model
+                });
                 return res.json({ html, model });
             }
-            console.warn(`[AI GATEWAY] HTML error on ${model}:`, data.detail || data.error?.message);
         } catch (err) {
-            console.error(`[AI GATEWAY] HTML network error:`, err.message);
+            console.error(`[AI GATEWAY] Erro HTML em ${model}: ${err.message}`);
         }
     }
-    res.status(503).json({ error: "Não foi possível gerar o HTML preview." });
+    res.status(503).json({ error: "Falha ao gerar HTML Elite." });
 });
 
-// ── Health ────────────────────────────────────────────────────────────────────
-
-app.get("/health", (_, res) => res.json({ status: "ok", port: PORT, provider: "piramyd+gemini" }));
-
-// ── Start ─────────────────────────────────────────────────────────────────────
+app.get("/health", (_, res) => res.json({ status: "online", motor: "Piramyd Elite Only" }));
 
 app.listen(PORT, () => {
-    console.log(`\n${"=".repeat(54)}`);
-    console.log(`🤖 AI GATEWAY ONLINE | PORT: ${PORT}`);
-    console.log(`${"=".repeat(54)}\n`);
-    console.log(`Primário: Piramyd (${PIRAMYD_MODELS.join(", ")})`);
-    console.log(`Fallback: Gemini (${GEMINI_MODELS.join(", ")})\n`);
+    console.log(`\n======================================================`);
+    console.log(`🤖 AI GATEWAY ONLINE (PIRAMYD ONLY) | PORT: ${PORT}`);
+    console.log(`======================================================\n`);
+    console.log(`Motor Primário: Piramyd (${PIRAMYD_MODELS.length} modelos disponíveis)`);
 });
 
-process.on("uncaughtException", err => console.error("[AI GATEWAY] Uncaught:", err));
-process.on("unhandledRejection", r => console.error("[AI GATEWAY] Rejection:", r));
+process.on("uncaughtException", err => console.error("[CRITICAL] Uncaught:", err));
+process.on("unhandledRejection", r => console.error("[CRITICAL] Rejection:", r));

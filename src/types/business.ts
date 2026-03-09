@@ -104,8 +104,21 @@ export interface BusinessData {
     testimonials: string[];
     cta_text: string;
     cta_action: string;
+    builder_prompt?: string;
+    color_palette?: string[];
+    layout_type?: string;
+    font_family?: string;
+    site_diagnostics?: {
+      score: number;
+      problems: string[];
+      suggestions: string[];
+    };
   };
   site_preview_summary?: string;
+  meta_data?: Record<string, any>;
+  html_preview?: string | null;
+  vibe_prompt?: string;
+  generated_site_code?: string;
 }
 
 export interface SearchParams {

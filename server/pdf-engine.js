@@ -101,7 +101,7 @@ app.post("/generate-pdf", async (req, res) => {
     // Validação 4: detectar padrões suspeitos de script injection
     const SUSPICIOUS_PATTERNS = [
         /javascript\s*:/gi,
-        /<script\b[^>]*src\s*=\s*["']https?:\/\//gi,   // scripts externos
+        /<script\b[^>]*src\s*=\s*["'](?!https:\/\/cdn\.tailwindcss\.com)https?:\/\//gi,   // scripts externos exceto tailwind
         /on(error|load|click|mouseover)\s*=/gi,          // event handlers inline
         /<iframe\b[^>]*src\s*=\s*["']https?:\/\//gi,   // iframes externos
     ];
@@ -112,66 +112,93 @@ app.post("/generate-pdf", async (req, res) => {
         return res.status(400).json({ error: "Payload contém conteúdo não permitido." });
     }
 
-    let browser = null;
+    let page = null;
     try {
-        console.log("🦅 [PDF Engine] Lançando o Motor Chromium Headless...");
-        browser = await puppeteer.launch({
-            headless: "new",
-            args: [
-                "--no-sandbox",
-                "--disable-setuid-sandbox",
-                "--disable-dev-shm-usage",
-                "--disable-accelerated-2d-canvas",
-                "--disable-gpu",
-                "--no-first-run",
-                "--no-zygote",
-                "--single-process"
-            ]
-        });
+        console.log("🦅 [PDF Engine] Obtendo instância do Motor Chromium...");
+        const browser = await getBrowser();
+        page = await browser.newPage();
 
-        const page = await browser.newPage();
-
-        // Emula media "print" para aplicar a folha de estilo de impressão do CSS nativamente
         await page.emulateMediaType("print");
 
         console.log("🦅 [PDF Engine] Injetando a Estrutura HTML B2B...");
         await page.setContent(html, {
-            waitUntil: "networkidle0", // Aguarda renderização completa (Fontes, Tailwind, Imagens)
-            timeout: 30000
+            waitUntil: "networkidle0",
+            timeout: 60000
         });
+
+        await new Promise(resolve => setTimeout(resolve, 500));
 
         console.log("🦅 [PDF Engine] Destilando o Pipeline. Gerando Binário PDF (A4)...");
         const pdfBuffer = await page.pdf({
             format: "A4",
-            printBackground: true, // Garante cores e sombras Tailwind
+            printBackground: true,
             preferCSSPageSize: true,
-            margin: {
-                top: "0",
-                right: "0",
-                bottom: "0",
-                left: "0"
-            }
+            margin: { top: "0", right: "0", bottom: "0", left: "0" }
         });
 
-        console.log("🦅 [PDF Engine] Sucesso Absoluto! Enviando Stream de volta ao Radar.");
+        console.log("🦅 [PDF Engine] Sucesso Absoluto! Enviando Stream.");
 
-        // Define os headers de resposta
         res.setHeader("Content-Type", "application/pdf");
         res.setHeader("Content-Length", pdfBuffer.length);
-
-        // Retorna o buffer binário
         res.send(pdfBuffer);
 
     } catch (error) {
         console.error("❌ [PDF Engine] Falha Crítica ao Renderizar PDF:", error);
-        res.status(500).json({ error: "Falha interna no Motor Headless", details: error.message });
+
+        let status = 500;
+        let message = "Falha interna no Motor Headless";
+
+        if (error.message.includes("Target closed") || error.message.includes("Protocol error")) {
+            message = "O motor de renderização crashou ou foi fechado inesperadamente. A instância será reiniciada na próxima tentativa.";
+            status = 503;
+            if (_browserInstance) {
+                _browserInstance.close().catch(() => { });
+                _browserInstance = null;
+            }
+        }
+
+        res.status(status).json({ error: message, details: error.message });
     } finally {
-        if (browser) {
-            console.log("🦅 [PDF Engine] Encerrando Instância Chromium Limpando Memória.");
-            await browser.close();
+        if (page) {
+            await page.close().catch(() => { });
         }
     }
 });
+
+let _browserInstance = null;
+async function getBrowser() {
+    if (_browserInstance && _browserInstance.connected && (await _browserInstance.pages().then(() => true).catch(() => false))) {
+        return _browserInstance;
+    }
+
+    if (_browserInstance) {
+        try { await _browserInstance.close(); } catch (e) { }
+    }
+
+    console.log("🦅 [PDF Engine] Iniciando novo processo Chromium...");
+    _browserInstance = await puppeteer.launch({
+        headless: true,
+        args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-accelerated-2d-canvas",
+            "--disable-gpu",
+            "--no-first-run",
+            "--no-zygote",
+            "--disable-extensions",
+            "--disable-features=IsolateOrigins,site-per-process",
+            "--font-render-hinting=none"
+        ]
+    });
+
+    _browserInstance.on('disconnected', () => {
+        console.warn('🦅 [PDF Engine] Chromium desconectado. Limpando instância...');
+        _browserInstance = null;
+    });
+
+    return _browserInstance;
+}
 
 app.listen(PORT, () => {
     console.log(`\n======================================================`);
