@@ -45,7 +45,7 @@ function extractJsonFromContent(text = "") {
     return cleaned.trim();
 }
 
-async function callPiramyd(model, apiKey, systemMessage, userPrompt) {
+async function callPiramyd(model, apiKey, systemMessage, userPrompt, maxTokens = 6000) {
     const messages = [];
     if (systemMessage) messages.push({ role: "system", content: systemMessage });
     messages.push({ role: "user", content: userPrompt });
@@ -61,7 +61,7 @@ async function callPiramyd(model, apiKey, systemMessage, userPrompt) {
             messages,
             temperature: 0.9,
             top_p: 0.95,
-            max_tokens: 6000
+            max_tokens: maxTokens
         }),
     });
 
@@ -78,7 +78,7 @@ app.use(express.json({ limit: "20mb" }));
 
 // ── Rota Blueprints (JSON) ──────────────────────────────────────────────────
 app.post("/generate-preview", async (req, res) => {
-    const { systemMessage, userPrompt, model: requestedModel } = req.body;
+    const { systemMessage, userPrompt, model: requestedModel, maxTokens } = req.body;
     if (!userPrompt) return res.status(400).json({ error: "userPrompt é obrigatório." });
 
     console.log({
@@ -103,7 +103,7 @@ app.post("/generate-preview", async (req, res) => {
         while (attempts < MAX_RETRIES) {
             attempts++;
             try {
-                const data = await callPiramyd(model, PIRAMYD_API_KEY, systemMessage, userPrompt);
+                const data = await callPiramyd(model, PIRAMYD_API_KEY, systemMessage, userPrompt, maxTokens);
                 if (data.choices?.[0]?.message?.content) {
                     const content = extractJsonFromContent(data.choices[0].message.content);
                     console.log({

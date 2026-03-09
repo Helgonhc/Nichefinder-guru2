@@ -35,56 +35,26 @@ export interface RemakePreviewResult {
 export async function analyzeWebsite(lead: BusinessData): Promise<{ score: number; problems: string[]; suggestions: string[] }> {
     console.log(`[Remake] Iniciando analyzeWebsite para: ${lead.website || lead.name}`);
 
-    const systemMessage = `
-Você é um AUDITOR PROFISSIONAL DE PRESENÇA DIGITAL.
-Analise o site de uma empresa e produza um diagnóstico profissional.
-
-Critérios de avaliação:
-* design visual
-* modernidade do layout
-* clareza da proposta de valor
-* facilidade de navegação
-* presença de chamada para ação
-* presença de prova social
-* organização do conteúdo
-* autoridade da marca
-* experiência geral do visitante
-
-Dê uma nota de 0 a 100 para a qualidade do site.
-Classificação:
-90–100 = excelente
-70–89 = bom
-50–69 = mediano
-30–49 = fraco
-0–29 = muito fraco
-
-Retorne exatamente neste formato:
-Site Score: XX / 100
-
+    const systemMessage = `Você é um AUDITOR PROFISSIONAL. Analise o site e retorne:
+Site Score: XX/100
 Problemas identificados:
-• problema 1
-• problema 2
-
+• item
 Sugestões de melhoria:
-• melhoria 1
-• melhoria 2
+• item
+Seja extremamente direto.`;
 
-A resposta deve ser clara e direta.
-`;
-
-    const userPrompt = `
-Empresa: ${lead.name}
-Nicho: ${lead.niche}
-Website: ${lead.website || 'Não possui'}
-Localização: ${lead.city}
-Estatísticas Adicionais: ${lead.audit ? JSON.stringify(lead.audit) : 'Nenhuma'}
-`;
+    const userPrompt = `Lead: ${lead.name} | Nicho: ${lead.niche} | Website: ${lead.website || 'Nenhum'} | Audit: ${JSON.stringify(lead.audit || {})}`;
 
     try {
         const response = await fetch(`/api/generate-preview`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ systemMessage, userPrompt, model: 'gpt-5.3' })
+            body: JSON.stringify({
+                systemMessage,
+                userPrompt,
+                model: 'Llama-4-scout',
+                maxTokens: 800
+            })
         });
 
         const result = await response.json();
