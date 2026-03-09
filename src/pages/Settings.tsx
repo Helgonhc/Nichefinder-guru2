@@ -426,35 +426,35 @@ export default function Settings() {
                                 </Badge>
                             </div>
 
-                            {/* Groq AI */}
+                            {/* Piramyd AI */}
                             <div className="rounded-xl border border-slate-100 overflow-hidden">
                                 <div className="flex items-center justify-between p-4 bg-slate-50/50">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-9 h-9 rounded-lg bg-purple-50 border border-purple-100 flex items-center justify-center">
-                                            <Zap className="w-4.5 h-4.5 text-purple-600" />
+                                        <div className="w-9 h-9 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center">
+                                            <Zap className="w-4.5 h-4.5 text-blue-600" />
                                         </div>
                                         <div>
-                                            <h4 className="text-sm font-semibold text-slate-800">Groq LLM (IA de Scripts)</h4>
-                                            <p className="text-xs text-slate-500">Inferência ultra-rápida para geração de conteúdo</p>
+                                            <h4 className="text-sm font-semibold text-slate-800">Piramyd AI (IA de Scripts)</h4>
+                                            <p className="text-xs text-slate-500">Modelos Llama 4 & GPT-5.3 (Elite)</p>
                                         </div>
                                     </div>
-                                    <Badge className="bg-purple-50 text-purple-700 border-purple-200 text-xs rounded-lg font-semibold">
+                                    <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-xs rounded-lg font-semibold">
                                         <CheckCircle2 className="w-3 h-3 mr-1" />
-                                        Groq Pro
+                                        Piramyd Pro
                                     </Badge>
                                 </div>
                                 <div className="px-4 pb-4 pt-3 space-y-3 border-t border-slate-100">
                                     <p className="text-xs text-slate-500 leading-relaxed">
-                                        A chave do Groq Cloud precisa estar configurada no painel do Supabase para garantir a geração de scripts e propostas.
+                                        A chave da Piramyd Cloud precisa estar configurada no arquivo .env para garantir a geração de scripts e propostas de alta performance.
                                     </p>
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className="h-8 text-xs border-slate-200 text-slate-600 hover:bg-purple-50 hover:border-purple-300 hover:text-purple-700 transition-all rounded-lg gap-1.5"
-                                        onClick={() => window.open('https://console.groq.com/', '_blank')}
+                                        className="h-8 text-xs border-slate-200 text-slate-600 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-all rounded-lg gap-1.5"
+                                        onClick={() => window.open('https://piramyd.cloud/', '_blank')}
                                     >
                                         <ExternalLink className="w-3.5 h-3.5" />
-                                        Gerar token no Groq Console
+                                        Gerar token na Piramyd Cloud
                                     </Button>
                                 </div>
                             </div>
