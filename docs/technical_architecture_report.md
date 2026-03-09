@@ -45,7 +45,7 @@ nichefinder-guru-main
 
 *   **Módulo Radar (Scraping):** Localizado em `src/lib/placesService.ts` e `serperService.ts`. Utiliza as APIs do Google Places e Serper para buscar empresas por nicho e cidade, extraindo dados como telefone, site e redes sociais.
 *   **Módulo Auditoria:** Localizado em `src/lib/siteAuditor.ts`. Realiza uma análise técnica da presença digital do lead (SSL, Performance, Mobile Friendly), gerando um score de presença.
-*   **Módulo Inteligência Artificial:** Localizado em `src/lib/aiService.ts`. Conecta-se à API da Groq (Llama 3/Gemma) para gerar scripts de vendas personalizados, quebra de objeções e resumos estratégicos.
+*   **Módulo Inteligência Artificial:** Localizado em `src/lib/aiService.ts`. Conecta-se à API da Piramyd Cloud (Llama 4) para gerar scripts de vendas personalizados, quebra de objeções e resumos estratégicos.
 *   **Módulo Gerador de PDF:** Localizado em `server/pdf-engine.js` e `src/components/SitePDF.tsx`. Renderiza propostas comerciais de "luxo" em PDF usando Puppeteer, injetando os dados da auditoria e da IA.
 *   **Módulo Automação (Bot):** Orquestrado pelo `standalone-bot/wa-bot.js`. Este serviço monitora o banco de dados e utiliza a **Evolution API v2** para disparar mensagens automáticas no WhatsApp.
 *   **Módulo Dashboard:** Interface React que permite ao usuário gerenciar leads, configurar nichos, monitorar disparos e visualizar KPIs de conversão.
@@ -59,7 +59,7 @@ O fluxo segue uma progressão linear do "Radar" ao "Bot":
 1.  **Busca & Descoberta (Radar):** O usuário busca nicho + cidade no Frontend.
 2.  **Enriquecimento (Scraping):** O sistema busca dados profundos (Serper) e valida presença digital.
 3.  **Captura (Supabase):** O lead é salvo na tabela `leads` com status `new`.
-4.  **Engajamento IA (Content Gen):** Scripts de abordagem são gerados dinamicamente via Groq Cloud.
+4.  **Engajamento IA (Content Gen):** Scripts de abordagem são gerados dinamicamente via Piramyd Cloud.
 5.  **Produção de Proposta:** Um PDF personalizado é gerado pelo motor de renderização.
 6.  **Disparo Automatizado (Bot):** O `wa-bot.js` detecta o lead, gera a mensagem e envia via Evolution API.
 7.  **Monitoramento:** O status do lead é atualizado (contacted, interested, etc.) e exibido no Dashboard.
@@ -69,7 +69,7 @@ O fluxo segue uma progressão linear do "Radar" ao "Bot":
 ## 5️⃣ SERVIÇOS OU ENGINES DO SISTEMA
 
 *   **Scraper Engine:** Híbrido entre Google Places Search e Serper Deep Analysis.
-*   **IA Engine:** Provedor Groq (Modelos Llama-3 para alta velocidade e baixo custo).
+*   **IA Engine:** Provedor Piramyd Cloud (Modelos Llama 4 para alta velocidade e baixo custo).
 *   **PDF Engine:** Puppeteer (Headless Browser) convertendo componentes React estilizados com Tailwind em arquivos A4.
 *   **WhatsApp Engine:** Evolution API v2 (Dockerizada) servindo como bridge entre o sistema e o protocolo Baileys.
 *   **Database Engine:** Supabase (PostgreSQL) com suporte a Realtime e Row Level Security (RLS).
@@ -94,14 +94,14 @@ O sistema utiliza PostgreSQL (Supabase). As entidades principais são:
 *   **Backend (Auth/DB):** Supabase (PostgreSQL + RLS).
 *   **Server/Bot:** Node.js (Express para motor PDF, Scripts independentes para Bot).
 *   **Automação WhatsApp:** Evolution API v2 (Docker).
-*   **Inteligência Artificial:** Groq SDK (Modelos Llama, Gemma, MixTrall).
+*   **Inteligência Artificial:** Piramyd Cloud SDK (Modelos Llama 4, GPT-5, GLM-5).
 *   **Scraping:** Serper.dev API + Google Maps Platform.
 
 ---
 
 ## 8️⃣ POSSÍVEIS RISCOS DE ARQUITETURA
 
-*   **Dependência de APIs Externas:** O sistema depende fortemente da estabilidade da Groq, Serper e Google Places. Falhas nessas chaves paralisam o Radar e a IA.
+*   **Dependência de APIs Externas:** O sistema depende fortemente da estabilidade da Piramyd Cloud, Serper e Google Places. Falhas nessas chaves paralisam o Radar e a IA.
 *   **Acoplamento Frontend/Backend no Scraping:** Grande parte da lógica de enriquecimento de leads (`mapPlaceDetails`) reside no cliente (React), o que pode expor chaves de API se não forem bem protegidas por proxies (embora utilize o Vite Env).
 *   **Sincronização do Bot Standalone:** O bot roda como um processo separado. Se o servidor Supabase tiver latência ou interrupção nas conexões Realtime/Polling, a sequência de mensagens pode atrasar.
 
@@ -113,7 +113,7 @@ O sistema utiliza PostgreSQL (Supabase). As entidades principais são:
 ↓
 **Persistência no Supabase (PostgreSQL)**
 ↓
-**Processamento de IA (Prompts Estratégicos via Groq)**
+**Processamento de IA (Prompts Estratégicos via Piramyd Cloud)**
 ↓
 **Motor de Propostas PDF (Puppeteer)**
 ↓

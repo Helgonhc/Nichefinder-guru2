@@ -17,7 +17,7 @@ const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 const googleApiKey = process.env.VITE_GOOGLE_PLACES_API_KEY;
 const serperApiKey = "6fa1237bfce1d3d220c28d3cada8fd261463732d";
-const groqApiKey = process.env.VITE_GROQ_API_KEY;
+const piramydApiKey = process.env.VITE_PIRAMYD_API_KEY;
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 const botOwnerId = process.env.BOT_OWNER_ID;
@@ -143,7 +143,7 @@ async function logToSupabase(message, type = 'info') {
 }
 
 async function generateAIContent(business, type, siteAuditData = null, stage = 'D0') {
-    if (!groqApiKey) return null;
+    if (!piramydApiKey) return null;
     const isCourts = business.niche?.toLowerCase().includes('quadra') || business.niche?.toLowerCase().includes('beach') || business.niche?.toLowerCase().includes('fut');
 
     let systemPrompt = `Você é um Estrategista de Vendas Consultivas de Elite. Sua missão é criar mensagens de abordagem via WhatsApp que sejam impossíveis de ignorar. 
@@ -227,12 +227,15 @@ async function generateAIContent(business, type, siteAuditData = null, stage = '
     }
 
     try {
-        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        const response = await fetch('https://api.piramyd.cloud/v1/chat/completions', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqApiKey}` },
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${piramydApiKey}` },
             body: JSON.stringify({
-                model: 'llama-3.3-70b-versatile',
-                messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+                model: 'llama-4-maverick',
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: userPrompt }
+                ],
                 temperature: 0.7
             })
         });

@@ -7,7 +7,7 @@ const config = {
         key: process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY,
     },
     apis: {
-        groq: process.env.VITE_GROQ_API_KEY,
+        piramyd: process.env.VITE_PIRAMYD_API_KEY,
         serper: process.env.VITE_SERPER_API_KEY,
         googlePlaces: process.env.VITE_GOOGLE_PLACES_API_KEY,
     },

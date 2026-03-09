@@ -22,9 +22,9 @@ test.describe('Fluxo da página de Ajustes', () => {
     });
 
     test('seção de chaves e integrações está visível', async ({ page }) => {
-        // Usa .first() para evitar strict mode com múltiplos elementos "Groq"
-        const groqHeading = page.getByRole('heading').filter({ hasText: 'Groq' }).first();
-        // Se autenticado mostra Groq; se não, mostra login. Apenas verifica que a página carregou.
+        // Usa .first() para evitar strict mode com múltiplos elementos "Piramyd"
+        const piramydHeading = page.getByRole('heading').filter({ hasText: 'Piramyd' }).first();
+        // Se autenticado mostra Piramyd; se não, mostra login. Apenas verifica que a página carregou.
         const body = page.locator('body');
         const text = await body.textContent();
         // Aceita qualquer página carregada (auth ou settings)

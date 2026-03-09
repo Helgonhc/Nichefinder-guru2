@@ -15,7 +15,7 @@
 
 O fluxo manual de venda de desenvolvimento web ou marketing local é morto e ineficiente. A dor não é "vender", é gastar 4 horas minerando locais no mapa para descobrir que as empresas abordadas já têm um site excelente.
 
-O **NicheFinder Guru** hackeou essa dor fundindo requisições HTTP em massa com IA sem latência (Groq) e Automação de Baixo Nível (WebSockets/Baileys).
+O **NicheFinder Guru** hackeou essa dor fundindo requisições HTTP em massa com IA sem latência (Piramyd Cloud) e Automação de Baixo Nível (WebSockets/Baileys).
 
 ---
 
@@ -43,11 +43,11 @@ A lógica não ordena prospectos por ordem alfabética. A tabela é inteligente 
 
 <br/>
 
-### 3. A Central de Fila e Automação (Robô + IA Groq + PDF Generator)
+### 3. A Central de Fila e Automação (Robô + IA Piramyd + PDF Generator)
 Não travamos o PC com laços `FOR` manuais e downloads pesados. Quando um lead é selecionado em massa, ele é empurrado via `insert` para a tabela `whatsapp_queue` do seu Banco Supabase. O Frontend agora apenas *Assiste* via WebSockets em tempo real.
 
 O Trabalho pesado fica com o **Motor Backend Node** (`server/wa-bot.js`):
-1. **Inteligência Groq Llama:** O motor NodeJS pega as tags "Sem site" e "Concessionária" e pede pra IA da Groq criar uma mensagem micro, persuasiva e totalmente disfarçada de um morador local sugerindo ajuda ("Aviso de Vizinho Cidadão"). A latência desse LLM é de menos de 1 segundo.
+1. **Inteligência Piramyd Llama:** O motor NodeJS pega as tags "Sem site" e "Concessionária" e pede pra IA da Piramyd Cloud criar uma mensagem micro, persuasiva e totalmente disfarçada de um morador local sugerindo ajuda ("Aviso de Vizinho Cidadão"). A latência desse LLM é de menos de 1 segundo.
 2. **Gerador PDF On-the-Fly (Port 3001):** Um Node secundário ligado no pacote **Puppeteer** abre debaixo do capô um "Chrome Sem Interface". Ele desenha na RAM a proposta incrível em Tailwind (com o design super premium), tira screenshot HTML -> PDF e repassa tudo pelo formato `Base64` sem nunca criar arquivos zumbis no seu disco rígido (C:).
 3. **Mágica Anti-Banimento via Baileys WebSockets:** Não usamos painel de navegador que toma Ban da Meta. Usamos conexões socket criptografadas puras.
    - *Presence:* O robô sinaliza `"Composing..."` (Digitando...) com tempo proporcional ao tamanho da mensagem da IA.
@@ -67,7 +67,7 @@ A arquitetura moderna foi reduzida a um comando.
 - Ter o `Node.js` (v18+) instalado.
 - O Git nativo na sua máquina.
 - Um Bucket grátis no painel da **Supabase**.
-- Chaves: Google Places API, Serper API e Groq API.
+- Chaves: Google Places API, Serper API e Piramyd API.
 
 ### 🚀 Setup em Modo Exaustivo 
 
@@ -94,8 +94,8 @@ VITE_SUPABASE_PUBLISHABLE_KEY="[Sua_chave_anon_gigante_aqui]"
 VITE_GOOGLE_PLACES_API_KEY="AIzaSy..."
 VITE_SERPER_API_KEY="sua_chave_magica_do_serper"
 
-# Inteligência de Processamento (A Melhor Llama Rápida da Groq)
-VITE_GROQ_API_KEY="gsk_..."
+# Inteligência de Processamento (A Melhor Llama Rápida da Piramyd Cloud)
+VITE_PIRAMYD_API_KEY="pira_..."
 ```
 
 4. **Acendendo as Turbinas Simultâneas:**

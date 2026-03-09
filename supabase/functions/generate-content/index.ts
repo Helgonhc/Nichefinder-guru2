@@ -13,10 +13,10 @@ serve(async (req) => {
 
   try {
     const { business, type, apiKey } = await req.json();
-    const GROQ_API_KEY = Deno.env.get('GROQ_API_KEY') || apiKey;
+    const PIRAMYD_API_KEY = Deno.env.get('PIRAMYD_API_KEY') || apiKey;
 
-    if (!GROQ_API_KEY) {
-      throw new Error('GROQ_API_KEY não configurada. Configure no Supabase Secrets ou envie via body.');
+    if (!PIRAMYD_API_KEY) {
+      throw new Error('PIRAMYD_API_KEY não configurada. Configure no Supabase Secrets ou envie via body.');
     }
 
     const nicheName = (business.niche || '').toLowerCase();
@@ -66,15 +66,15 @@ A mensagem deve ser curta, amigável e sem papo de vendedor chato.`;
       }
     }
 
-    // Groq API Call
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    // Piramyd Cloud API Call
+    const response = await fetch('https://api.piramyd.cloud/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${GROQ_API_KEY}`
+        'Authorization': `Bearer ${PIRAMYD_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model: 'llama-4-maverick',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
@@ -86,7 +86,7 @@ A mensagem deve ser curta, amigável e sem papo de vendedor chato.`;
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Groq API Error: ${response.status} - ${errorText}`);
+      throw new Error(`Piramyd API Error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();

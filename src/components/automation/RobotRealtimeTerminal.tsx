@@ -22,7 +22,7 @@ export const RobotRealtimeTerminal = ({ logs, onClear, onStop, status }: RobotRe
     const getLogColor = (log: string) => {
         if (log.includes('✅') || log.toLowerCase().includes('sucesso')) return 'text-green-600 font-semibold';
         if (log.includes('❌') || log.toLowerCase().includes('erro') || log.toLowerCase().includes('falha')) return 'text-red-500 font-semibold';
-        if (log.includes('⚡') || log.includes('Groq') || log.includes('IA')) return 'text-blue-600 font-semibold';
+        if (log.includes('⚡') || log.includes('Piramyd') || log.includes('IA')) return 'text-blue-600 font-semibold';
         if (log.includes('🔍') || log.includes('Minerando')) return 'text-amber-600 font-semibold';
         return 'text-slate-500';
     };

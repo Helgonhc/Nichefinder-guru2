@@ -5,24 +5,25 @@ import { getSystemPrompt, getUserPrompt } from '../../../shared/aiPrompts.js';
 
 const aiService = {
     async generateAIContent(business, type, auditResult = null, cadenceStage = 'D0', userName = 'Você') {
-        if (!config.apis.groq) {
-            logger.error('VITE_GROQ_API_KEY não configurada');
+        const apiKey = config.apis.piramyd;
+        if (!apiKey) {
+            logger.error('VITE_PIRAMYD_API_KEY não configurada');
             return null;
         }
 
         const systemPrompt = getSystemPrompt(business, type, userName, cadenceStage);
         const userPrompt = getUserPrompt(business, type, auditResult, cadenceStage, userName);
 
-        const models = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'gemma2-9b-it'];
+        const models = ['llama-4-maverick', 'gpt-5.3-codex', 'glm-5'];
 
         for (const model of models) {
             try {
                 logger.ai(`Tentando gerar conteúdo com modelo: ${model}...`);
-                const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                const response = await fetch('https://api.piramyd.cloud/v1/chat/completions', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${config.apis.groq}`
+                        'Authorization': `Bearer ${apiKey}`
                     },
                     body: JSON.stringify({
                         model,

@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
  * Geração automática de uma proposta de redesign (Preview) usando IA para o Bot de WA.
  */
 async function generateRemakePreview(lead) {
-    const apiKey = process.env.VITE_GROQ_API_KEY;
+    const apiKey = process.env.VITE_PIRAMYD_API_KEY;
     if (!apiKey) {
         return generateFallbackPreview(lead);
     }
@@ -34,14 +34,14 @@ async function generateRemakePreview(lead) {
       }
     `;
 
-        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        const response = await fetch("https://api.piramyd.cloud/v1/chat/completions", {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${apiKey}`,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                model: "llama-3.3-70b-versatile",
+                model: "llama-4-maverick",
                 messages: [{ role: "user", content: prompt }],
                 temperature: 0.7,
                 response_format: { type: "json_object" }
