@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { BusinessData, GeneratorType } from "@/types/business";
 import { generateContent } from "@/lib/aiService";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Copy, Check, Loader2, Sparkles, RefreshCw, MessageSquare, ShieldAlert, Zap, Target } from "lucide-react";
@@ -252,6 +252,9 @@ export function GeneratorModal({ business, type: initialType, open, onClose }: G
               Analisando: <span className="text-foreground font-medium">{business.name}</span>
             </p>
           )}
+          <DialogDescription className="sr-only">
+            Modal para geração de scripts de vendas, quebra de objeções e análise estratégica de leads usando Inteligência Artificial.
+          </DialogDescription>
         </DialogHeader>
 
         <Tabs value={activeType} onValueChange={handleTabChange} className="w-full">
