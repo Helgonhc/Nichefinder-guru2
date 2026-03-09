@@ -114,8 +114,12 @@ app.post("/generate-preview", async (req, res) => {
             attempts++;
             try {
                 const data = await callPiramyd(model, PIRAMYD_API_KEY, systemMessage, userPrompt, maxTokens);
-                if (data.choices?.[0]?.message?.content) {
-                    const content = extractJsonFromContent(data.choices[0].message.content);
+                const raw = data.choices?.[0]?.message?.content;
+                if (raw && raw.trim().length > 10) {
+                    let content = extractJsonFromContent(raw);
+                    if (content.length > 200000) {
+                        content = content.slice(0, 200000);
+                    }
                     console.log({
                         event: "generate_preview_success",
                         model,
@@ -124,7 +128,7 @@ app.post("/generate-preview", async (req, res) => {
                     return res.json({ content, model, provider: "piramyd" });
                 }
             } catch (err) {
-                console.error(`[AI GATEWAY] Erro em ${model}: ${err.message}`);
+                console.error(`[AI Gateway] Model ${model} failed:`, err.message);
                 if (attempts < MAX_RETRIES) await sleep(2000);
             }
         }
