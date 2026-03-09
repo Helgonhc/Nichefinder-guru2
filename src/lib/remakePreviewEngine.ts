@@ -263,15 +263,15 @@ ESTRUTURA ESPERADA DO JSON (Respeite os tipos e nomes das chaves):
   "builder_prompt": "Máximo de 200 palavras explicando o layout..."
 }`;
 
-        // Chamada via AI Gateway (porta 3002) — server-to-server, sem bloqueio de quota do browser
-        const response = await fetch(`http://localhost:3002/generate-preview`, {
+        // Chamada via Serverless Vercel Edge / API
+        const response = await fetch(`/api/generate-preview`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ systemMessage, userPrompt, model })
         });
 
         const result = await response.json();
-        console.log("[AI GATEWAY] Status:", response.status, "| Model:", result.model);
+        console.log("[API PREVIEW] Status:", response.status, "| Model:", result.model);
 
         if (!response.ok || result.error) {
             console.error("AI Gateway Error:", result.error);
