@@ -95,7 +95,53 @@ export default async function handler(req, res) {
 
     const systemMsg = `Você é um DIRETOR CRIATIVO DE AGÊNCIA DIGITAL PREMIUM, DESIGNER UI/UX SÊNIOR e FRONT-END DEVELOPER ESPECIALISTA EM LANDING PAGES DE ALTO IMPACTO.\n\nSua missão é gerar um HTML COMPLETO, visualmente impressionante e altamente profissional para ser exibido no módulo Elite Preview.\n\nEste site será mostrado ao empresário como uma prévia de como o site dele poderia ser muito melhor.\n\nPORTANTO:\n- o resultado NÃO pode parecer template genérico\n- o resultado NÃO pode parecer site simples de IA\n- o resultado DEVE parecer projeto feito por uma agência premium\n\nDIREÇÃO VISUAL OBRIGATÓRIA:\n- hero section impactante, gradientes modernos, profundidade visual, containers bem espaçados, tipografia moderna e marcante, micro interações visuais leves.\n\nDIREÇÃO CRIATIVA:\n${designDirection}\n\nARQUITETURA DA PÁGINA:\n${siteStructure}\n\nREQUISITOS TÉCNICOS:\n- Retornar APENAS HTML completo\n- Iniciar com <!DOCTYPE html>\n- Usar Tailwind CSS via CDN\n- Layout totalmente responsivo\n- Container max-width 1200px ou 1280px\n- Hero com tipografia robusta (>56px)\n- Pelo menos uma seção com background gradient moderno e uma com layout alternado.\n\nRetornar SOMENTE o HTML.`;
 
-    const userMsg = `Crie um site premium para o Elite Preview com base nos dados abaixo.\n\nEmpresa: ${leadData.name}\nCidade: ${leadData.city}\nNicho: ${leadData.niche}\nPaleta sugerida: ${leadData.colorPalette?.join(', ') || 'dark blue, charcoal e gold'}\nDireção estratégica: ${leadData.builder_prompt || 'criar um site premium, moderno, impactante'}\n\nComece imediatamente com <!DOCTYPE html>.`;
+    const userMsg = `Generate a complete HTML website using TailwindCSS.
+
+Business information:
+Name: ${leadData.name || 'Empresa Local'}
+Niche: ${leadData.niche || 'Negócio Local'}
+City: ${leadData.city || 'Sua Cidade'}
+Description: ${leadData.description || 'Uma empresa consolidada no mercado.'}
+
+Services:
+${leadData.services ? leadData.services.join('\\n') : 'Nossos Serviços'}
+
+Testimonials:
+${leadData.testimonials ? leadData.testimonials.join('\\n') : 'Ótimos serviços e atendimento!'}
+
+Marketing Copy:
+Headline: ${leadData.headline || 'Impacto Digital'}
+Subheadline: ${leadData.subheadline || 'Apresente seus serviços de forma elegante'}
+Benefits: ${leadData.benefits ? leadData.benefits.join('\\n') : 'Vantagem 1\\nVantagem 2\\nVantagem 3'}
+
+Design system:
+Primary colors: ${leadData.colorPalette?.join(', ') || 'dark blue, charcoal e gold'}
+Font: ${leadData.font || 'Inter'}
+
+Technical diagnostics of current site:
+${leadData.diagnostics ? JSON.stringify(leadData.diagnostics, null, 2) : 'Ainda sem site otimizado'}
+
+Instructions:
+
+Create a professional website redesign specifically for this business.
+
+The design must:
+- match the niche
+- look premium
+- be conversion focused
+- include hero section
+- services section
+- testimonials
+- call to action
+- contact section
+
+The result must be a COMPLETE HTML page using TailwindCSS.
+
+Do NOT generate placeholder text like "Company Name".
+Use the real business data.
+
+OUTPUT:
+Return ONLY valid HTML.`;
 
     const modelsToTry = [...PIRAMYD_MODELS];
     if (requestedModel && requestedModel !== "Llama-4-maverick") {

@@ -355,37 +355,53 @@ Não usar markdown.
 Iniciar diretamente com <!DOCTYPE html>.
 `;
 
-    const userMsg = `
-Crie um site premium para o Elite Preview com base nos dados abaixo.
+    const userMsg = `Generate a complete HTML website using TailwindCSS.
 
-Empresa: ${leadData.name}
-Cidade: ${leadData.city}
-Tipo de negócio: ${leadData.niche}
+Business information:
+Name: ${leadData.name || 'Empresa Local'}
+Niche: ${leadData.niche || 'Negócio Local'}
+City: ${leadData.city || 'Sua Cidade'}
+Description: ${leadData.description || 'Uma empresa consolidada no mercado.'}
 
-Paleta sugerida:
-${leadData.colorPalette?.join(', ') || 'dark blue, charcoal e gold'}
+Services:
+${leadData.services ? leadData.services.join('\\n') : 'Nossos Serviços'}
 
-Direção estratégica:
-${leadData.builder_prompt || 'criar um site premium, moderno, impactante e muito superior a um template genérico'}
+Testimonials:
+${leadData.testimonials ? leadData.testimonials.join('\\n') : 'Ótimos serviços e atendimento!'}
 
-Direção visual obrigatória:
+Marketing Copy:
+Headline: ${leadData.headline || 'Impacto Digital'}
+Subheadline: ${leadData.subheadline || 'Apresente seus serviços de forma elegante'}
+Benefits: ${leadData.benefits ? leadData.benefits.join('\\n') : 'Vantagem 1\\nVantagem 2\\nVantagem 3'}
 
-${designDirection}
+Design system:
+Primary colors: ${leadData.colorPalette?.join(', ') || 'dark blue, charcoal e gold'}
+Font: ${leadData.font || 'Inter'}
 
-Estrutura obrigatória do site:
+Technical diagnostics of current site:
+${leadData.diagnostics ? JSON.stringify(leadData.diagnostics, null, 2) : 'Ainda sem site otimizado'}
 
-${siteStructure}
+Instructions:
 
-O objetivo é gerar uma página que impressione imediatamente o empresário.
+Create a professional website redesign specifically for this business.
 
-O site precisa parecer desenvolvido por uma agência digital premium.
+The design must:
+- match the niche
+- look premium
+- be conversion focused
+- include hero section
+- services section
+- testimonials
+- call to action
+- contact section
 
-Evite frases genéricas.
-Evite layout comum.
-Evite aparência de template simples.
+The result must be a COMPLETE HTML page using TailwindCSS.
 
-Comece imediatamente com <!DOCTYPE html>.
-`;
+Do NOT generate placeholder text like "Company Name".
+Use the real business data.
+
+OUTPUT:
+Return ONLY valid HTML.`;
 
     console.log(`\n[AI GATEWAY] Request HTML → ${leadData.name}`);
 
