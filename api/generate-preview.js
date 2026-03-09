@@ -16,7 +16,7 @@ const PIRAMYD_MODELS = [
     "Nemotron-3-nano",
 ];
 
-const MAX_RETRIES = 1;
+const MAX_RETRIES = 2;
 
 function sleep(ms) {
     return new Promise(r => setTimeout(r, ms));
@@ -34,7 +34,7 @@ async function callPiramyd(model, apiKey, systemMessage, userPrompt, maxTokens =
     messages.push({ role: "user", content: userPrompt });
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout
+    const timeout = setTimeout(() => controller.abort(), 45000); // 45s timeout
 
     try {
         const res = await fetch("https://api.piramyd.cloud/v1/chat/completions", {
@@ -47,8 +47,10 @@ async function callPiramyd(model, apiKey, systemMessage, userPrompt, maxTokens =
             body: JSON.stringify({
                 model,
                 messages,
-                temperature: 0.9,
-                top_p: 0.95,
+                temperature: 0.35,
+                top_p: 0.9,
+                presence_penalty: 0.2,
+                frequency_penalty: 0.2,
                 max_tokens: maxTokens
             }),
         });

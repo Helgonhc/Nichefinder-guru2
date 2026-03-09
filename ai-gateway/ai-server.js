@@ -50,7 +50,7 @@ async function callPiramyd(model, apiKey, systemMessage, userPrompt, maxTokens =
     messages.push({ role: "user", content: userPrompt });
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout total
+    const timeout = setTimeout(() => controller.abort(), 45000); // 45s timeout total
 
     try {
         console.log(`[AI GATEWAY] Chamando Piramyd (${model}) - MaxTokens: ${maxTokens}...`);
@@ -64,8 +64,10 @@ async function callPiramyd(model, apiKey, systemMessage, userPrompt, maxTokens =
             body: JSON.stringify({
                 model,
                 messages,
-                temperature: 0.45,
-                top_p: 0.95,
+                temperature: 0.35,
+                top_p: 0.9,
+                presence_penalty: 0.2,
+                frequency_penalty: 0.2,
                 max_tokens: maxTokens
             }),
         });
