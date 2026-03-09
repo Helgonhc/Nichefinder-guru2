@@ -64,7 +64,7 @@ async function callPiramyd(model, apiKey, systemMessage, userPrompt, maxTokens =
             body: JSON.stringify({
                 model,
                 messages,
-                temperature: 0.9,
+                temperature: 0.45,
                 top_p: 0.95,
                 max_tokens: maxTokens
             }),
@@ -343,6 +343,7 @@ REQUISITOS TÉCNICOS
 - Hero com tipografia robusta (acima de 56px no desktop).
 - Adicionar pelo menos uma seção com background gradient moderno.
 - Use pelo menos uma seção com layout alternado (imagem esquerda, texto direita).
+- Use modern spacing (py-24 sections), rounded-xl cards and subtle shadows.
 - Código pronto para renderizar em iframe usando srcDoc
 
 ==================================================
@@ -378,6 +379,9 @@ Design system:
 Primary colors: ${leadData.colorPalette?.join(', ') || 'dark blue, charcoal e gold'}
 Font: ${leadData.font || 'Inter'}
 
+Creative direction from marketing blueprint:
+${leadData.builder_prompt || ""}
+
 Technical diagnostics of current site:
 ${leadData.diagnostics ? JSON.stringify(leadData.diagnostics, null, 2) : 'Ainda sem site otimizado'}
 
@@ -395,10 +399,20 @@ The design must:
 - call to action
 - contact section
 
-The result must be a COMPLETE HTML page using TailwindCSS.
+SECTION DATA RULES:
+Services section MUST display the services listed below.
+Testimonials section MUST display the testimonials provided.
+Benefits section MUST use the provided benefits.
 
-Do NOT generate placeholder text like "Company Name".
-Use the real business data.
+CRITICAL RULE:
+The website MUST use the real business information provided.
+You MUST explicitly include:
+- the company name
+- the city
+- the services provided
+
+Do NOT invent fictional company names.
+If the company name is "${leadData.name}", the hero section must clearly display that name.
 
 OUTPUT:
 Return ONLY valid HTML.`;

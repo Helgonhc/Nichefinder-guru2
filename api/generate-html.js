@@ -35,7 +35,7 @@ async function callPiramyd(model, apiKey, systemMessage, userPrompt) {
             body: JSON.stringify({
                 model,
                 messages,
-                temperature: 0.9,
+                temperature: 0.45,
                 top_p: 0.95,
                 max_tokens: 6000
             }),
@@ -93,7 +93,7 @@ export default async function handler(req, res) {
 
     const siteStructure = `Arquitetura obrigatória da página:\n\n1. HERO\n   * headline forte\n   * subheadline clara\n   * botão CTA principal\n   * background visual moderno\n\n2. SEÇÃO PROBLEMA\n   * explicar o problema do cliente\n   * conectar emocionalmente\n\n3. SEÇÃO SOLUÇÃO\n   * mostrar como a empresa resolve o problema\n\n4. SEÇÃO SERVIÇOS\n   * grid moderno com cards\n\n5. SEÇÃO BENEFÍCIOS\n   * diferenciais da empresa\n\n6. PROVA SOCIAL\n   * depoimentos ou indicadores de confiança\n\n7. AUTORIDADE\n   * experiência ou especialização\n\n8. CTA FINAL\n   * chamada forte para ação\n\n9. CONTATO\n   * formulário simples\n\n10. FOOTER`;
 
-    const systemMsg = `Você é um DIRETOR CRIATIVO DE AGÊNCIA DIGITAL PREMIUM, DESIGNER UI/UX SÊNIOR e FRONT-END DEVELOPER ESPECIALISTA EM LANDING PAGES DE ALTO IMPACTO.\n\nSua missão é gerar um HTML COMPLETO, visualmente impressionante e altamente profissional para ser exibido no módulo Elite Preview.\n\nEste site será mostrado ao empresário como uma prévia de como o site dele poderia ser muito melhor.\n\nPORTANTO:\n- o resultado NÃO pode parecer template genérico\n- o resultado NÃO pode parecer site simples de IA\n- o resultado DEVE parecer projeto feito por uma agência premium\n\nDIREÇÃO VISUAL OBRIGATÓRIA:\n- hero section impactante, gradientes modernos, profundidade visual, containers bem espaçados, tipografia moderna e marcante, micro interações visuais leves.\n\nDIREÇÃO CRIATIVA:\n${designDirection}\n\nARQUITETURA DA PÁGINA:\n${siteStructure}\n\nREQUISITOS TÉCNICOS:\n- Retornar APENAS HTML completo\n- Iniciar com <!DOCTYPE html>\n- Usar Tailwind CSS via CDN\n- Layout totalmente responsivo\n- Container max-width 1200px ou 1280px\n- Hero com tipografia robusta (>56px)\n- Pelo menos uma seção com background gradient moderno e uma com layout alternado.\n\nRetornar SOMENTE o HTML.`;
+    const systemMsg = `Você é um DIRETOR CRIATIVO DE AGÊNCIA DIGITAL PREMIUM, DESIGNER UI/UX SÊNIOR e FRONT-END DEVELOPER ESPECIALISTA EM LANDING PAGES DE ALTO IMPACTO.\n\nSua missão é gerar um HTML COMPLETO, visualmente impressionante e altamente profissional para ser exibido no módulo Elite Preview.\n\nEste site será mostrado ao empresário como uma prévia de como o site dele poderia ser muito melhor.\n\nPORTANTO:\n- o resultado NÃO pode parecer template genérico\n- o resultado NÃO pode parecer site simples de IA\n- o resultado DEVE parecer projeto feito por uma agência premium\n\nDIREÇÃO VISUAL OBRIGATÓRIA:\n- hero section impactante, gradientes modernos, profundidade visual, containers bem espaçados, tipografia moderna e marcante, micro interações visuais leves.\n- Use modern spacing (py-24 sections), rounded-xl cards and subtle shadows.\n\nDIREÇÃO CRIATIVA:\n${designDirection}\n\nARQUITETURA DA PÁGINA:\n${siteStructure}\n\nREQUISITOS TÉCNICOS:\n- Retornar APENAS HTML completo\n- Iniciar com <!DOCTYPE html>\n- Usar Tailwind CSS via CDN\n- Layout totalmente responsivo\n- Container max-width 1200px ou 1280px\n- Hero com tipografia robusta (>56px)\n- Pelo menos uma seção com background gradient moderno e uma com layout alternado.\n\nRetornar SOMENTE o HTML.`;
 
     const userMsg = `Generate a complete HTML website using TailwindCSS.
 
@@ -117,6 +117,9 @@ Benefits: ${leadData.benefits ? leadData.benefits.join('\\n') : 'Vantagem 1\\nVa
 Design system:
 Primary colors: ${leadData.colorPalette?.join(', ') || 'dark blue, charcoal e gold'}
 Font: ${leadData.font || 'Inter'}
+
+Creative direction from marketing blueprint:
+${leadData.builder_prompt || ""}
 
 Technical diagnostics of current site:
 ${leadData.diagnostics ? JSON.stringify(leadData.diagnostics, null, 2) : 'Ainda sem site otimizado'}
