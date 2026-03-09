@@ -137,36 +137,29 @@ app.post("/generate-html", async (req, res) => {
     const { leadData, model: requestedModel } = req.body;
     if (!leadData) return res.status(400).json({ error: "leadData é obrigatório." });
 
-    const niche = String(leadData.niche || "").toLowerCase();
+    const layout = leadData.layout_type || "modern-business";
     let designDirection = "";
 
-    if (niche.includes("advocacia") || niche.includes("advogado") || niche.includes("law")) {
-        designDirection = `Estilo visual: institucional premium
-Paleta recomendada: navy, charcoal e dourado
-Tipografia: serif elegante combinada com sans-serif moderna
-Atmosfera: autoridade, confiança e sofisticação
-Layout: hero forte, seções elegantes, grid de serviços refinado`;
+    if (layout === "healthcare-clean") {
+        designDirection = `Estilo visual: limpo, higiênico e acolhedor\nPaleta recomendada: branco puro, azuis suaves, verdes calmos\nTipografia: sans-serif humanista altamente legível\nAtmosfera: confiança, cuidado, tecnologia e saúde\nLayout: hero claro, espaços em branco abundantes, seções organizadas em blocos suaves`;
     }
-    else if (niche.includes("clinica") || niche.includes("odontologia") || niche.includes("medico")) {
-        designDirection = `Estilo visual: limpo e profissional
-Paleta recomendada: branco, azul suave e verde claro
-Tipografia: sans-serif moderna
-Atmosfera: confiança, cuidado e tecnologia
-Layout: hero claro, seções organizadas, blocos informativos`;
+    else if (layout === "authority-premium") {
+        designDirection = `Estilo visual: institucional premium, luxuoso e sóbrio\nPaleta recomendada: navy (azul marinho profundo), charcoal (carvão), dourado ou cobre sutil\nTipografia: serifas elegantes em títulos combinadas com sans-serif modernas\nAtmosfera: alta autoridade, prestígio, confiança, exclusividade\nLayout: hero forte e imponente, seções simétricas luxuosas, grid de serviços estruturado`;
     }
-    else if (niche.includes("tecnologia") || niche.includes("software") || niche.includes("ti")) {
-        designDirection = `Estilo visual: futurista moderno
-Paleta recomendada: gradientes azul e roxo
-Tipografia: sans-serif geométrica
-Atmosfera: inovação e tecnologia
-Layout: hero visual com gradientes, seções dinâmicas e cards modernos`;
+    else if (layout === "food-visual") {
+        designDirection = `Estilo visual: apetitoso, vibrante e fotográfico\nPaleta recomendada: tons quentes (vermelhos, laranjas, amarelos quentes), fundo escuro premium ou branco limpo\nTipografia: fontes display ousadas ou rústicas para títulos\nAtmosfera: desejo, sabor, energia, experiência gastronômica\nLayout: focado fortemente em imagens grandes (fotografia e texturas), seções dinâmicas de menu/produtos`;
+    }
+    else if (layout === "fitness-energy") {
+        designDirection = `Estilo visual: alta energia, intenso e dinâmico\nPaleta recomendada: preto absoluto, cinzas escuros, cores de destaque neon (amarelo, verde, vermelho)\nTipografia: sans-serif grossas, itálicas ou geométricas de alto impacto\nAtmosfera: superação, força, movimento, agressivo (no bom sentido)\nLayout: fotografias em preto e branco com overlays, blocos em diagonal ou assimétricos, forte uso de contraste`;
+    }
+    else if (layout === "high-ticket") {
+        designDirection = `Estilo visual: tecnológico, de alto valor agregado e grandioso\nPaleta recomendada: azuis profundos, preto, prateado, branco e detalhes em cores tecnológicas\nTipografia: sans-serif geométrica minimalista, tracking espaçado\nAtmosfera: progresso, investimento, alto valor, inteligência\nLayout: linhas precisas, gráficos ou imagens conceituais, storytelling visual focado em resultados de longo prazo`;
+    }
+    else if (layout === "service-local") {
+        designDirection = `Estilo visual: prático, direto e confiável\nPaleta recomendada: cores trabalhadoras (azul royal, laranja industrial, amarelo, preto)\nTipografia: robusta e ultra legível, focada em leitura rápida\nAtmosfera: agilidade, trabalho duro, proximidade, resolução de problemas\nLayout: chamadas para ação (telefone/whatsapp) imediatas e em destaque, prova social forte, listagem clara de serviços`;
     }
     else {
-        designDirection = `Estilo visual: moderno premium
-Paleta recomendada: dark blue, charcoal e branco
-Tipografia: sans-serif moderna
-Atmosfera: profissional e confiável
-Layout: hero impactante, seções amplas e design elegante`;
+        designDirection = `Estilo visual: moderno premium corporativo\nPaleta recomendada: dark blue (azul escuro elegante), charcoal (grafite) e branco\nTipografia: sans-serif limpa e contemporânea\nAtmosfera: profissionalismo corporativo, confiabilidade clara, eficiência\nLayout: hero impactante com bordas sutis, seções com bastante respiro (padding amplo), design elegante focado em conversão B2B/B2C direta`;
     }
 
     const siteStructure = `
@@ -380,7 +373,7 @@ Benefits: ${leadData.benefits ? leadData.benefits.join('\\n') : 'Vantagem 1\\nVa
 Design system:
 Primary colors: ${leadData.colorPalette?.join(', ') || 'dark blue, charcoal e gold'}
 Font: ${leadData.font || 'Inter'}
-Design Layout Type: ${leadData.layout_type || 'modern-business'}
+Detected Layout Style: ${leadData.layout_type || 'modern-business'}
 
 Creative direction from marketing blueprint:
 ${leadData.builder_prompt || ""}
