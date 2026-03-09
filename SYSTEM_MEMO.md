@@ -101,4 +101,9 @@ Este arquivo serve como a "memória central" do desenvolvimento. Se você trocar
 - **Serper Places Integration**: O `serperService.ts` foi atualizado para usar o endpoint de *Places* do Google. Isso garante a captura de telefones comerciais oficiais e links de redes sociais com precisão cirúrgica.
 - **Validação de Porta**: Sistema configurado e validado para rodar em `localhost:8080`, garantindo compatibilidade com o ambiente de desenvolvimento do usuário.
 
-*Última atualização: 04 de Março de 2026 - Antigravity AI*
+### 18. Arquitetura "Headless HTML" e Inteligência de Layouts (Elite Preview) 🎨🧠
+- **Engine de Layouts por Nicho:** Novo motor inteligente (`getLayoutByNiche`) mapeia automaticamente as palavras-chave do prospecto para a melhor estrutura visual (ex: nichos de saúde caem em `healthcare-clean`, finanças caem em `authority-premium`).
+- **Expansão Mestra do Banco de Nichos:** Dicionário expandido substancialmente com mais de 20 subnichos específicos e ultra-locais.
+- **Template Engine Inadulterável (Ponto de Virada):** A IA (`Piramyd`) foi estritamente proibida de codificar front-end/HTML. Ela agora atua APENAS como **Diretora Criativa & Copywriter**, entregando um **JSON** estratégico (Dor, Solução, Benefícios). Este JSON é injetado diretamente em um Template local infalível (`premium-business-template.js`), erradicando de vez sites genéricos, templates pobres ou bugs de responsividade no Elite Preview.
+
+*Última atualização: 09 de Março de 2026 - Antigravity AI*
