@@ -18,11 +18,11 @@ if (!PIRAMYD_API_KEY) {
 }
 
 const PIRAMYD_MODELS = [
+    "Llama-4-scout",
     "gpt-5.3-codex",
     "claude-sonnet-4.5",
     "gpt-5.3",
     "Llama-4-maverick",
-    "Llama-4-scout",
     "Kimi-k2-thinking",
     "Glm-5",
     "Gpt-oss-120b",
@@ -100,13 +100,9 @@ app.post("/generate-preview", async (req, res) => {
     });
 
     const modelsToTry = [...PIRAMYD_MODELS];
-    if (requestedModel && PIRAMYD_MODELS.includes(requestedModel)) {
-        // Coloca o modelo solicitado no topo
+    if (requestedModel && requestedModel !== "Llama-4-scout") {
         const index = modelsToTry.indexOf(requestedModel);
         if (index > -1) modelsToTry.splice(index, 1);
-        modelsToTry.unshift(requestedModel);
-    } else if (requestedModel) {
-        // Modelo customizado não na lista padrão (tenta mesmo assim)
         modelsToTry.unshift(requestedModel);
     }
 

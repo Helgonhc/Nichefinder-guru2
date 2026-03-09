@@ -2,11 +2,11 @@
 const PIRAMYD_API_KEY = process.env.PIRAMYD_API_KEY;
 
 const PIRAMYD_MODELS = [
+    "Llama-4-scout",
     "gpt-5.3-codex",
     "claude-sonnet-4.5",
     "gpt-5.3",
     "Llama-4-maverick",
-    "Llama-4-scout",
     "Kimi-k2-thinking",
     "Glm-5",
     "Gpt-oss-120b",
@@ -34,27 +34,39 @@ async function callPiramyd(model, apiKey, systemMessage, userPrompt, maxTokens =
     if (systemMessage) messages.push({ role: "system", content: systemMessage });
     messages.push({ role: "user", content: userPrompt });
 
-    const res = await fetch("https://api.piramyd.cloud/v1/chat/completions", {
-        method: "POST",
-        headers: {
-            "Authorization": `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            model,
-            messages,
-            temperature: 0.9,
-            top_p: 0.95,
-            max_tokens: maxTokens
-        }),
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
-    if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error?.message || "Erro na API da Piramyd");
+    try {
+        const res = await fetch("https://api.piramyd.cloud/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${apiKey}`,
+                "Content-Type": "application/json",
+            },
+            signal: controller.signal,
+            body: JSON.stringify({
+                model,
+                messages,
+                temperature: 0.9,
+                top_p: 0.95,
+                max_tokens: maxTokens
+            }),
+        });
+
+        clearTimeout(timeout);
+
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error?.message || "Erro na API da Piramyd");
+        }
+
+        return await res.json();
+    } catch (err) {
+        clearTimeout(timeout);
+        if (err.name === 'AbortError') throw new Error("TIMEOUT: Piramyd demorou demais para responder.");
+        throw err;
     }
-
-    return await res.json();
 }
 
 export default async function handler(req, res) {
@@ -77,11 +89,9 @@ export default async function handler(req, res) {
     }
 
     const modelsToTry = [...PIRAMYD_MODELS];
-    if (requestedModel && PIRAMYD_MODELS.includes(requestedModel)) {
+    if (requestedModel && requestedModel !== "Llama-4-scout") {
         const index = modelsToTry.indexOf(requestedModel);
         if (index > -1) modelsToTry.splice(index, 1);
-        modelsToTry.unshift(requestedModel);
-    } else if (requestedModel) {
         modelsToTry.unshift(requestedModel);
     }
 
