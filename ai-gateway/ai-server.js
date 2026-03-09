@@ -10,6 +10,7 @@ import cors from "cors";
 
 const app = express();
 const PORT = process.env.AI_GATEWAY_PORT || 3002;
+import generatePremiumTemplate from '../src/templates/premium-business-template.js';
 
 const PIRAMYD_API_KEY = process.env.PIRAMYD_API_KEY;
 
@@ -166,196 +167,40 @@ app.post("/generate-html", async (req, res) => {
         designDirection = `Estilo visual: moderno premium corporativo\nPaleta recomendada: dark blue (azul escuro elegante), charcoal (grafite) e branco\nTipografia: sans-serif limpa e contemporânea\nAtmosfera: profissionalismo corporativo, confiabilidade clara, eficiência\nLayout: hero impactante com bordas sutis, seções com bastante respiro (padding amplo), design elegante focado em conversão B2B/B2C direta`;
     }
 
-    const siteStructure = `
-Arquitetura obrigatória da página:
+    const systemMsg = `Você é um COPYWRITER E ESTRATEGISTA DE MARKETING DE ELITE.
 
-1. HERO
-   * headline forte
-   * subheadline clara
-   * botão CTA principal
-   * background visual moderno
+Sua missão é gerar APENAS O CONTEÚDO (em formato JSON) para uma página de conversão premium. Este conteúdo será inserido em um template pré-pronto de alta conversão.
 
-2. SEÇÃO PROBLEMA
-   * explicar o problema do cliente
-   * conectar emocionalmente
-
-3. SEÇÃO SOLUÇÃO
-   * mostrar como a empresa resolve o problema
-
-4. SEÇÃO SERVIÇOS
-   * grid moderno com cards
-
-5. SEÇÃO BENEFÍCIOS
-   * diferenciais da empresa
-
-6. PROVA SOCIAL
-   * depoimentos ou indicadores de confiança
-
-7. AUTORIDADE
-   * experiência ou especialização
-
-8. CTA FINAL
-   * chamada forte para ação
-
-9. CONTATO
-   * formulário simples
-
-10. FOOTER
-`;
-
-    const systemMsg = `
-Você é um DIRETOR CRIATIVO DE AGÊNCIA DIGITAL PREMIUM, DESIGNER UI/UX SÊNIOR e FRONT-END DEVELOPER ESPECIALISTA EM LANDING PAGES DE ALTO IMPACTO.
-
-Sua missão é gerar um HTML COMPLETO, visualmente impressionante e altamente profissional para ser exibido no módulo Elite Preview.
-
-Este site será mostrado ao empresário como uma prévia de como o site dele poderia ser muito melhor.
-
-PORTANTO:
-- o resultado NÃO pode parecer template genérico
-- o resultado NÃO pode parecer site simples de IA
-- o resultado DEVE parecer projeto feito por uma agência premium
-
-==================================================
-DIREÇÃO VISUAL OBRIGATÓRIA
-==================================================
-
-Inspirar-se em referências visuais de alto nível como:
-
-- Webflow
-- Framer
-- Awwwards
-- Dribbble
-
-Aplicar obrigatoriamente no design:
-
-- hero section visualmente forte
-- gradientes modernos
-- profundidade visual
-- containers bem espaçados
-- tipografia moderna e marcante
-- contraste forte e elegante
-- cards com aparência premium
-- sombras suaves
-- seções bem separadas
-- layout sofisticado
-- micro interações visuais leves
-- aparência de site caro
-
-==================================================
-HERO OBRIGATÓRIO
-==================================================
-
-A primeira seção precisa causar impacto imediato.
-
-Ela deve conter:
-
-- headline forte e persuasiva
-- subheadline clara
-- CTA principal destacado
-- fundo visual elegante
-- sensação premium logo na primeira dobra
-
-Ao olhar o hero, o visitante deve entender rapidamente:
-
-- o que a empresa faz
-- por que ela é confiável
-- por que o site parece superior ao atual
-
-==================================================
-PERSONALIZAÇÃO POR NICHO
-==================================================
-
-Adapte o estilo ao nicho do negócio.
-
-Exemplos:
-
-ADVOCACIA:
-- visual elegante
-- cores escuras
-- detalhes dourados
-- tipografia séria
-- sensação de autoridade
-
-CLÍNICA:
-- visual limpo
-- cores suaves
-- sensação de confiança e cuidado
-
-TECNOLOGIA:
-- gradientes modernos
-- visual mais ousado
-- sensação de inovação
-
-==================================================
-DIREÇÃO CRIATIVA
-================
-
+DIREÇÃO DA COPY (Atmosfera):
 ${designDirection}
 
 ==================================================
-ARQUITETURA DA PÁGINA
-=====================
-
-${siteStructure}
-
+REQUISITOS TÉCNICOS OBRIGATÓRIOS
 ==================================================
-ESTRUTURA OBRIGATÓRIA
-==================================================
+- Retorne APENAS um objeto JSON válido
+- NÃO retorne marcadores de markdown como \`\`\`json
+- A estrutura do JSON DEVE ser exatamente a seguinte:
 
-O site deve conter:
+{
+  "headline": "Chamada principal forte (impactante)",
+  "subheadline": "Subtítulo atraente explicando o valor",
+  "problem": "Descrição empática da dor do cliente",
+  "solution": "Apresentação da solução definitiva",
+  "services": [
+    { "title": "Serviço 1", "description": "Breve desc" },
+    { "title": "Serviço 2", "description": "Breve desc" },
+    { "title": "Serviço 3", "description": "Breve desc" }
+  ],
+  "benefits": ["Diferencial 1", "Diferencial 2", "Diferencial 3", "Diferencial 4"],
+  "testimonials": [
+    { "text": "Depoimento real", "author": "Nome" },
+    { "text": "Depoimento real", "author": "Nome" }
+  ],
+  "authority": "Texto demonstrando autoridade, anos de experiência ou especialização.",
+  "cta": "Texto curto para botão (ex: Agendar Consulta)"
+}`;
 
-1. Hero
-2. Problema do cliente
-3. Solução oferecida
-4. Serviços
-5. Benefícios
-6. Prova social
-7. Autoridade
-8. CTA final
-9. Contato
-10. Rodapé
-
-==================================================
-COPYWRITING
-==================================================
-
-Os textos devem parecer escritos por um copywriter profissional.
-
-Evitar frases genéricas como:
-
-- Bem-vindo ao nosso site
-- Somos uma empresa de qualidade
-- Trabalhamos com excelência
-
-Os textos devem parecer específicos para a empresa.
-
-==================================================
-REQUISITOS TÉCNICOS
-==================================================
-
-- Retornar APENAS HTML completo
-- Iniciar com <!DOCTYPE html>
-- Usar Tailwind CSS via CDN
-- Usar Google Fonts
-- Layout totalmente responsivo
-- Use container max-width 1200px ou 1280px para evitar layout esticado.
-- Hero com tipografia robusta (acima de 56px no desktop).
-- Adicionar pelo menos uma seção com background gradient moderno.
-- Use pelo menos uma seção com layout alternado (imagem esquerda, texto direita).
-- Use modern spacing (py-24 sections), rounded-xl cards and subtle shadows.
-- Código pronto para renderizar em iframe usando srcDoc
-
-==================================================
-IMPORTANTE
-==================================================
-
-Retornar SOMENTE o HTML.
-Não escrever explicações.
-Não usar markdown.
-Iniciar diretamente com <!DOCTYPE html>.
-`;
-
-    const userMsg = `Generate a complete HTML website using TailwindCSS.
+    const userMsg = `Gere o JSON de conteúdo estratégico para a seguinte empresa:
 
 Business information:
 Name: ${leadData.name || 'Empresa Local'}
@@ -363,59 +208,14 @@ Niche: ${leadData.niche || 'Negócio Local'}
 City: ${leadData.city || 'Sua Cidade'}
 Description: ${leadData.description || 'Uma empresa consolidada no mercado.'}
 
-Services:
-${leadData.services ? leadData.services.join('\\n') : 'Nossos Serviços'}
+Contexto base fornecido (modifique, amplie e melhore se necessário):
+Services: ${leadData.services ? leadData.services.join(', ') : 'Serviços gerais'}
+Testimonials: ${leadData.testimonials ? leadData.testimonials.join(' | ') : 'Ótimos serviços e atendimento!'}
+Benefits: ${leadData.benefits ? leadData.benefits.join(', ') : 'Vantagem 1, Vantagem 2'}
 
-Testimonials:
-${leadData.testimonials ? leadData.testimonials.join('\\n') : 'Ótimos serviços e atendimento!'}
-
-Marketing Copy:
-Headline: ${leadData.headline || 'Impacto Digital'}
-Subheadline: ${leadData.subheadline || 'Apresente seus serviços de forma elegante'}
-Benefits: ${leadData.benefits ? leadData.benefits.join('\\n') : 'Vantagem 1\\nVantagem 2\\nVantagem 3'}
-
-Design system:
-Primary colors: ${leadData.colorPalette?.join(', ') || 'dark blue, charcoal e gold'}
-Font: ${leadData.font || 'Inter'}
 Detected Layout Style: ${leadData.layout_type || 'modern-business'}
 
-Creative direction from marketing blueprint:
-${leadData.builder_prompt || ""}
-
-Technical diagnostics of current site:
-${leadData.diagnostics ? JSON.stringify(leadData.diagnostics, null, 2) : 'Ainda sem site otimizado'}
-
-Instructions:
-
-Create a professional website redesign specifically for this business.
-
-The design must:
-- match the niche
-- look premium
-- be conversion focused
-- include hero section
-- services section
-- testimonials
-- call to action
-- contact section
-
-SECTION DATA RULES:
-Services section MUST display the services listed below.
-Testimonials section MUST display the testimonials provided.
-Benefits section MUST use the provided benefits.
-
-CRITICAL RULE:
-The website MUST use the real business information provided.
-You MUST explicitly include:
-- the company name
-- the city
-- the services provided
-
-Do NOT invent fictional company names.
-If the company name is "${leadData.name}", the hero section must clearly display that name.
-
-OUTPUT:
-Return ONLY valid HTML.`;
+Instrução Final: Return ONLY JSON. Do NOT generate HTML.`;
 
     console.log(`\n[AI GATEWAY] Request HTML → ${leadData.name}`);
 
@@ -431,16 +231,17 @@ Return ONLY valid HTML.`;
         try {
             const data = await callPiramyd(model, PIRAMYD_API_KEY, systemMsg, userMsg);
             if (data.choices?.[0]?.message?.content) {
-                let html = data.choices[0].message.content.trim();
-                html = html.replace(/^```html?\n?/i, '').replace(/\n?```$/i, '').trim();
+                let raw = data.choices[0].message.content.trim();
+                raw = raw.replace(/^```json/i, '').replace(/```$/i, '').trim();
 
-                if (html.length > 150000) {
-                    html = html.slice(0, 150000);
+                let aiContent = {};
+                try {
+                    aiContent = JSON.parse(raw);
+                } catch (parseErr) {
+                    console.error("[AI GATEWAY] Falha ao parsear JSON HTML da IA, usando Fallback.", parseErr.message);
                 }
 
-                if (!html.startsWith("<!DOCTYPE html>")) {
-                    console.warn("Resposta não iniciou com HTML válido.");
-                }
+                const html = generatePremiumTemplate(aiContent, leadData);
 
                 console.log({
                     event: "generate_html_success",

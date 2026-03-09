@@ -122,7 +122,7 @@ app.post("/generate-pdf", async (req, res) => {
 
         console.log("🦅 [PDF Engine] Injetando a Estrutura HTML B2B...");
         await page.setContent(html, {
-            waitUntil: "networkidle0",
+            waitUntil: "networkidle2", // Mais resiliente a scripts externos (Tailwind, Fonts)
             timeout: 60000
         });
 
@@ -148,7 +148,10 @@ app.post("/generate-pdf", async (req, res) => {
         let status = 500;
         let message = "Falha interna no Motor Headless";
 
-        if (error.message.includes("Target closed") || error.message.includes("Protocol error")) {
+        if (error.name === 'TimeoutError') {
+            message = "Timeout ao carregar recursos externos (Tailwind/Fonts). O motor não conseguiu atingir o estado de rede ociosa em 60s.";
+            status = 504;
+        } else if (error.message.includes("Target closed") || error.message.includes("Protocol error")) {
             message = "O motor de renderização crashou ou foi fechado inesperadamente. A instância será reiniciada na próxima tentativa.";
             status = 503;
             if (_browserInstance) {

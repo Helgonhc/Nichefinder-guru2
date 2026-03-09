@@ -11,12 +11,16 @@ export const config = {
     maxDuration: 60, // Limite de 60 segundos para renderização complexa
     api: {
         bodyParser: {
-            sizeLimit: '10mb', // Permite payloads maiores com imagens base64
+            sizeLimit: '25mb', // Aumentado para suportar PDFs com muitas imagens embutidas (Limite prático Vercel)
         },
     },
 };
 
 export default async function handler(req, res) {
+    // Configura Headers de Segurança e CORS
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Método Não Permitido' });
     }
@@ -31,8 +35,15 @@ export default async function handler(req, res) {
         console.log("🦅 [Vercel PDF] Iniciando motor serverless...");
 
         // Configura o Chromium para o ambiente Vercel
+        // Otimizado para baixo consumo de memória
         browser = await puppeteer.launch({
-            args: chromium.args,
+            args: [
+                ...chromium.args,
+                "--disable-gpu",
+                "--disable-dev-shm-usage",
+                "--disable-setuid-sandbox",
+                "--no-sandbox",
+            ],
             defaultViewport: chromium.defaultViewport,
             executablePath: await chromium.executablePath(),
             headless: chromium.headless,
@@ -41,14 +52,17 @@ export default async function handler(req, res) {
 
         const page = await browser.newPage();
 
-        // Emula media print para CSS Tailwind
+        // Emula media print para CSS Tailwind e backgrounds impressos
         await page.emulateMediaType('print');
 
         console.log("🦅 [Vercel PDF] Injetando conteúdo HTML...");
         await page.setContent(html, {
-            waitUntil: 'networkidle0',
-            timeout: 45000
+            waitUntil: 'networkidle2', // Sincronizado com o fix local: mais resiliente a scripts externos
+            timeout: 50000 // 50s de timeout interno (dentro dos 60s do Vercel)
         });
+
+        // Pequeno fôlego para garantir renderização de fontes complexas
+        await new Promise(resolve => setTimeout(resolve, 500));
 
         console.log("🦅 [Vercel PDF] Exportando para A4...");
         const pdfBuffer = await page.pdf({
@@ -66,8 +80,17 @@ export default async function handler(req, res) {
 
     } catch (error) {
         console.error("❌ [Vercel PDF Error]:", error);
-        return res.status(500).json({
-            error: 'Falha crítica na renderização do PDF',
+
+        let status = 500;
+        let message = 'Falha crítica na renderização do PDF';
+
+        if (error.name === 'TimeoutError') {
+            status = 504;
+            message = 'Timeout na renderização (recursos externos demoraram demais).';
+        }
+
+        return res.status(status).json({
+            error: message,
             details: error.message
         });
     } finally {
