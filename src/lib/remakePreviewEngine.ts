@@ -340,33 +340,7 @@ ${reviewsSource}
 ${reviewsSource}
 ---`;
 
-        // Gera HTML preview em paralelo (não bloqueia o resultado do JSON)
-        let html_preview: string | undefined;
-        try {
-            const htmlRes = await fetch('/api/generate-html', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    leadData: {
-                        ...lead,
-                        services: content.services || lead.services,
-                        testimonials: content.testimonials || [],
-                        colorPalette: content.color_palette,
-                        font: content.font_family,
-                        builder_prompt: content.builder_prompt // Injetando o blueprint massivo para consistência total
-                    },
-                    model: 'gpt-5.3-codex' // Usando versão especializada para código se disponível
-                })
-            });
-            if (htmlRes.ok) {
-                const htmlData = await htmlRes.json();
-                html_preview = htmlData.html;
-                console.log('[Remake] HTML preview gerado via:', htmlData.model);
-            }
-        } catch (err) {
-            console.warn('[Remake] Falha ao gerar HTML preview:', err);
-        }
-
+        // O HTML preview agora é desacoplado para performance (gerado sob demanda no frontend)
         return {
             preview_data: {
                 headline: content.headline,
@@ -393,7 +367,6 @@ ${reviewsSource}
                 },
             },
             summary: content.summary,
-            html_preview,
         };
 
     } catch (error) {

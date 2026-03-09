@@ -384,30 +384,8 @@ export const BusinessCard = memo(function BusinessCard({
   };
 
   const handleAnalyzeLead = async () => {
-    setLoadingAnalysis(true);
-    const toastId = toast.loading("Analisando presença digital...");
-    try {
-      const result = await analyzeLead(business);
-      setAnalysis(result);
-
-      if (onUpdateBusiness && result.audit) {
-        onUpdateBusiness({
-          ...business,
-          audit: result.audit,
-          site_preview: result.preview?.preview_data,
-          site_preview_summary: result.preview?.summary,
-          opportunity_score: result.opportunity?.opportunity_score
-        });
-      }
-
-      toast.success("Análise completa!", { id: toastId });
-      setShowRemakePreview(true);
-    } catch (error) {
-      console.error("Lead analysis failed", error);
-      toast.error("Falha na análise do lead.", { id: toastId });
-    } finally {
-      setLoadingAnalysis(false);
-    }
+    setShowRemakePreview(true);
+    // A análise continuará em background se necessário, ou será disparada pelo próprio modal
   };
 
   const [ticketValue, setTicketValue] = useState(business.ticketMedio || 0);

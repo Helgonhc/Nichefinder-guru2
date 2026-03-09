@@ -62,36 +62,120 @@ export function SiteRemakePreview({ business, open, onClose, onRegenerate }: Sit
 
     const handleAnalysis = async () => {
         setIsAnalyzing(true);
-        const toastId = toast.loading("Realizando Auditoria Digital...");
+        const toastId = toast.loading("Realizando Auditoria Profissional (Google + IA)...");
         try {
-            const result = await analyzeWebsite(business);
-            setDiagnostics(result);
+            const { analyzeLead } = await import("@/lib/leadAnalysisPipeline");
+            const result = await analyzeLead(business);
 
-            // Tenta persistir no banco se tiver ID
-            const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
-            if (isUUID(business.id)) {
-                await (supabase as any).from('leads').update({
-                    site_preview: {
-                        ...business.site_preview,
-                        site_diagnostics: result
+            if (result.preview) {
+                setDiagnostics(result.preview.preview_data.site_diagnostics || { score: 0, problems: [], suggestions: [] });
+
+                const updatedBusiness = {
+                    ...business,
+                    audit: result.audit,
+                    site_preview: result.preview.preview_data,
+                    site_preview_summary: result.preview.summary,
+                    opportunity_score: result.opportunity?.opportunity_score,
+                    meta_data: {
+                        ...business.meta_data,
+                        technical_audit: result.audit,
+                        site_preview: result.preview.preview_data,
+                        opportunity_score: result.opportunity?.opportunity_score
                     }
-                }).eq('id', business.id);
-            }
+                };
 
-            toast.success("Análise concluída!", { id: toastId });
+                // Persiste no banco se tiver ID
+                const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+                if (isUUID(business.id)) {
+                    await (supabase as any).from('leads').update({
+                        meta_data: updatedBusiness.meta_data,
+                        opportunity_score: result.opportunity?.opportunity_score
+                    }).eq('id', business.id);
+                }
+
+                if (onRegenerate) onRegenerate(updatedBusiness);
+                toast.success("Dossiê Elite concluído!", { id: toastId });
+
+                // 3. Dispara a geração de HTML em background se não existir
+                if (!updatedBusiness.html_preview && !updatedBusiness.generated_site_code) {
+                    try {
+                        console.log("[SiteRemakePreview] Disparando geração de HTML em background...");
+                        const htmlRes = await fetch('/api/generate-html', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                leadData: {
+                                    ...updatedBusiness,
+                                    services: updatedBusiness.site_preview.services,
+                                    testimonials: updatedBusiness.site_preview.testimonials,
+                                    colorPalette: updatedBusiness.site_preview.color_palette,
+                                    font: updatedBusiness.site_preview.font_family,
+                                    builder_prompt: updatedBusiness.site_preview.builder_prompt
+                                },
+                                model: 'gpt-5.3-codex'
+                            })
+                        });
+
+                        if (htmlRes.ok) {
+                            const htmlData = await htmlRes.json();
+                            const finalBusiness = {
+                                ...updatedBusiness,
+                                generated_site_code: htmlData.html,
+                                html_preview: htmlData.html,
+                                meta_data: {
+                                    ...updatedBusiness.meta_data,
+                                    generated_site_code: htmlData.html,
+                                    html_preview: htmlData.html
+                                }
+                            };
+
+                            if (isUUID(business.id)) {
+                                await (supabase as any).from('leads').update({
+                                    generated_site_code: htmlData.html,
+                                    meta_data: finalBusiness.meta_data
+                                }).eq('id', business.id);
+                            }
+
+                            if (onRegenerate) onRegenerate(finalBusiness);
+                            console.log("[SiteRemakePreview] HTML de background concluído.");
+                        }
+                    } catch (htmlErr) {
+                        console.warn("[SiteRemakePreview] Erro na geração de HTML de background:", htmlErr);
+                    }
+                }
+            }
         } catch (err) {
-            console.error("Erro na análise:", err);
-            toast.error("Falha na análise técnica.", { id: toastId });
+            console.error("Erro na análise profunda:", err);
+            toast.error("Falha na auditoria técnica.", { id: toastId });
         } finally {
             setIsAnalyzing(false);
         }
     };
 
-    // Configurações Dinâmicas de Estilo
+    // Fallback seguro se preview for nulo
+    const safePreview = useMemo(() => {
+        return preview || {
+            headline: "Análise em Processamento...",
+            subheadline: "Estamos preparando o dossiê estratégico do lead.",
+            benefits: [],
+            services: [],
+            testimonials: [],
+            cta_text: "Aguardando...",
+            cta_action: "WhatsApp",
+            design_style: "Premium",
+            color_palette: ["#2563eb", "#1e293b", "#f8fafc"],
+            layout_type: "modern-split",
+            font_family: "Inter",
+            hero_typography: "modern",
+            hero_image_url: "",
+            builder_prompt: ""
+        };
+    }, [preview]);
+
     const design = useMemo(() => {
-        const palette = preview?.color_palette || ["#2563eb", "#1e293b", "#f8fafc"];
-        const layout = preview?.layout_type || "modern-split";
-        const font = preview?.font_family || "Inter";
+        const palette = safePreview.color_palette || ["#2563eb", "#1e293b", "#f8fafc"];
+        const layout = safePreview.layout_type || "modern-split";
+        const font = safePreview.font_family || "Inter";
         return {
             primary: palette[0],
             secondary: palette[1] || palette[0],
@@ -99,9 +183,7 @@ export function SiteRemakePreview({ business, open, onClose, onRegenerate }: Sit
             layout,
             font
         };
-    }, [preview]);
-
-    if (!preview) return null;
+    }, [safePreview]);
 
     return (
         <Dialog open={open} onOpenChange={(val) => !val && onClose()}>
@@ -273,13 +355,34 @@ export function SiteRemakePreview({ business, open, onClose, onRegenerate }: Sit
                                                 <h3 className="text-xs font-black text-emerald-500 uppercase tracking-widest mb-3 flex items-center gap-2">
                                                     <Sparkles className="w-3 h-3" /> Novo Site Gerado por IA
                                                 </h3>
-                                                <div className="flex-1 rounded-2xl border-2 border-emerald-500/20 bg-slate-900 overflow-hidden min-h-[500px]">
-                                                    <iframe
-                                                        srcDoc={htmlPreview}
-                                                        className="w-full h-full border-none"
-                                                        sandbox="allow-scripts allow-same-origin"
-                                                        title="Redesign Elite"
-                                                    />
+                                                <div className="flex-1 rounded-2xl border-2 border-emerald-500/20 bg-slate-900 overflow-hidden min-h-[500px] relative">
+                                                    {htmlPreview ? (
+                                                        <iframe
+                                                            srcDoc={htmlPreview}
+                                                            className="w-full h-full border-none"
+                                                            sandbox="allow-scripts allow-same-origin"
+                                                            title="Redesign Elite"
+                                                        />
+                                                    ) : (
+                                                        <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-slate-900 space-y-4">
+                                                            <Sparkles className="w-12 h-12 text-emerald-500/20 mb-2" />
+                                                            <p className="text-sm text-slate-400 font-medium">
+                                                                O Design Visual ainda não foi gerado.
+                                                            </p>
+                                                            <Button
+                                                                size="sm"
+                                                                className="bg-emerald-600 hover:bg-emerald-700 font-black uppercase tracking-widest text-[10px]"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    // Dispara a regeneração para obter o HTML
+                                                                    const btn = document.getElementById('btn-regenerar');
+                                                                    if (btn) btn.click();
+                                                                }}
+                                                            >
+                                                                Gerar Preview Agora
+                                                            </Button>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -519,6 +622,7 @@ export function SiteRemakePreview({ business, open, onClose, onRegenerate }: Sit
                         </Button>
 
                         <Button
+                            id="btn-regenerar"
                             variant="secondary"
                             className="flex-1 md:flex-none bg-slate-800 hover:bg-slate-700 text-white font-black uppercase tracking-widest h-12 rounded-2xl px-6 gap-2 border border-white/5 active:scale-95 transition-all"
                             onClick={async () => {
@@ -527,37 +631,72 @@ export function SiteRemakePreview({ business, open, onClose, onRegenerate }: Sit
                                 try {
                                     const styles = ['Luxo Black', 'Tech Modern', 'Futuristic Clean', 'Premium Gold'];
                                     const randomStyle = styles[Math.floor(Math.random() * styles.length)];
+
+                                    // 1. Gera o JSON Rápido
                                     const result = await generateRemakePreview(business, randomStyle, selectedModel);
 
-                                    const updatedBusiness = {
+                                    // 2. Notifica o Frontend do JSON (Auditoria e Prompt)
+                                    const intermediateBusiness = {
                                         ...business,
                                         site_preview: result.preview_data,
                                         site_preview_summary: result.summary,
                                         vibe_prompt: result.preview_data.builder_prompt,
-                                        generated_site_code: result.html_preview,
                                         meta_data: {
                                             ...business.meta_data,
                                             site_preview: result.preview_data,
                                             site_preview_summary: result.summary,
                                             vibe_prompt: result.preview_data.builder_prompt,
-                                            generated_site_code: result.html_preview
                                         }
                                     };
+                                    if (onRegenerate) onRegenerate(intermediateBusiness);
+                                    toast.success("Blueprint Estratégico gerado!", { id: toastId });
 
-                                    const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+                                    // 3. Gera o HTML em segundo plano (Pesado)
+                                    toast.loading("Renderizando Design Visual (10-15s)...", { id: toastId });
+                                    const htmlRes = await fetch('/api/generate-html', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            leadData: {
+                                                ...business,
+                                                services: result.preview_data.services,
+                                                testimonials: result.preview_data.testimonials,
+                                                colorPalette: result.preview_data.color_palette,
+                                                font: result.preview_data.font_family,
+                                                builder_prompt: result.preview_data.builder_prompt
+                                            },
+                                            model: 'gpt-5.3-codex'
+                                        })
+                                    });
 
-                                    if (isUUID(business.id)) {
-                                        await (supabase as any).from('leads').update({
-                                            site_preview: result.preview_data,
-                                            site_preview_summary: result.summary,
-                                            vibe_prompt: result.preview_data.builder_prompt,
-                                            generated_site_code: result.html_preview,
-                                            meta_data: updatedBusiness.meta_data
-                                        }).eq('id', business.id);
+                                    if (htmlRes.ok) {
+                                        const htmlData = await htmlRes.json();
+                                        const finalBusiness = {
+                                            ...intermediateBusiness,
+                                            generated_site_code: htmlData.html,
+                                            html_preview: htmlData.html,
+                                            meta_data: {
+                                                ...intermediateBusiness.meta_data,
+                                                generated_site_code: htmlData.html,
+                                                html_preview: htmlData.html
+                                            }
+                                        };
+
+                                        // Persiste o resultado final completo
+                                        const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+                                        if (isUUID(business.id)) {
+                                            await (supabase as any).from('leads').update({
+                                                site_preview: result.preview_data,
+                                                site_preview_summary: result.summary,
+                                                vibe_prompt: result.preview_data.builder_prompt,
+                                                generated_site_code: htmlData.html,
+                                                meta_data: finalBusiness.meta_data
+                                            }).eq('id', business.id);
+                                        }
+
+                                        if (onRegenerate) onRegenerate(finalBusiness);
+                                        toast.success(`Design ${randomStyle} renderizado com sucesso!`, { id: toastId });
                                     }
-
-                                    if (onRegenerate) onRegenerate(updatedBusiness);
-                                    toast.success(`Design ${randomStyle} aplicado com sucesso!`, { id: toastId });
                                 } catch (err) {
                                     console.error("Erro no Regenerate:", err);
                                     toast.error("Erro ao regenerar proposta.");
