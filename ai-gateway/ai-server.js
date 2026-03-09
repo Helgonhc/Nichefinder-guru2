@@ -50,27 +50,40 @@ async function callPiramyd(model, apiKey, systemMessage, userPrompt, maxTokens =
     if (systemMessage) messages.push({ role: "system", content: systemMessage });
     messages.push({ role: "user", content: userPrompt });
 
-    const res = await fetch("https://api.piramyd.cloud/v1/chat/completions", {
-        method: "POST",
-        headers: {
-            "Authorization": `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            model,
-            messages,
-            temperature: 0.9,
-            top_p: 0.95,
-            max_tokens: maxTokens
-        }),
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout total
 
-    if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error?.message || "Erro na API da Piramyd");
+    try {
+        console.log(`[AI GATEWAY] Chamando Piramyd (${model}) - MaxTokens: ${maxTokens}...`);
+        const res = await fetch("https://api.piramyd.cloud/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${apiKey}`,
+                "Content-Type": "application/json",
+            },
+            signal: controller.signal,
+            body: JSON.stringify({
+                model,
+                messages,
+                temperature: 0.9,
+                top_p: 0.95,
+                max_tokens: maxTokens
+            }),
+        });
+
+        clearTimeout(timeout);
+
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error?.message || "Erro na API da Piramyd");
+        }
+
+        return await res.json();
+    } catch (err) {
+        clearTimeout(timeout);
+        if (err.name === 'AbortError') throw new Error("TIMEOUT: Piramyd demorou demais para responder.");
+        throw err;
     }
-
-    return await res.json();
 }
 
 app.use(cors({ origin: "*", methods: ["POST", "OPTIONS"], allowedHeaders: ["Content-Type"] }));
@@ -381,12 +394,11 @@ Comece imediatamente com <!DOCTYPE html>.
 
     console.log(`\n[AI GATEWAY] Request HTML → ${leadData.name}`);
 
-    const modelsToTry = [...PIRAMYD_MODELS];
+    const modelsToTry = ["Llama-4-scout", ...PIRAMYD_MODELS];
+
     if (requestedModel && PIRAMYD_MODELS.includes(requestedModel)) {
         const index = modelsToTry.indexOf(requestedModel);
         if (index > -1) modelsToTry.splice(index, 1);
-        modelsToTry.unshift(requestedModel);
-    } else if (requestedModel) {
         modelsToTry.unshift(requestedModel);
     }
 
