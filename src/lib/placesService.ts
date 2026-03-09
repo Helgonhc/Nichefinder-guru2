@@ -67,6 +67,11 @@ export const searchRawBusinesses = async (niche: string, city: string, pageToken
           } else {
             const searchData = await searchRes.json();
             console.log(`[Radar] Resposta recebida. Status: ${searchData.status}`);
+
+            if (searchData.status === 'REQUEST_DENIED') {
+              console.error("[Radar] Detalhes do Erro do Google:", searchData.error_message || "Sem mensagem de erro detalhada.");
+            }
+
             if (searchData.status === 'OK' || searchData.status === 'ZERO_RESULTS') {
               const results = searchData.results || [];
               const tagged = results.map((r: any) => ({ ...r, _searched_city: c }));
