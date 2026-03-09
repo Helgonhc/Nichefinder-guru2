@@ -680,6 +680,7 @@ export function SiteRemakePreview({ business, open, onClose, onRegenerate }: Sit
                                                 benefits: result.preview_data.benefits,
                                                 colorPalette: result.preview_data.color_palette,
                                                 font: result.preview_data.font_family,
+                                                layout_type: result.preview_data.layout_type,
                                                 builder_prompt: result.preview_data.builder_prompt,
                                                 diagnostics: diagnostics
                                             },

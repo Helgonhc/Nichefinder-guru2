@@ -119,6 +119,7 @@ Benefits: ${leadData.benefits ? leadData.benefits.join('\\n') : 'Vantagem 1\\nVa
 Design system:
 Primary colors: ${leadData.colorPalette?.join(', ') || 'dark blue, charcoal e gold'}
 Font: ${leadData.font || 'Inter'}
+Design Layout Type: ${leadData.layout_type || 'modern-business'}
 
 Creative direction from marketing blueprint:
 ${leadData.builder_prompt || ""}

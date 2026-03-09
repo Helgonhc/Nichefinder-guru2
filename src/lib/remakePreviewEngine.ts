@@ -106,6 +106,30 @@ function parseDiagnosticResponse(content: string): { score: number; problems: st
     return { score, problems, suggestions };
 }
 
+export function getLayoutByNiche(niche: string = "") {
+    const n = niche.toLowerCase();
+
+    if (n.includes("dent") || n.includes("clinica") || n.includes("medico") || n.includes("farmacia"))
+        return "healthcare-clean";
+
+    if (n.includes("advoc") || n.includes("contab") || n.includes("arquitetura"))
+        return "authority-premium";
+
+    if (n.includes("restaurante") || n.includes("pizza") || n.includes("hamburg") || n.includes("sushi"))
+        return "food-visual";
+
+    if (n.includes("academia") || n.includes("crossfit") || n.includes("fitness") || n.includes("beach tennis"))
+        return "fitness-energy";
+
+    if (n.includes("solar") || n.includes("imobiliaria") || n.includes("construtora"))
+        return "high-ticket";
+
+    if (n.includes("oficina") || n.includes("mecanica") || n.includes("pet shop") || n.includes("barbearia") || n.includes("salao"))
+        return "service-local";
+
+    return "modern-business";
+}
+
 /**
  * Geração automática de uma proposta de redesign (Preview) usando IA.
  * NÍVEL: ULTRA GOD MODE GALAXY EDITION (3000+ PALAVRAS / BLUEPRINT DE ENGENHARIA RADICAL)
@@ -234,7 +258,7 @@ ESTRUTURA ESPERADA DO JSON (Respeite os tipos e nomes das chaves):
   "cta_text": "Texto CTA",
   "design_style": "${style}",
   "color_palette": ["HEX1", "HEX2", "HEX3"],
-  "layout_type": "modern-split | experimental-asymmetry",
+  "layout_type": "${getLayoutByNiche(lead.niche)}",
   "summary": "Resumo estratégico",
   "builder_prompt": "Máximo de 200 palavras explicando o layout..."
 }`;
