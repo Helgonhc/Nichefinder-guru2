@@ -105,12 +105,21 @@ export function SiteRemakePreview({ business, open, onClose, onRegenerate }: Sit
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                                 leadData: {
-                                    ...updatedBusiness,
+                                    name: business.name,
+                                    niche: business.niche,
+                                    city: business.city,
+                                    description: business.description,
+                                    phone: business.phone,
+                                    website: business.website,
                                     services: updatedBusiness.site_preview.services,
                                     testimonials: updatedBusiness.site_preview.testimonials,
+                                    headline: updatedBusiness.site_preview.headline,
+                                    subheadline: updatedBusiness.site_preview.subheadline,
+                                    benefits: updatedBusiness.site_preview.benefits,
                                     colorPalette: updatedBusiness.site_preview.color_palette,
                                     font: updatedBusiness.site_preview.font_family,
-                                    builder_prompt: updatedBusiness.site_preview.builder_prompt
+                                    builder_prompt: updatedBusiness.site_preview.builder_prompt,
+                                    diagnostics: diagnostics
                                 },
                                 model: 'Llama-4-maverick'
                             })
@@ -658,14 +667,23 @@ export function SiteRemakePreview({ business, open, onClose, onRegenerate }: Sit
                                         headers: { 'Content-Type': 'application/json' },
                                         body: JSON.stringify({
                                             leadData: {
-                                                ...business,
+                                                name: business.name,
+                                                niche: business.niche,
+                                                city: business.city,
+                                                description: business.description,
+                                                phone: business.phone,
+                                                website: business.website,
                                                 services: result.preview_data.services,
                                                 testimonials: result.preview_data.testimonials,
+                                                headline: result.preview_data.headline,
+                                                subheadline: result.preview_data.subheadline,
+                                                benefits: result.preview_data.benefits,
                                                 colorPalette: result.preview_data.color_palette,
                                                 font: result.preview_data.font_family,
-                                                builder_prompt: result.preview_data.builder_prompt
+                                                builder_prompt: result.preview_data.builder_prompt,
+                                                diagnostics: diagnostics
                                             },
-                                            model: 'Llama-4-maverick'
+                                            model: selectedModel
                                         })
                                     });
 
