@@ -21,13 +21,19 @@ export interface DeepInfo {
 
 const getHeaders = () => {
     const myHeaders = new Headers();
+    if (!SERPER_API_KEY) {
+        console.warn("[Serper] ATENÇÃO: VITE_SERPER_API_KEY não encontrada nas variáveis de ambiente!");
+    }
     myHeaders.append("X-API-KEY", SERPER_API_KEY || '');
     myHeaders.append("Content-Type", "application/json");
     return myHeaders;
 };
 
 export const searchGoogle = async (query: string): Promise<any> => {
-    if (!SERPER_API_KEY) return null;
+    if (!SERPER_API_KEY) {
+        console.error("[Serper] Erro: Busca Google abortada por falta de API KEY.");
+        return null;
+    }
     try {
         const response = await fetch("https://google.serper.dev/search", {
             method: 'POST',
@@ -35,7 +41,14 @@ export const searchGoogle = async (query: string): Promise<any> => {
             body: JSON.stringify({ q: query, gl: "br", hl: "pt-br", num: 10 }),
             redirect: 'follow'
         });
-        return response.ok ? await response.json() : null;
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`[Serper] Search API Error: ${response.status} ${response.statusText}`, errorText);
+            return null;
+        }
+
+        return await response.json();
     } catch (error) {
         console.error("Serper Search Error:", error);
         return null;
@@ -43,7 +56,10 @@ export const searchGoogle = async (query: string): Promise<any> => {
 };
 
 export const searchPlaces = async (query: string): Promise<any> => {
-    if (!SERPER_API_KEY) return null;
+    if (!SERPER_API_KEY) {
+        console.error("[Serper] Erro: Busca Places abortada por falta de API KEY.");
+        return null;
+    }
     try {
         const response = await fetch("https://google.serper.dev/places", {
             method: 'POST',
@@ -51,7 +67,14 @@ export const searchPlaces = async (query: string): Promise<any> => {
             body: JSON.stringify({ q: query, gl: "br", hl: "pt-br" }),
             redirect: 'follow'
         });
-        return response.ok ? await response.json() : null;
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`[Serper] Places API Error: ${response.status} ${response.statusText}`, errorText);
+            return null;
+        }
+
+        return await response.json();
     } catch (error) {
         console.error("Serper Places Error:", error);
         return null;

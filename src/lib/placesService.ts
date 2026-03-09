@@ -39,7 +39,10 @@ export const searchRawBusinesses = async (niche: string, city: string, pageToken
   checkRateLimit();
 
   if (!GOOGLE_PLACES_API_KEY) {
+    console.error("[Radar] Erro Crítico: VITE_GOOGLE_PLACES_API_KEY não encontrada!");
     throw new Error("VITE_GOOGLE_PLACES_API_KEY não configurada no arquivo .env");
+  } else {
+    console.log("[Radar] Google Places API Key detectada.");
   }
 
   let combinedRaw: any[] = [];
@@ -55,9 +58,15 @@ export const searchRawBusinesses = async (niche: string, city: string, pageToken
         const query = encodeURIComponent(q);
         const searchUrl = `/maps-api/maps/api/place/textsearch/json?query=${query}&key=${GOOGLE_PLACES_API_KEY}&language=pt-BR`;
         try {
+          console.log(`[Radar] Buscando: ${q} em ${c}...`);
           const searchRes = await fetch(searchUrl);
-          if (searchRes.ok) {
+
+          if (!searchRes.ok) {
+            const errorText = await searchRes.text();
+            console.error(`[Radar] Erro na Resposta do Proxy (${searchRes.status}):`, errorText);
+          } else {
             const searchData = await searchRes.json();
+            console.log(`[Radar] Resposta recebida. Status: ${searchData.status}`);
             if (searchData.status === 'OK' || searchData.status === 'ZERO_RESULTS') {
               const results = searchData.results || [];
               const tagged = results.map((r: any) => ({ ...r, _searched_city: c }));
@@ -148,6 +157,8 @@ export const mapPlaceDetails = async (rawPlaces: any[], niche: string, city: str
       let deepInfo: any = {};
       if (import.meta.env.VITE_SERPER_API_KEY) {
         deepInfo = await findDeepInfoViaSerper(place.name, city);
+      } else {
+        console.warn("[Radar] Enriquecimento Serper ignorado: VITE_SERPER_API_KEY ausente.");
       }
 
       // Validação rigorosa de URL para garantir website próprio
