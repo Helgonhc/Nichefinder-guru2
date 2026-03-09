@@ -228,7 +228,7 @@ Retorne um objeto JSON com:
 - site_diagnostics
 - builder_prompt
 
-O builder_prompt deve explicar como recriar um site moderno para esse negócio. (MÁXIMO 200 PALAVRAS).
+O builder_prompt deve conter diretrizes de copywriting e tom de voz (MÁXIMO 100 PALAVRAS).
 O retorno DEVE ser EXCLUSIVAMENTE o JSON válido.`;
 
         const userPrompt = `DADOS DO LEAD:

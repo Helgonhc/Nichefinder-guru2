@@ -1,3 +1,4 @@
+import generatePremiumTemplate from '../src/templates/premium-business-template.js';
 
 const PIRAMYD_API_KEY = process.env.PIRAMYD_API_KEY;
 
@@ -102,11 +103,40 @@ export default async function handler(req, res) {
         designDirection = `Estilo visual: moderno premium corporativo\nPaleta recomendada: dark blue (azul escuro elegante), charcoal (grafite) e branco\nTipografia: sans-serif limpa e contemporânea\nAtmosfera: profissionalismo corporativo, confiabilidade clara, eficiência\nLayout: hero impactante com bordas sutis, seções com bastante respiro (padding amplo), design elegante focado em conversão B2B/B2C direta`;
     }
 
-    const siteStructure = `Arquitetura obrigatória da página:\n\n1. HERO\n   * headline forte\n   * subheadline clara\n   * botão CTA principal\n   * background visual moderno\n\n2. SEÇÃO PROBLEMA\n   * explicar o problema do cliente\n   * conectar emocionalmente\n\n3. SEÇÃO SOLUÇÃO\n   * mostrar como a empresa resolve o problema\n\n4. SEÇÃO SERVIÇOS\n   * grid moderno com cards\n\n5. SEÇÃO BENEFÍCIOS\n   * diferenciais da empresa\n\n6. PROVA SOCIAL\n   * depoimentos ou indicadores de confiança\n\n7. AUTORIDADE\n   * experiência ou especialização\n\n8. CTA FINAL\n   * chamada forte para ação\n\n9. CONTATO\n   * formulário simples\n\n10. FOOTER`;
+    const systemMsg = `Você é um COPYWRITER E ESTRATEGISTA DE MARKETING DE ELITE.
 
-    const systemMsg = `Você é um DIRETOR CRIATIVO DE AGÊNCIA DIGITAL PREMIUM, DESIGNER UI/UX SÊNIOR e FRONT-END DEVELOPER ESPECIALISTA EM LANDING PAGES DE ALTO IMPACTO.\n\nSua missão é gerar um HTML COMPLETO, visualmente impressionante e altamente profissional para ser exibido no módulo Elite Preview.\n\nEste site será mostrado ao empresário como uma prévia de como o site dele poderia ser muito melhor.\n\nPORTANTO:\n- o resultado NÃO pode parecer template genérico\n- o resultado NÃO pode parecer site simples de IA\n- o resultado DEVE parecer projeto feito por uma agência premium\n\nDIREÇÃO VISUAL OBRIGATÓRIA:\n- hero section impactante, gradientes modernos, profundidade visual, containers bem espaçados, tipografia moderna e marcante, micro interações visuais leves.\n- Use modern spacing (py-24 sections), rounded-xl cards and subtle shadows.\n\nDIREÇÃO CRIATIVA:\n${designDirection}\n\nARQUITETURA DA PÁGINA:\n${siteStructure}\n\nREQUISITOS TÉCNICOS:\n- Retornar APENAS HTML completo\n- Iniciar com <!DOCTYPE html>\n- Usar Tailwind CSS via CDN\n- Layout totalmente responsivo\n- Container max-width 1200px ou 1280px\n- Hero com tipografia robusta (>56px)\n- Pelo menos uma seção com background gradient moderno e uma com layout alternado.\n\nRetornar SOMENTE o HTML.`;
+Sua missão é gerar APENAS O CONTEÚDO (em formato JSON) para uma página de conversão premium. Este conteúdo será inserido em um template pré-pronto de alta conversão.
 
-    const userMsg = `Generate a complete HTML website using TailwindCSS.
+DIREÇÃO DA COPY (Atmosfera):
+${designDirection}
+
+==================================================
+REQUISITOS TÉCNICOS OBRIGATÓRIOS
+==================================================
+- Retorne APENAS um objeto JSON válido
+- NÃO retorne marcadores de markdown como \`\`\`json
+- A estrutura do JSON DEVE ser exatamente a seguinte:
+
+{
+  "headline": "Chamada principal forte (impactante)",
+  "subheadline": "Subtítulo atraente explicando o valor",
+  "problem": "Descrição empática da dor do cliente",
+  "solution": "Apresentação da solução definitiva",
+  "services": [
+    { "title": "Serviço 1", "description": "Breve desc" },
+    { "title": "Serviço 2", "description": "Breve desc" },
+    { "title": "Serviço 3", "description": "Breve desc" }
+  ],
+  "benefits": ["Diferencial 1", "Diferencial 2", "Diferencial 3", "Diferencial 4"],
+  "testimonials": [
+    { "text": "Depoimento real", "author": "Nome" },
+    { "text": "Depoimento real", "author": "Nome" }
+  ],
+  "authority": "Texto demonstrando autoridade, anos de experiência ou especialização.",
+  "cta": "Texto curto para botão (ex: Agendar Consulta)"
+}`;
+
+    const userMsg = `Gere o JSON de conteúdo estratégico para a seguinte empresa:
 
 Business information:
 Name: ${leadData.name || 'Empresa Local'}
@@ -114,49 +144,14 @@ Niche: ${leadData.niche || 'Negócio Local'}
 City: ${leadData.city || 'Sua Cidade'}
 Description: ${leadData.description || 'Uma empresa consolidada no mercado.'}
 
-Services:
-${leadData.services ? leadData.services.join('\\n') : 'Nossos Serviços'}
+Contexto base fornecido (modifique, amplie e melhore se necessário):
+Services: ${leadData.services ? leadData.services.join(', ') : 'Serviços gerais'}
+Testimonials: ${leadData.testimonials ? leadData.testimonials.join(' | ') : 'Ótimos serviços e atendimento!'}
+Benefits: ${leadData.benefits ? leadData.benefits.join(', ') : 'Vantagem 1, Vantagem 2'}
 
-Testimonials:
-${leadData.testimonials ? leadData.testimonials.join('\\n') : 'Ótimos serviços e atendimento!'}
-
-Marketing Copy:
-Headline: ${leadData.headline || 'Impacto Digital'}
-Subheadline: ${leadData.subheadline || 'Apresente seus serviços de forma elegante'}
-Benefits: ${leadData.benefits ? leadData.benefits.join('\\n') : 'Vantagem 1\\nVantagem 2\\nVantagem 3'}
-
-Design system:
-Primary colors: ${leadData.colorPalette?.join(', ') || 'dark blue, charcoal e gold'}
-Font: ${leadData.font || 'Inter'}
 Detected Layout Style: ${leadData.layout_type || 'modern-business'}
 
-Creative direction from marketing blueprint:
-${leadData.builder_prompt || ""}
-
-Technical diagnostics of current site:
-${leadData.diagnostics ? JSON.stringify(leadData.diagnostics, null, 2) : 'Ainda sem site otimizado'}
-
-Instructions:
-
-Create a professional website redesign specifically for this business.
-
-The design must:
-- match the niche
-- look premium
-- be conversion focused
-- include hero section
-- services section
-- testimonials
-- call to action
-- contact section
-
-The result must be a COMPLETE HTML page using TailwindCSS.
-
-Do NOT generate placeholder text like "Company Name".
-Use the real business data.
-
-OUTPUT:
-Return ONLY valid HTML.`;
+Instrução Final: Return ONLY JSON. Do NOT generate HTML.`;
 
     const modelsToTry = [...PIRAMYD_MODELS];
     if (requestedModel && requestedModel !== "Llama-4-maverick") {
@@ -169,10 +164,17 @@ Return ONLY valid HTML.`;
         try {
             const data = await callPiramyd(model, PIRAMYD_API_KEY, systemMsg, userMsg);
             if (data.choices?.[0]?.message?.content) {
-                let html = data.choices[0].message.content.trim();
-                html = html.replace(/^```html?\n?/i, '').replace(/\n?```$/i, '').trim();
+                let raw = data.choices[0].message.content.trim();
+                raw = raw.replace(/^```json/i, '').replace(/```$/i, '').trim();
 
-                if (html.length > 150000) html = html.slice(0, 150000);
+                let aiContent = {};
+                try {
+                    aiContent = JSON.parse(raw);
+                } catch (parseErr) {
+                    console.error("[API HTML] Falha ao parsear JSON da IA, caindo para fallback.", parseErr.message);
+                }
+
+                const html = generatePremiumTemplate(aiContent, leadData);
 
                 res.setHeader('Access-Control-Allow-Origin', '*');
                 return res.json({ html, model });
